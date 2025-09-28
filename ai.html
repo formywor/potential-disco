@@ -6,162 +6,73 @@
   <title>Gomega AI</title>
   <style>
     :root{
-      --bg1:#0f1724;
-      --bg2:#111827;
-      --card:#0f1724;
-      --accent:#35d0ff;
-      --accent2:#7c3aed;
-      --muted:#94a3b8;
-      --bubble-user:#064e3b;
-      --bubble-ai:#0b1220;
+      --bg1:#071021; --bg2:#0b1220; --card:#0f1724;
+      --accent:#34d3ff; --accent2:#7c3aed; --muted:#94a3b8;
+      --user:#0b6b4c; --ai:#081029;
+      --glass: rgba(255,255,255,0.03);
     }
     *{box-sizing:border-box}
     body{
-      margin:0;
-      font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
-      background: radial-gradient(1200px 600px at 10% 10%, rgba(56,189,248,0.05), transparent),
+      margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
+      background: radial-gradient(800px 400px at 10% 10%, rgba(56,189,248,0.04), transparent),
                   linear-gradient(180deg,var(--bg1),var(--bg2));
-      color:#e6eef6;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      padding:20px;
+      color:#e6eef6; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:18px;
+    }
+    header{ width:100%; max-width:1200px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .brand{ display:flex; gap:12px; align-items:center; }
+    .logo{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; transform:rotate(-8deg); box-shadow:0 10px 30px rgba(0,0,0,0.4)}
+    .logo b{ color:#062; font-size:20px; }
+    h1{ margin:0; font-size:20px; color: #e6fbff; text-shadow:0 6px 22px rgba(0,0,0,0.6) }
+    .meta{ color:var(--muted); font-size:13px }
+
+    .top-row{ width:100%; max-width:1200px; display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+    .controls{ display:flex; gap:12px; align-items:center; background:var(--glass); padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.03) }
+
+    select, input[type="text"], input[type="number"], button, textarea{
+      background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:8px 10px; border-radius:8px; outline:none; font-size:14px;
     }
 
-    header{
-      width:100%;
-      max-width:1100px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:20px;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-    .logo{
-      width:56px;height:56px;border-radius:12px;
-      background:linear-gradient(135deg,var(--accent),var(--accent2));
-      display:flex;align-items:center;justify-content:center;
-      box-shadow:0 6px 18px rgba(44,211,255,0.08);
-      transform:rotate(-8deg);
-    }
-    .logo b{font-size:20px;color:#022;letter-spacing:1px}
-    h1{margin:0;font-size:20px;color: #e6fbff; text-shadow:0 6px 22px rgba(0,0,0,0.6);}
-    .meta{color:var(--muted);font-size:13px}
+    .container{ width:100%; max-width:1200px; display:grid; grid-template-columns: 1fr 380px; gap:18px; align-items:start; }
+    .chat-area{ background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); padding:18px; border-radius:14px; min-height:600px; max-height:78vh; overflow:auto; border:1px solid rgba(255,255,255,0.02) }
+    .messages{ display:flex; flex-direction:column; gap:12px }
 
-    .top-controls{
-      width:100%;
-      max-width:1100px;
-      margin-top:18px;
-      display:flex;
-      gap:14px;
-      align-items:center;
-    }
+    .bubble{ max-width:82%; padding:12px 14px; border-radius:12px; line-height:1.4; position:relative; animation: slideUp .28s ease }
+    .bubble.user{ background: linear-gradient(90deg,#0b6b4c,#064e3b); color:#d7fff0; align-self:flex-end; border-bottom-right-radius:6px; }
+    .bubble.ai{ background: linear-gradient(90deg,#0b1020,#151827); color:#e6eef6; align-self:flex-start; border-bottom-left-radius:6px; }
 
-    .model-select{
-      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.03));
-      padding:10px;border-radius:10px;display:flex;gap:10px;align-items:center;
-      border:1px solid rgba(255,255,255,0.03);
-    }
-    select, .sources, input[type="number"]{
-      background:transparent;border:none;color:var(--muted);padding:8px;font-size:14px;
-      outline:none;
-    }
+    @keyframes slideUp { from{ opacity:0; transform:translateY(8px) } to{ opacity:1; transform:none } }
 
-    .container{
-      width:100%;
-      max-width:1100px;
-      margin-top:18px;
-      display:grid;
-      grid-template-columns: 1fr 340px;
-      gap:18px;
-      align-items:start;
-    }
+    .caret{ display:inline-block; width:2px; height:1em; background:var(--accent); margin-left:6px; vertical-align:bottom; animation: blinkCaret 1s steps(2,end) infinite; }
+    @keyframes blinkCaret { 50%{ opacity:0 } }
 
-    /* Chat area */
-    .chat-area{
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
-      padding:18px;border-radius:14px;
-      min-height:520px; max-height:72vh; overflow:auto;
-      border:1px solid rgba(255,255,255,0.02);
-    }
-    .messages{display:flex;flex-direction:column;gap:12px}
+    .controls-bottom{ display:flex; gap:10px; align-items:center; margin-top:12px }
+    .prompt-input{ flex:1; padding:12px; border-radius:10px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.03); font-size:15px }
 
-    .bubble{
-      max-width:78%;
-      padding:12px 14px;border-radius:12px;line-height:1.4;
-      animation: slideUp .28s ease;
-      position:relative;
-    }
-    .bubble.user{background:linear-gradient(90deg,#0b6b4c,#064e3b);align-self:flex-end;border-bottom-right-radius:6px;}
-    .bubble.ai{background:linear-gradient(90deg,#0b1020,#151827);align-self:flex-start;border-bottom-left-radius:6px;color:#dbeafe;}
+    .ask-btn{ padding:12px 18px; border-radius:10px; background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#062; font-weight:700; border:none; cursor:pointer }
+    .ask-btn:active{ transform:translateY(1px) }
 
-    @keyframes slideUp{
-      from{opacity:0; transform:translateY(8px)}
-      to{opacity:1; transform:none}
-    }
+    .right{ padding:18px; border-radius:14px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); border:1px solid rgba(255,255,255,0.02); min-height:600px; display:flex; flex-direction:column; gap:12px }
+    .card{ padding:12px; border-radius:10px; background:transparent; border:1px solid rgba(255,255,255,0.02); }
 
-    /* fancy typing cursor within ai bubble */
-    .caret{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:4px;vertical-align:bottom;
-      animation: blinkCaret 1s steps(2,end) infinite;
-    }
-    @keyframes blinkCaret{50%{opacity:0}}
+    .model-list{ display:flex; flex-direction:column; gap:8px; max-height:220px; overflow:auto; padding-right:6px }
+    .model-item{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); }
+    .small{ font-size:13px; color:var(--muted) }
 
-    /* right pane */
-    .right{
-      padding:18px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
-      border:1px solid rgba(255,255,255,0.02); min-height:520px;
-      display:flex;flex-direction:column;gap:12px;
-    }
+    .image-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:8px }
+    .image-card{ border-radius:8px; overflow:hidden; background:#000; position:relative; display:flex; align-items:center; justify-content:center; min-height:120px }
+    .image-card img{ width:100%; height:100%; object-fit:cover; display:block }
 
-    .model-card{
-      display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:10px;
-      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03));
-      border:1px solid rgba(255,255,255,0.02);
-    }
-    .model-card h3{margin:0;font-size:15px}
-    .model-stats{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13px}
+    .download-btn{ position:absolute; right:8px; bottom:8px; background:rgba(0,0,0,0.5); color:#fff; padding:6px 8px; border-radius:6px; font-size:13px; text-decoration:none }
 
-    .input-row{display:flex;gap:12px;margin-top:12px}
-    .prompt{
-      flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--muted);
-      outline:none;font-size:15px;
-    }
-    .ask-btn{padding:12px 16px;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:#062;cursor:pointer;font-weight:700}
-    .ask-btn:active{transform:translateY(1px)}
+    .footer{ text-align:center; color:var(--muted); font-size:13px; margin-top:6px }
 
-    .footer{
-      margin-top:10px;color:var(--muted);font-size:13px; text-align:center;
-    }
+    .source-link{ color:var(--accent); text-decoration:none; font-size:13px; margin-left:8px }
 
-    /* spinner dots */
-    .dots{display:inline-flex;gap:6px;align-items:center}
-    .dot{width:8px;height:8px;border-radius:50%;background:#2b2b2b;box-shadow:0 0 0 0 rgba(255,255,255,0.1);animation: bounce 1s infinite;}
-    .dot:nth-child(2){animation-delay:.12s}
-    .dot:nth-child(3){animation-delay:.24s}
-    @keyframes bounce{
-      0%{transform:translateY(0);opacity:.6}
-      50%{transform:translateY(-6px);opacity:1}
-      100%{transform:translateY(0);opacity:.6}
-    }
+    /* animations */
+    .fadeIn{ animation: fadeIn 0.4s ease forwards }
+    @keyframes fadeIn { from{ opacity:0; transform:translateY(8px) } to{ opacity:1; transform:none } }
 
-    /* subtle transitions */
-    .fade-in { animation: fadeIn 0.5s ease forwards }
-    @keyframes fadeIn{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none }}
-    a.source-link{color:var(--accent); text-decoration:none; font-size:13px; margin-left:8px}
-
-    /* responsive */
-    @media (max-width:960px){
-      .container{grid-template-columns:1fr; padding-bottom:40px}
-      .right{order:2}
-      .chat-area{order:1}
-    }
+    @media (max-width:1000px){ .container{ grid-template-columns: 1fr } .right{ order:2 } .chat-area{ order:1 } }
   </style>
 </head>
 <body>
@@ -170,147 +81,184 @@
       <div class="logo"><b>G</b></div>
       <div>
         <h1>Gomega AI</h1>
-        <div class="meta">Up-to-date browsing • Multi-source corroboration • Session memory</div>
+        <div class="meta">Multi-source answers • Inline image generator (BETA) • Session memory</div>
       </div>
     </div>
-    <div style="text-align:right;">
+    <div style="text-align:right">
       <div class="meta">Local time: <span id="localTime">—</span></div>
-      <div style="height:2px"></div>
+      <div style="height:6px"></div>
       <div class="meta">Last fetch: <span id="lastFetch">—</span></div>
     </div>
   </header>
 
-  <div class="top-controls">
-    <div class="model-select">
-      <label style="color:var(--muted);font-size:13px">Model:</label>
-      <select id="modelPicker" title="Choose model" style="background:transparent;color:#e6eef6">
-        <option value="v5">V5.0 — Balanced (slow & accurate)</option>
-        <option value="v5mini">V5mini — Fast (short answers)</option>
-        <option value="v4">V4.2 — Research (verbose)</option>
-        <option value="v3">V3 — Creative</option>
-        <option value="math">MathMaster — Calculation specialist</option>
-        <option value="browsing">Browsing — aggressive multi-source</option>
+  <div class="top-row">
+    <div class="controls" style="flex:1">
+      <label class="small" style="margin-right:8px">Model</label>
+      <select id="modelPicker" title="Choose model" style="min-width:220px">
+        <option value="v7">Gomega V7 — Balanced & up-to-date</option>
+        <option value="v7mini">Gomega V7-mini — Fast short answers</option>
+        <option value="v7image">Gomega V7-image (BETA) — Image creator</option>
+        <option value="v6">Gomega V6 — Researcher</option>
+        <option value="v5">Gomega V5 — Stable</option>
+        <option value="math">MathMaster — Calculations</option>
+        <option value="browsing">Browsing — Aggressive lookup</option>
       </select>
-      <div style="width:12px"></div>
-      <label style="color:var(--muted);font-size:13px">Sources:</label>
-      <select id="sourceCount" title="Number of sources to use">
-        <option value="3">3 sources</option>
-        <option value="2">2 sources</option>
-        <option value="4">4 sources</option>
+
+      <label class="small" style="margin-left:12px">Sources</label>
+      <select id="sourceCount" style="min-width:80px">
+        <option value="2">2</option><option value="3" selected>3</option><option value="4">4</option>
       </select>
+
+      <label class="small" style="margin-left:12px">Google CSE (optional)</label>
+      <input id="googleKey" placeholder="API Key (optional)" style="width:180px" />
+      <input id="googleCx" placeholder="CSE ID (optional)" style="width:140px" />
+      <button id="applyKeys" style="margin-left:8px;padding:8px 10px">Apply</button>
     </div>
   </div>
 
   <div class="container">
     <div class="chat-area">
       <div class="messages" id="messages"></div>
-      <div style="height:8px"></div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input id="prompt" class="prompt" placeholder="Ask a question (e.g. 'What year was Nokia released in North America?')" />
+
+      <div class="controls-bottom">
+        <input id="prompt" class="prompt-input" placeholder="Ask a question or 'generate: cyberpunk city at night' for images" />
         <button class="ask-btn" id="askBtn">Ask</button>
       </div>
+      <div style="height:6px"></div>
+      <div class="footer small">Tip: add "only the year" or "only the number" in your question for strict outputs.</div>
     </div>
 
     <aside class="right">
-      <div class="model-card">
-        <h3>Active Model Info</h3>
-        <div class="model-stats" id="modelStats">
-          <!-- filled by JS -->
-        </div>
-        <div style="margin-top:8px;color:var(--muted);font-size:13px">
-          Gomega will check multiple public sources (Wikipedia & DuckDuckGo), extract concise facts (e.g., years), do safe math, and show sources. For critical facts, verify externally.
-        </div>
+      <div class="card">
+        <h3>Active Model</h3>
+        <div id="modelStats" class="small">—</div>
       </div>
 
-      <div class="model-card" id="sessionCard">
+      <div class="card">
         <h3>Session Memory</h3>
-        <div id="sessionList" style="color:var(--muted);font-size:13px">No messages yet.</div>
-        <button id="clearSession" style="margin-top:8px;padding:8px;background:#111;border-radius:8px;border:1px solid rgba(255,255,255,0.02);color:var(--muted);cursor:pointer">Clear Session</button>
+        <div id="sessionList" class="small">No messages yet.</div>
+        <button id="clearSession" style="margin-top:8px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer">Clear Session</button>
       </div>
 
-      <div class="model-card">
-        <h3>Quick Tips</h3>
-        <ul style="margin:6px 0 0 18px;color:var(--muted);font-size:13px">
-          <li>For a single year: ask “What year was X released in North America?”</li>
-          <li>For math: ask expressions (e.g. 12*(5+7)/3) or plain language (e.g. "12 divided by 3")</li>
-          <li>Switch model to "Browsing" for more aggressive lookup</li>
-        </ul>
+      <div class="card">
+        <h3>Image Generator (BETA)</h3>
+        <div class="small">When you select <strong>Gomega V7-image (BETA)</strong> or prefix with <code>generate:</code>, Gomega will attempt to create images from the prompt. Currently uses Unsplash/lexica fallbacks — real generative APIs require keys.</div>
       </div>
-      <div style="flex:1"></div>
-      <div class="footer">Built for you — Gomega AI</div>
+
+      <div class="card">
+        <h3>Sources & Tools</h3>
+        <div class="small">Gomega uses Wikipedia & DuckDuckGo by default. Paste Google API Key + CSE ID above to enable Google Overview results (optional). For generation we use Unsplash or Lexica as a BETA placeholder.</div>
+      </div>
+
     </aside>
   </div>
 
   <script>
-    // -------------------------
-    // Utilities & session state
-    // -------------------------
+    /******************************
+     * Gomega AI — Client-side app
+     * Runs fully in the browser.
+     * - Multi-source lookup (Wikipedia, DuckDuckGo)
+     * - Optional Google CSE if user provides API Key + CX
+     * - Inline image "generator" (BETA) using Unsplash / Lexica fallback
+     * - Multiple model profiles with typing & behavior
+     ******************************/
+
+    // ----- state -----
     const messagesEl = document.getElementById('messages');
-    const sessionList = document.getElementById('sessionList');
-    const modelStats = document.getElementById('modelStats');
-    const localTimeEl = document.getElementById('localTime');
+    const modelPicker = document.getElementById('modelPicker');
+    const sourceCountEl = document.getElementById('sourceCount');
+    const promptEl = document.getElementById('prompt');
+    const askBtn = document.getElementById('askBtn');
+    const sessionListEl = document.getElementById('sessionList');
+    const modelStatsEl = document.getElementById('modelStats');
     const lastFetchEl = document.getElementById('lastFetch');
+    const googleKeyInput = document.getElementById('googleKey');
+    const googleCxInput = document.getElementById('googleCx');
+    const applyKeysBtn = document.getElementById('applyKeys');
 
-    let session = []; // {role:'user'|'ai', text, model}
-    function updateSessionUI(){
-      if(session.length === 0){ sessionList.innerText = 'No messages yet.'; return; }
-      sessionList.innerHTML = session.slice(-6).map(m => `<div style="margin-bottom:6px"><strong style="color:${m.role==='user'?'#9ae6b4':'#93c5fd'}">${m.role}</strong>: <span style="color:#cbd5e1">${escapeHtml(m.text).slice(0,120)}</span></div>`).join('');
-    }
-    function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
+    let session = []; // array of {role, text, model}
+    let GOOGLE_API_KEY = '';
+    let GOOGLE_CX = '';
 
-    // update local time every second
-    function tickLocalTime(){
-      const now = new Date();
-      localTimeEl.textContent = now.toLocaleString();
-      requestAnimationFrame(()=>setTimeout(tickLocalTime,1000));
-    }
-    tickLocalTime();
-
-    // model "profiles"
+    // model profiles
     const MODELS = {
-      v5: {label:'V5.0', speed:60, verboseness:1.0, sources:3, desc:'Balanced & accurate (slower typing)'},
-      v5mini: {label:'V5mini', speed:18, verboseness:0.4, sources:2, desc:'Fast short answers'},
-      v4: {label:'V4.2', speed:90, verboseness:1.6, sources:4, desc:'Researcher (longer, more sources)'},
-      v3: {label:'V3', speed:80, verboseness:1.2, sources:3, desc:'Creative but less strict'},
-      math: {label:'MathMaster', speed:32, verboseness:0.2, sources:1, desc:'Calculations specialist'},
-      browsing: {label:'Browsing', speed:70, verboseness:1.1, sources:4, desc:'Aggressive multi-source lookup'}
+      v7: {label:'Gomega V7', speed:70, verb:1.0, sources:3, desc:'Balanced & up-to-date'},
+      v7mini: {label:'Gomega V7-mini', speed:22, verb:0.5, sources:2, desc:'Fast, concise'},
+      v7image: {label:'Gomega V7-image (BETA)', speed:60, verb:0.5, sources:1, desc:'Image creator (BETA)'},
+      v6: {label:'Gomega V6', speed:85, verb:1.6, sources:4, desc:'Researcher — verbose'},
+      v5: {label:'Gomega V5', speed:64, verb:1.0, sources:3, desc:'Stable & precise'},
+      math: {label:'MathMaster', speed:38, verb:0.2, sources:1, desc:'Calculation specialist'},
+      browsing: {label:'Browsing', speed:72, verb:1.1, sources:4, desc:'Aggressive lookup'}
     };
 
-    function renderModelStats(key){
+    function renderModelStats(){
+      const key = modelPicker.value;
       const m = MODELS[key];
-      modelStats.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">
-          <div><strong style="color:#fff">${m.label}</strong> • <span style="color:var(--muted)">${m.desc}</span></div>
-          <div style="display:flex;gap:10px">
-              <div style="color:var(--muted)">Typing: <strong style="color:var(--accent)">${m.speed}ms</strong></div>
-              <div style="color:var(--muted)">Verbosity: <strong style="color:var(--accent)">${m.verboseness}</strong></div>
-              <div style="color:var(--muted)">Sources: <strong style="color:var(--accent)">${m.sources}</strong></div>
-          </div>
-        </div>`;
+      modelStatsEl.innerHTML = `<div><strong>${m.label}</strong> — ${m.desc}</div>
+        <div style="margin-top:6px" class="small">Typing: ${m.speed}ms · Verbosity: ${m.verb} · Preferred sources: ${m.sources}</div>`;
+    }
+    renderModelStats();
+    modelPicker.addEventListener('change', renderModelStats);
+
+    applyKeysBtn.addEventListener('click', () => {
+      GOOGLE_API_KEY = googleKeyInput.value.trim();
+      GOOGLE_CX = googleCxInput.value.trim();
+      alert('Google keys updated. If provided correctly, Gomega will use Google Overview results.');
+    });
+
+    // update local time
+    const localTimeEl = document.getElementById('localTime');
+    function tick(){
+      localTimeEl.textContent = new Date().toLocaleString();
+      setTimeout(tick, 1000);
+    }
+    tick();
+
+    // helpers
+    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function addBubble(role, text, extraHTML){
+      const el = document.createElement('div');
+      el.className = 'bubble ' + (role==='user' ? 'user' : 'ai');
+      el.innerHTML = escapeHtml(text).replace(/\n/g,'<br>') + (extraHTML ? extraHTML : '');
+      messagesEl.appendChild(el);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      return el;
     }
 
-    // initialize default model view
-    renderModelStats(document.getElementById('modelPicker').value);
+    function addAIBubbleTypingArea(){
+      const el = document.createElement('div');
+      el.className = 'bubble ai';
+      el.innerHTML = `<div class="typingArea"></div><span class="caret"></span>`;
+      messagesEl.appendChild(el);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      return el.querySelector('.typingArea');
+    }
 
-    document.getElementById('modelPicker').addEventListener('change', e => {
-      renderModelStats(e.target.value);
-    });
+    // typing with randomness & pauses at punctuation to feel human
+    async function humanType(el, text, baseSpeed){
+      el.innerHTML = '';
+      const punctuationPause = 300;
+      for(let i=0;i<text.length;i++){
+        const ch = text[i];
+        el.innerHTML = escapeHtml(text.slice(0, i+1));
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+        // randomize speed a bit and slow down on punctuation
+        const variability = Math.random()*0.5 + 0.75; // 0.75..1.25
+        let delay = Math.max(8, Math.round(baseSpeed * variability));
+        if(/[,;:]/.test(ch)) delay += punctuationPause*0.25;
+        if(/[.!?]/.test(ch)) delay += punctuationPause;
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
 
-    document.getElementById('clearSession').addEventListener('click', () => {
-      session = []; updateSessionUI();
-      // clear chat UI
-      messagesEl.innerHTML = '';
-    });
-
-    // -------------------------
-    // Fetch helpers (public sources)
-    // -------------------------
+    // ---------- Data sources ----------
     async function fetchWikiSummary(q){
       try{
-        // Wikipedia REST summary for a title (works for article titles)
         const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, {mode:'cors'});
         if(!r.ok) return null;
         const j = await r.json();
-        return {source:'Wikipedia', title:j.title||q, text:j.extract || '', url: j.content_urls ? j.content_urls.desktop.page : `https://en.wikipedia.org/wiki/${encodeURIComponent(q)}`};
+        return {source:'Wikipedia', title:j.title||q, text:j.extract||'', url: (j.content_urls && j.content_urls.desktop) ? j.content_urls.desktop.page : `https://en.wikipedia.org/wiki/${encodeURIComponent(q)}`};
       }catch(e){ return null; }
     }
 
@@ -320,12 +268,10 @@
         if(!r.ok) return [];
         const j = await r.json();
         const hits = j.query?.search || [];
-        // load summaries for each hit (but limit network calls)
         const results = [];
-        for(let i=0;i<hits.length;i++){
-          const title = hits[i].title;
-          const sum = await fetchWikiSummary(title);
-          if(sum) results.push(sum);
+        for(const h of hits){
+          const s = await fetchWikiSummary(h.title);
+          if(s) results.push(s);
         }
         return results;
       }catch(e){ return []; }
@@ -336,272 +282,290 @@
         const r = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`);
         if(!r.ok) return null;
         const j = await r.json();
-        let text = j.Abstract || j.RelatedTopics?.map(t=>t.Text).join('. ') || '';
+        let text = j.Abstract || (j.RelatedTopics ? j.RelatedTopics.map(t => t.Text).join('. ') : '');
         let url = j.AbstractURL || '';
-        return {source:'DuckDuckGo', title: j.Heading || q, text: text, url: url};
+        return {source:'DuckDuckGo', title:j.Heading||q, text:text, url:url};
       }catch(e){ return null; }
     }
 
-    // tries a set of sources, returns array of {source,title,text,url}
-    async function gatherSources(query, desiredCount=3, aggressive=false){
-      const results = [];
-      // 1: try direct wiki summary for the query
-      const wikiDirect = await fetchWikiSummary(query);
-      if(wikiDirect) results.push(wikiDirect);
-
-      // 2: ddg
-      const ddg = await fetchDDG(query);
-      if(ddg && ddg.text) results.push(ddg);
-
-      // 3: wiki search hits
-      const searchHits = await fetchWikiSearch(query, aggressive?5:3);
-      for(const s of searchHits) if(!results.find(r=>r.title===s.title)) results.push(s);
-
-      // 4: if still not enough and aggressive, try search variations (append "history", "release", "company")
-      if(aggressive && results.length < desiredCount){
-        const extras = ['history','release date','company','overview'];
-        for(const ex of extras){
-          if(results.length>=desiredCount) break;
-          const t = await fetchWikiSummary(`${query} ${ex}`);
-          if(t && !results.find(r=>r.title===t.title)) results.push(t);
-        }
-      }
-      // dedupe and slice
-      const deduped = [];
-      const seen = new Set();
-      for(const r of results){
-        const key = (r.title||'') + '|' + (r.source||'');
-        if(!seen.has(key) && r.text && r.text.length>20){
-          deduped.push(r); seen.add(key);
-        }
-      }
-      return deduped.slice(0, desiredCount);
+    // Optional: Google Custom Search (requires key + cx) - user must paste keys in UI
+    async function fetchGoogleOverview(q){
+      if(!GOOGLE_API_KEY || !GOOGLE_CX) return null;
+      try{
+        const r = await fetch(`https://www.googleapis.com/customsearch/v1?key=${encodeURIComponent(GOOGLE_API_KEY)}&cx=${encodeURIComponent(GOOGLE_CX)}&q=${encodeURIComponent(q)}&num=1`);
+        if(!r.ok) return null;
+        const j = await r.json();
+        const item = j.items && j.items[0];
+        if(!item) return null;
+        const snippet = item.snippet || '';
+        return {source:'Google', title:item.title||q, text:snippet, url:item.link || ''};
+      }catch(e){ return null; }
     }
 
-    // -------------------------
-    // Smart extraction helpers
-    // -------------------------
-    function extractYearFromText(text){
+    // Image generation (BETA): attempt Lexica -> Unsplash fallback
+    async function generateImages(prompt, count=2){
+      // 1) Try Lexica API (public search) as a generator placeholder
+      try{
+        const lexicaUrl = `https://lexica.art/api/v1/search?q=${encodeURIComponent(prompt)}`;
+        const r = await fetch(lexicaUrl);
+        if(r.ok){
+          const j = await r.json();
+          if(j.images && j.images.length>0){
+            return j.images.slice(0, count).map(img => ({src: img.src, prompt: img.prompt || prompt}));
+          }
+        }
+      }catch(e){ /* ignore */ }
+
+      // 2) Unsplash Source fallback (not generative but search-like)
+      try{
+        const imgs = [];
+        for(let i=0;i<count;i++){
+          // use unsplash source to get a photo by query - this returns a redirect to an image
+          const url = `https://source.unsplash.com/collection/190727/800x600?${encodeURIComponent(prompt)}&sig=${Date.now()+i}`;
+          imgs.push({src: url, prompt});
+        }
+        return imgs;
+      }catch(e){ /* ignore */ }
+
+      return [];
+    }
+
+    // ---------- Smart helpers ----------
+    function extractYear(text){
       if(!text) return null;
-      const years = text.match(/\b(18\d{2}|19\d{2}|20\d{2}|2100)\b/g);
-      if(!years) return null;
-      // frequency map
+      const m = text.match(/\b(17\d{2}|18\d{2}|19\d{2}|20\d{2}|2100)\b/g);
+      if(!m) return null;
       const freq = {};
-      for(const y of years) freq[y] = (freq[y]||0)+1;
-      const sorted = Object.keys(freq).sort((a,b)=>freq[b]-freq[a]);
-      return sorted[0];
+      for(const y of m) freq[y] = (freq[y]||0)+1;
+      return Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
     }
 
-    // safer math parser: allow numbers, parentheses, decimals, + - * / ^, and textual ops
-    function safeMathEval(input){
-      if(!input || input.length>200) return null;
-      // convert words to ops
-      let s = input.toLowerCase().replace(/÷|×/g, function(m){ return m==='÷' ? '/' : '*';});
-      s = s.replace(/(\d)\s+percent/gi, '$1*0.01');
-      s = s.replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-').replace(/\btimes\b/g,'*').replace(/\bmultiplied by\b/g,'*')
-           .replace(/\bdivided by\b/g,'/').replace(/\bover\b/g,'/').replace(/\binto\b/g,'*')
-           .replace(/\bto the power of\b/g,'^').replace(/\bpower\b/g,'^').replace(/(\d)\s*\^\s*(\d)/g,'$1^$2');
-      // allow only digits, spaces, operators, parentheses, decimal point and ^ 
+    // safe math - allow numbers, whitespace, + - * / ( ) . ^ % only
+    function safeEvalMath(expr){
+      if(!expr || expr.length>200) return null;
+      let s = expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/—/g,'-');
+      s = s.replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-').replace(/\btimes\b/g,'*').replace(/\bdivided by\b/g,'/');
+      // allow only safe chars
       if(!/^[0-9+\-*/().\s%^]+$/.test(s)) return null;
-      // transform ^ to **
       s = s.replace(/\^/g,'**');
       try{
         // eslint-disable-next-line no-new-func
-        const val = Function(`"use strict"; return (${s});`)();
-        if(typeof val === 'number' && Number.isFinite(val)) return val;
+        const v = Function(`"use strict"; return (${s});`)();
+        if(typeof v === 'number' && Number.isFinite(v)) return v;
         return null;
-      }catch(e){
-        return null;
-      }
+      }catch(e){ return null; }
     }
 
-    // simple "smart answer" combiner: choose best text, extract year if requested, else concise summary
-    function pickBestAnswer(sources, query, modelKey){
-      // join texts as candidates
-      const texts = sources.map(s=>({src:s.source, title:s.title, text:s.text, url:s.url}));
-      // if it's math-like, try to compute
-      const mathVal = safeMathEval(query);
-      if(mathVal !== null && modelKey === 'math') return {answer: String(mathVal), sources:[]};
-
-      // detect "year" question
-      const asksYear = /\bwhat\s+year|\bwhen\s+was|\breleased in .*year|\breleased in/i.test(query);
-      if(asksYear){
-        // try to find year in all sources
-        const years = [];
-        for(const t of texts){
-          const y = extractYearFromText(t.text || '');
-          if(y) years.push({y,src:t.source, title:t.title, url:t.url});
-        }
-        if(years.length>0){
-          // pick majority or the first
-          const freq = {}; for(const it of years){ freq[it.y] = (freq[it.y]||0)+1; }
-          const pick = Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
-          const chosen = years.find(r=>r.y===pick);
-          return {answer: pick, sources: years.map(x=> ({src:x.src, url:x.url, title:x.title}))};
+    // gather sources based on query and desired count
+    async function gather(query, desired=3, aggressive=false){
+      const out = [];
+      // 1) Wikipedia direct
+      const wiki = await fetchWikiSummary(query);
+      if(wiki) out.push(wiki);
+      // 2) DuckDuckGo
+      const ddg = await fetchDDG(query);
+      if(ddg && ddg.text) out.push(ddg);
+      // 3) Google overview if possible
+      const google = await fetchGoogleOverview(query);
+      if(google) out.push(google);
+      // 4) wiki search results
+      if(out.length < desired){
+        const hits = await fetchWikiSearch(query, aggressive ? 5 : 3);
+        for(const h of hits){
+          if(out.length >= desired) break;
+          if(!out.find(o => o.title === h.title)) out.push(h);
         }
       }
-
-      // general: pick most informative source: longest extract
-      let best = texts[0];
-      for(const t of texts) if((t.text||'').length > (best.text||'').length) best = t;
-      // produce concise answer by taking first 2 sentences trimmed by model verbosity
-      let sentences = (best.text||'').split(/(?<=\.)\s+/).filter(Boolean);
-      const verb = MODELS[modelKey].verboseness || 1;
-      const take = Math.max(1, Math.floor(verb*1.5));
-      const answer = sentences.slice(0,take).join(' ').trim();
-      const srcs = texts.map(t=>({src:t.src, title:t.title, url:t.url}));
-      return {answer: answer || "I couldn't find an answer.", sources: srcs};
-    }
-
-    // -------------------------
-    // UI functions: render bubble with typing
-    // -------------------------
-    function addUserBubble(text){
-      const el = document.createElement('div');
-      el.className = 'bubble user';
-      el.innerText = text;
-      messagesEl.appendChild(el);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-
-    function addAIBubbleTyping(){ // returns element to be typed into
-      const el = document.createElement('div');
-      el.className = 'bubble ai';
-      el.innerHTML = '<span class="typingArea"></span><span class="caret"></span>';
-      messagesEl.appendChild(el);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-      return el.querySelector('.typingArea');
-    }
-
-    // typed printing with caret handled
-    async function typeToElement(el, text, speed){
-      el.innerHTML = '';
-      for(let i=0;i<text.length;i++){
-        el.innerHTML = escapeHtml(text.slice(0,i+1));
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-        await new Promise(r => setTimeout(r, speed));
+      // dedupe & filter
+      const dedup = [];
+      const seen = new Set();
+      for(const r of out){
+        const key = (r.title||'') + '|' + (r.source||'');
+        if(!seen.has(key) && r.text && r.text.length>20){
+          seen.add(key); dedup.push(r);
+        }
       }
+      return dedup.slice(0, desired);
     }
 
-    // -------------------------
-    // Main ask handler
-    // -------------------------
-    document.getElementById('askBtn').addEventListener('click', handleAsk);
-    document.getElementById('prompt').addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter' && !e.shiftKey){ handleAsk(); e.preventDefault(); }
-    });
+    // pick best answer from sources
+    function pickAnswer(sources, query, modelKey){
+      // detect year / when questions
+      const wantsYear = /\bwhat\s+year|\bwhen\s+was|\bwhen\s+did/i.test(query);
+      // detect math expression
+      const mathValue = safeEvalMath(query);
+
+      if(modelKey === 'math' && mathValue !== null) return {answer: String(mathValue), sources: []};
+      if(mathValue !== null && modelKey !== 'v7image'){ // non-math models can still show computed value as extra
+        // we'll return computed value appended as verification later
+      }
+
+      if(wantsYear){
+        for(const s of sources){
+          const y = extractYear(s.text);
+          if(y) return {answer: y, sources: sources.map(s => ({title:s.title, url:s.url}))};
+        }
+      }
+
+      // choose longest extract
+      let best = sources[0];
+      for(const s of sources) if((s.text||'').length > (best.text||'').length) best = s;
+      let answer = (best && best.text) ? best.text.split(/(?<=\.)\s+/).slice(0, Math.max(1, Math.round(MODELS[modelKey].verb*1.5))).join(' ') : "I couldn't find an answer.";
+      // small cleanup
+      answer = answer.replace(/\s+/g,' ').trim();
+
+      return {answer, sources: sources.map(s => ({title:s.title, url:s.url, src:s.source}))};
+    }
+
+    // compute simple corroboration
+    function corroborationText(sources){
+      if(!sources || sources.length <= 1) return 'Limited corroboration';
+      // look for common year matches
+      const years = {};
+      for(const s of sources){
+        const y = extractYear(s.title + ' ' + (s.text||''));
+        if(y) years[y] = (years[y]||0)+1;
+      }
+      const keys = Object.keys(years);
+      if(keys.length===0) return 'Multiple sources';
+      const best = keys.sort((a,b)=>years[b]-years[a])[0];
+      if(years[best] > 1) return `Corroborated: ${best}`;
+      return 'Multiple sources (partial agreement)';
+    }
+
+    // ---------- UI actions ----------
+    askBtn.addEventListener('click', handleAsk);
+    promptEl.addEventListener('keydown', (e) => { if(e.key==='Enter' && !e.shiftKey){ handleAsk(); e.preventDefault(); }});
+
+    document.getElementById('clearSession').addEventListener('click', () => { session = []; sessionListEl.innerText = 'No messages yet.'; messagesEl.innerHTML=''; });
 
     async function handleAsk(){
-      const qInput = document.getElementById('prompt');
-      const query = qInput.value.trim();
+      const query = promptEl.value.trim();
       if(!query) return;
-      const modelKey = document.getElementById('modelPicker').value;
-      const desiredSources = parseInt(document.getElementById('sourceCount').value || MODELS[modelKey].sources,10);
-
-      // push user message
-      addUserBubble(query);
+      const modelKey = modelPicker.value;
+      const desiredSources = parseInt(sourceCountEl.value || MODELS[modelKey].sources, 10);
+      // show user bubble
+      addBubble('user', query);
       session.push({role:'user', text: query, model:modelKey});
       updateSessionUI();
 
-      // show ai bubble (typing)
-      const typingArea = addAIBubbleTyping();
-
-      // show spinner in model stats (lastFetch)
-      lastFetchEl.textContent = 'fetching...';
-
-      // gather sources (aggressive if browsing)
-      const aggressive = modelKey === 'browsing' || modelKey === 'v4';
-      let sources = await gatherSources(query, desiredSources, aggressive);
-
-      // if not enough sources and model wants more, try again with search
-      if(sources.length === 0 && aggressive){
-        sources = await gatherSources(query, desiredSources, true);
+      // If model is image or query starts with "generate:" treat as image generation
+      let isGen = false;
+      let genPrompt = '';
+      if(modelKey === 'v7image' || /^generate[:\s]/i.test(query)){
+        isGen = true;
+        genPrompt = (modelKey==='v7image') ? query : query.replace(/^generate[:\s]+/i, '');
       }
 
-      // choose best answer
-      const picked = pickBestAnswer(sources, query, modelKey);
-      const rawAnswer = picked.answer || "I couldn't find an answer.";
-      // prepare final display answer (respect model verbosity)
-      let finalAnswer = rawAnswer;
-      // For v5mini prefer single-sentence
-      if(modelKey === 'v5mini') finalAnswer = finalAnswer.split(/(?<=\.)\s+/)[0] || finalAnswer;
-      // v3 adds a playful suffix
-      if(modelKey === 'v3') finalAnswer = finalAnswer + " ✨";
+      if(isGen){
+        // show an AI bubble placeholder with typing
+        const typingArea = addAIBubbleTypingArea();
+        const baseSpeed = MODELS[modelKey].speed * 1.5;
+        await humanType(typingArea, 'Generating images… (BETA)', Math.max(14, Math.round(baseSpeed*0.6)));
+        // run image generation fallback
+        const imgs = await generateImages(genPrompt, 4);
+        // replace bubble content with images
+        const imgContainer = document.createElement('div');
+        imgContainer.style.display = 'grid';
+        imgContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        imgContainer.style.gap = '8px';
+        for(const img of imgs){
+          const card = document.createElement('div'); card.className = 'image-card';
+          const imageEl = document.createElement('img');
+          imageEl.src = img.src;
+          imageEl.alt = img.prompt || genPrompt;
+          card.appendChild(imageEl);
 
-      // If the query is math-like and model not math but expression present, compute and append as verification
-      if(modelKey !== 'math'){
-        const mathVal = safeMathEval(query);
-        if(mathVal !== null){
-          // keep it concise: show computed value as a verification note
-          finalAnswer = finalAnswer + `\n\n(Computed: ${mathVal})`;
+          // download button fetches image as blob, creates downloadable link
+          const dl = document.createElement('a');
+          dl.className = 'download-btn';
+          dl.textContent = 'Download';
+          dl.href = img.src;
+          // use download attribute where possible; for cross-origin images this may not always work, but we still provide link
+          dl.setAttribute('download', 'gomega-image.jpg');
+          card.appendChild(dl);
+
+          imgContainer.appendChild(card);
         }
+        // append to last bubble
+        const lastBubble = messagesEl.lastElementChild;
+        if(lastBubble) lastBubble.innerHTML = ''; // clear typing
+        const wrapper = document.createElement('div');
+        wrapper.appendChild(imgContainer);
+        if(lastBubble) lastBubble.appendChild(wrapper);
+        lastFetchEl.textContent = new Date().toLocaleString();
+        session.push({role:'ai', text: `Generated ${imgs.length} images for "${genPrompt}"`, model:modelKey});
+        updateSessionUI();
+        return;
       }
 
-      // Type answer with model speed (make it intentionally slow per request)
-      const speedBase = MODELS[modelKey].speed;
-      // slow factor to make it slower by default
-      const slowFactor = 1.6;
-      const finalSpeed = Math.max(14, Math.round(speedBase * slowFactor));
+      // non-image flow: prepare typing area
+      const typingArea = addAIBubbleTypingArea();
 
-      // If answer is exactly numeric (e.g., year or math), render directly (no line breaks)
-      const typingText = finalAnswer;
+      // show interim text while fetching
+      await humanType(typingArea, 'Searching multiple sources…', 40);
 
-      // perform typing
-      await typeToElement(typingArea, typingText, finalSpeed);
+      // perform multi-source gather
+      lastFetchEl.textContent = 'fetching...';
+      let sources = [];
+      try{
+        sources = await gather(query, desiredSources, modelKey === 'browsing' || modelKey === 'v6' || modelKey === 'v7');
+      }catch(e){ console.warn(e); }
 
-      // after typing, show sources & corroboration summary below the bubble
-      const metaEl = document.createElement('div');
-      metaEl.style.marginTop = '6px';
-      metaEl.style.fontSize = '13px';
-      metaEl.style.color = 'var(--muted)';
+      // if still empty and model is aggressive, try again
+      if(sources.length === 0 && (modelKey === 'browsing' || modelKey === 'v6')){
+        try{ sources = await gather(query, desiredSources, true); } catch(e){ }
+      }
 
+      // pick answer
+      const picked = pickAnswer(sources, query, modelKey);
+      let final = picked.answer || "I couldn't find an answer.";
+      // append computed math if present and user didn't ask for strict only-number
+      const mathVal = safeEvalMath(query);
+      const wantsStrictNumber = /\bonly the year\b|\bonly the number\b|\bjust the year\b/i.test(query);
+      if(mathVal !== null && !wantsStrictNumber && modelKey !== 'math'){
+        final = final + `\n\n(Computed: ${mathVal})`;
+      }
+      // for v7mini keep it short
+      if(modelKey === 'v7mini') final = final.split(/(?<=\.)\s+/)[0] || final;
+
+      // clear typing area and type nicely (slow, human-like)
+      const slowFactor = 1.6; // make slower as requested
+      const speed = Math.max(12, Math.round(MODELS[modelKey].speed * slowFactor));
+      // clear typingArea before final typing
+      typingArea.innerHTML = '';
+      await humanType(typingArea, final, speed);
+
+      // append sources & corroboration
+      const meta = document.createElement('div');
+      meta.style.marginTop = '8px';
+      meta.style.fontSize = '13px';
+      meta.style.color = 'var(--muted)';
       if(picked.sources && picked.sources.length>0){
-        // simple corroboration: check how many sources contain the same token (e.g. year)
-        const corroboration = computeCorroboration(picked.sources);
-        metaEl.innerHTML = `Sources: ${picked.sources.map(s=> `<a class="source-link" href="${s.url||'#'}" target="_blank" rel="noopener">${escapeHtml(s.title||s.src)}</a>`).join(', ')} • ${corroboration}`;
+        meta.innerHTML = `Sources: ${picked.sources.map(s => `<a class="source-link" href="${s.url||'#'}" target="_blank" rel="noopener">${escapeHtml(s.title||s.src||'source')}</a>`).join(', ')} • ${corroborationText(picked.sources)}`;
       } else {
-        metaEl.innerHTML = `Sources: none found.`;
+        meta.innerHTML = 'Sources: none found';
       }
-      // append meta under the last message
       const lastBubble = messagesEl.lastElementChild;
-      if(lastBubble) lastBubble.appendChild(metaEl);
-      // update session + UI
-      session.push({role:'ai', text: finalAnswer, model:modelKey});
+      if(lastBubble) lastBubble.appendChild(meta);
+
+      session.push({role:'ai', text: final, model:modelKey});
       updateSessionUI();
       lastFetchEl.textContent = new Date().toLocaleString();
-      // scroll
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-      qInput.value = '';
     }
 
-    function computeCorroboration(sources){
-      if(!sources || sources.length<=1) return 'Limited corroboration';
-      // find numeric tokens in sources
-      const counts = {};
-      for(const s of sources){
-        const y = extractYearFromText((s.title||'') + ' ' + (s.text||''));
-        if(y) counts[y] = (counts[y]||0)+1;
-      }
-      const keys = Object.keys(counts);
-      if(keys.length===0) return 'Multiple sources (no clear numeric match)';
-      const best = keys.sort((a,b)=>counts[b]-counts[a])[0];
-      if(counts[best] > 1) return `Corroborated: ${best}`;
-      return 'Multiple sources (one-of-a-kind matches)';
+    function updateSessionUI(){
+      if(session.length===0){ sessionListEl.innerText = 'No messages yet.'; return; }
+      sessionListEl.innerHTML = session.slice(-6).map(m => `<div style="margin-bottom:6px"><strong style="color:${m.role==='user' ? '#9ae6b4' : '#93c5fd'}">${escapeHtml(m.role)}</strong>: <span style="color:#cbd5e1">${escapeHtml(m.text).slice(0,140)}</span></div>`).join('');
     }
 
-    // initial demo/welcome messages
-    (function welcome(){
-      const w1 = document.createElement('div');
-      w1.className='bubble ai fade-in';
-      w1.innerHTML = 'Hello — I am <strong>Gomega AI</strong>. Ask me anything. I check multiple sources and try to be precise.';
-      messagesEl.appendChild(w1);
+    // ---------- image download helper (for cross-origin fallback, we use direct link; user can right-click) ----------
+    // Note: attempting to fetch images to create same-origin blob may fail due to CORS. We provide direct link + download attribute; browser behavior may vary.
 
-      const w2 = document.createElement('div');
-      w2.className='bubble ai fade-in';
-      w2.style.animationDelay='0.08s';
-      w2.innerHTML = 'Try: <em>What year was Nokia released in North America?</em> or a math expression like <em>12*(5+7)/3</em>.';
-      messagesEl.appendChild(w2);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
+    // ----- initial welcome -----
+    (function init(){
+      addBubble('ai', 'Hello — I am Gomega AI. I can search multiple sources, do safe math, and (BETA) generate images inline. Paste Google API Key + CSE ID to enable Google Overview results.');
+      addBubble('ai', 'Try: "What year was Nokia released in North America?" or "generate: neon city at night".');
     })();
 
   </script>
