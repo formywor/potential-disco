@@ -1,79 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Gomega AI</title>
-  <style>
-    :root{
-      --bg1:#071021; --bg2:#0b1220; --card:#0f1724;
-      --accent:#34d3ff; --accent2:#7c3aed; --muted:#94a3b8;
-      --user:#0b6b4c; --ai:#081029;
-      --glass: rgba(255,255,255,0.03);
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
-      background: radial-gradient(800px 400px at 10% 10%, rgba(56,189,248,0.04), transparent),
-                  linear-gradient(180deg,var(--bg1),var(--bg2));
-      color:#e6eef6; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:18px;
-    }
-    header{ width:100%; max-width:1200px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
-    .brand{ display:flex; gap:12px; align-items:center; }
-    .logo{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; transform:rotate(-8deg); box-shadow:0 10px 30px rgba(0,0,0,0.4)}
-    .logo b{ color:#062; font-size:20px; }
-    h1{ margin:0; font-size:20px; color: #e6fbff; text-shadow:0 6px 22px rgba(0,0,0,0.6) }
-    .meta{ color:var(--muted); font-size:13px }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Gomega AI — thinking mode & multi-source</title>
+<style>
+  :root{
+    --bg1:#071021; --bg2:#0b1220; --card:#0f1724;
+    --accent:#34d3ff; --accent2:#7c3aed; --muted:#94a3b8;
+    --user:#0b6b4c; --ai:#081029; --glass: rgba(255,255,255,0.03);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
+    background: radial-gradient(900px 400px at 10% 10%, rgba(56,189,248,0.04), transparent),
+                linear-gradient(180deg,var(--bg1),var(--bg2));
+    color:#e6eef6; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:18px;
+  }
+  header{ width:100%; max-width:1200px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+  .brand{ display:flex; gap:12px; align-items:center; }
+  .logo{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; transform:rotate(-8deg); box-shadow:0 10px 30px rgba(0,0,0,0.4)}
+  .logo b{ color:#062; font-size:20px; }
+  h1{ margin:0; font-size:20px; color: #e6fbff; text-shadow:0 6px 22px rgba(0,0,0,0.6) }
+  .meta{ color:var(--muted); font-size:13px }
 
-    .top-row{ width:100%; max-width:1200px; display:flex; gap:12px; align-items:center; margin-bottom:12px; }
-    .controls{ display:flex; gap:12px; align-items:center; background:var(--glass); padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.03) }
+  .top-row{ width:100%; max-width:1200px; display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+  .controls{ display:flex; gap:12px; align-items:center; background:var(--glass); padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.03) }
 
-    select, input[type="text"], input[type="number"], button, textarea{
-      background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:8px 10px; border-radius:8px; outline:none; font-size:14px;
-    }
+  select, input[type="text"], input[type="number"], button, textarea{
+    background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:8px 10px; border-radius:8px; outline:none; font-size:14px;
+  }
 
-    .container{ width:100%; max-width:1200px; display:grid; grid-template-columns: 1fr 380px; gap:18px; align-items:start; }
-    .chat-area{ background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); padding:18px; border-radius:14px; min-height:600px; max-height:78vh; overflow:auto; border:1px solid rgba(255,255,255,0.02) }
-    .messages{ display:flex; flex-direction:column; gap:12px }
+  .container{ width:100%; max-width:1200px; display:grid; grid-template-columns: 1fr 420px; gap:18px; align-items:start; }
+  .chat-area{ background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); padding:18px; border-radius:14px; min-height:640px; max-height:80vh; overflow:auto; border:1px solid rgba(255,255,255,0.02) }
+  .messages{ display:flex; flex-direction:column; gap:12px }
 
-    .bubble{ max-width:82%; padding:12px 14px; border-radius:12px; line-height:1.4; position:relative; animation: slideUp .28s ease }
-    .bubble.user{ background: linear-gradient(90deg,#0b6b4c,#064e3b); color:#d7fff0; align-self:flex-end; border-bottom-right-radius:6px; }
-    .bubble.ai{ background: linear-gradient(90deg,#0b1020,#151827); color:#e6eef6; align-self:flex-start; border-bottom-left-radius:6px; }
+  .bubble{ max-width:82%; padding:12px 14px; border-radius:12px; line-height:1.4; position:relative; animation: slideUp .28s ease }
+  .bubble.user{ background: linear-gradient(90deg,#0b6b4c,#064e3b); color:#d7fff0; align-self:flex-end; border-bottom-right-radius:6px; }
+  .bubble.ai{ background: linear-gradient(90deg,#0b1020,#151827); color:#e6eef6; align-self:flex-start; border-bottom-left-radius:6px; }
 
-    @keyframes slideUp { from{ opacity:0; transform:translateY(8px) } to{ opacity:1; transform:none } }
+  @keyframes slideUp { from{ opacity:0; transform:translateY(8px) } to{ opacity:1; transform:none } }
 
-    .caret{ display:inline-block; width:2px; height:1em; background:var(--accent); margin-left:6px; vertical-align:bottom; animation: blinkCaret 1s steps(2,end) infinite; }
-    @keyframes blinkCaret { 50%{ opacity:0 } }
+  .caret{ display:inline-block; width:2px; height:1em; background:var(--accent); margin-left:6px; vertical-align:bottom; animation: blinkCaret 1s steps(2,end) infinite; }
+  @keyframes blinkCaret { 50%{ opacity:0 } }
 
-    .controls-bottom{ display:flex; gap:10px; align-items:center; margin-top:12px }
-    .prompt-input{ flex:1; padding:12px; border-radius:10px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.03); font-size:15px }
+  .controls-bottom{ display:flex; gap:10px; align-items:center; margin-top:12px; }
+  .prompt-input{ flex:1; padding:12px; border-radius:10px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.03); font-size:15px; }
 
-    .ask-btn{ padding:12px 18px; border-radius:10px; background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#062; font-weight:700; border:none; cursor:pointer }
-    .ask-btn:active{ transform:translateY(1px) }
+  .ask-btn{ padding:12px 18px; border-radius:10px; background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#062; font-weight:700; border:none; cursor:pointer }
+  .ask-btn:active{ transform:translateY(1px) }
 
-    .right{ padding:18px; border-radius:14px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); border:1px solid rgba(255,255,255,0.02); min-height:600px; display:flex; flex-direction:column; gap:12px }
-    .card{ padding:12px; border-radius:10px; background:transparent; border:1px solid rgba(255,255,255,0.02); }
+  .right{ padding:18px; border-radius:14px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); border:1px solid rgba(255,255,255,0.02); min-height:640px; display:flex; flex-direction:column; gap:12px }
+  .card{ padding:12px; border-radius:10px; background:transparent; border:1px solid rgba(255,255,255,0.02); }
 
-    .model-list{ display:flex; flex-direction:column; gap:8px; max-height:220px; overflow:auto; padding-right:6px }
-    .model-item{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); }
-    .small{ font-size:13px; color:var(--muted) }
+  .model-list{ display:flex; flex-direction:column; gap:8px; max-height:220px; overflow:auto; padding-right:6px }
+  .model-item{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); }
+  .small{ font-size:13px; color:var(--muted) }
 
-    .image-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:8px }
-    .image-card{ border-radius:8px; overflow:hidden; background:#000; position:relative; display:flex; align-items:center; justify-content:center; min-height:120px }
-    .image-card img{ width:100%; height:100%; object-fit:cover; display:block }
+  .badge{ background:rgba(255,255,255,0.02); border-radius:6px; padding:6px 8px; color:var(--muted); font-size:13px; display:inline-block; }
 
-    .download-btn{ position:absolute; right:8px; bottom:8px; background:rgba(0,0,0,0.5); color:#fff; padding:6px 8px; border-radius:6px; font-size:13px; text-decoration:none }
+  .progress-wrapper{ display:flex; align-items:center; gap:8px; }
+  .progress{ flex:1; height:8px; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; }
+  .progress-bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 300ms linear; }
 
-    .footer{ text-align:center; color:var(--muted); font-size:13px; margin-top:6px }
+  .sources-list{ max-height:120px; overflow:auto; font-size:13px; color:var(--muted); }
 
-    .source-link{ color:var(--accent); text-decoration:none; font-size:13px; margin-left:8px }
+  .footer{ text-align:center; color:var(--muted); font-size:13px; margin-top:6px }
 
-    /* animations */
-    .fadeIn{ animation: fadeIn 0.4s ease forwards }
-    @keyframes fadeIn { from{ opacity:0; transform:translateY(8px) } to{ opacity:1; transform:none } }
+  .explain{ margin-top:8px; font-size:13px; color:var(--muted); border-top:1px dashed rgba(255,255,255,0.03); padding-top:8px; }
 
-    @media (max-width:1000px){ .container{ grid-template-columns: 1fr } .right{ order:2 } .chat-area{ order:1 } }
-  </style>
+  @media (max-width:1000px){ .container{ grid-template-columns: 1fr } .right{ order:2 } .chat-area{ order:1 } }
+</style>
 </head>
 <body>
   <header>
@@ -81,7 +78,7 @@
       <div class="logo"><b>G</b></div>
       <div>
         <h1>Gomega AI</h1>
-        <div class="meta">Multi-source answers • Inline image generator (BETA) • Session memory</div>
+        <div class="meta">10-source lookup • Thinking mode • Deep-dive & explain reasoning</div>
       </div>
     </div>
     <div style="text-align:right">
@@ -95,10 +92,10 @@
     <div class="controls" style="flex:1">
       <label class="small" style="margin-right:8px">Model</label>
       <select id="modelPicker" title="Choose model" style="min-width:220px">
+        <option value="v8">Gomega V8 — Flagship (deep reasoning)</option>
         <option value="v7">Gomega V7 — Balanced & up-to-date</option>
-        <option value="v7mini">Gomega V7-mini — Fast short answers</option>
-        <option value="v7image">Gomega V7-image (BETA) — Image creator</option>
-        <option value="v6">Gomega V6 — Researcher</option>
+        <option value="v7mini">Gomega V7-mini — Fast & concise</option>
+        <option value="v6">Gomega V6 — Researcher (aggressive)</option>
         <option value="v5">Gomega V5 — Stable</option>
         <option value="math">MathMaster — Calculations</option>
         <option value="browsing">Browsing — Aggressive lookup</option>
@@ -106,11 +103,19 @@
 
       <label class="small" style="margin-left:12px">Sources</label>
       <select id="sourceCount" style="min-width:80px">
-        <option value="2">2</option><option value="3" selected>3</option><option value="4">4</option>
+        <option value="10" selected>10</option>
+        <option value="8">8</option>
+        <option value="6">6</option>
       </select>
 
+      <label class="small" style="margin-left:12px">Thinking mode</label>
+      <input type="checkbox" id="thinkingToggle" title="When enabled, Gomega will 'think' longer and search more aggressively" />
+
+      <label class="small" style="margin-left:12px">Strict mode</label>
+      <input type="checkbox" id="strictToggle" title='When asking for "only the year" or "only the number" this enforces strict outputs' />
+
       <label class="small" style="margin-left:12px">Google CSE (optional)</label>
-      <input id="googleKey" placeholder="API Key (optional)" style="width:180px" />
+      <input id="googleKey" placeholder="API Key (optional)" style="width:170px" />
       <input id="googleCx" placeholder="CSE ID (optional)" style="width:140px" />
       <button id="applyKeys" style="margin-left:8px;padding:8px 10px">Apply</button>
     </div>
@@ -121,11 +126,11 @@
       <div class="messages" id="messages"></div>
 
       <div class="controls-bottom">
-        <input id="prompt" class="prompt-input" placeholder="Ask a question or 'generate: cyberpunk city at night' for images" />
+        <input id="prompt" class="prompt-input" placeholder="Ask a question, e.g., 'What year was Nokia released in North America?'" />
         <button class="ask-btn" id="askBtn">Ask</button>
       </div>
       <div style="height:6px"></div>
-      <div class="footer small">Tip: add "only the year" or "only the number" in your question for strict outputs.</div>
+      <div class="footer small">Tip: use "only the year" or toggle Strict Mode for strict numeric outputs.</div>
     </div>
 
     <aside class="right">
@@ -135,439 +140,417 @@
       </div>
 
       <div class="card">
+        <h3>Thinking / Progress</h3>
+        <div class="progress-wrapper">
+          <div class="badge" id="thinkingBadge">Idle</div>
+          <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+          <div class="badge" id="confidenceBadge">—</div>
+        </div>
+        <div class="explain" id="lastAction">No operations yet.</div>
+      </div>
+
+      <div class="card">
+        <h3>Sources checked (latest)</h3>
+        <div id="sourcesList" class="sources-list small">None yet</div>
+      </div>
+
+      <div class="card">
         <h3>Session Memory</h3>
         <div id="sessionList" class="small">No messages yet.</div>
         <button id="clearSession" style="margin-top:8px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer">Clear Session</button>
       </div>
 
-      <div class="card">
-        <h3>Image Generator (BETA)</h3>
-        <div class="small">When you select <strong>Gomega V7-image (BETA)</strong> or prefix with <code>generate:</code>, Gomega will attempt to create images from the prompt. Currently uses Unsplash/lexica fallbacks — real generative APIs require keys.</div>
-      </div>
-
-      <div class="card">
-        <h3>Sources & Tools</h3>
-        <div class="small">Gomega uses Wikipedia & DuckDuckGo by default. Paste Google API Key + CSE ID above to enable Google Overview results (optional). For generation we use Unsplash or Lexica as a BETA placeholder.</div>
-      </div>
-
     </aside>
   </div>
 
-  <script>
-    /******************************
-     * Gomega AI — Client-side app
-     * Runs fully in the browser.
-     * - Multi-source lookup (Wikipedia, DuckDuckGo)
-     * - Optional Google CSE if user provides API Key + CX
-     * - Inline image "generator" (BETA) using Unsplash / Lexica fallback
-     * - Multiple model profiles with typing & behavior
-     ******************************/
+<script>
+/* Gomega AI — client-side multi-source assistant (10-source) with thinking mode
+   Notes:
+   - Runs client-side only. Some requests may fail due to CORS; those sources will be skipped.
+   - Provide Google API Key + CSE ID to enable Google Overview results.
+*/
 
-    // ----- state -----
-    const messagesEl = document.getElementById('messages');
-    const modelPicker = document.getElementById('modelPicker');
-    const sourceCountEl = document.getElementById('sourceCount');
-    const promptEl = document.getElementById('prompt');
-    const askBtn = document.getElementById('askBtn');
-    const sessionListEl = document.getElementById('sessionList');
-    const modelStatsEl = document.getElementById('modelStats');
-    const lastFetchEl = document.getElementById('lastFetch');
-    const googleKeyInput = document.getElementById('googleKey');
-    const googleCxInput = document.getElementById('googleCx');
-    const applyKeysBtn = document.getElementById('applyKeys');
+const messagesEl = document.getElementById('messages');
+const modelPicker = document.getElementById('modelPicker');
+const sourceCountEl = document.getElementById('sourceCount');
+const promptEl = document.getElementById('prompt');
+const askBtn = document.getElementById('askBtn');
+const sessionListEl = document.getElementById('sessionList');
+const modelStatsEl = document.getElementById('modelStats');
+const lastFetchEl = document.getElementById('lastFetch');
+const thinkingBadge = document.getElementById('thinkingBadge');
+const progressBar = document.getElementById('progressBar');
+const confidenceBadge = document.getElementById('confidenceBadge');
+const sourcesList = document.getElementById('sourcesList');
+const lastAction = document.getElementById('lastAction');
+const googleKeyInput = document.getElementById('googleKey');
+const googleCxInput = document.getElementById('googleCx');
+const applyKeysBtn = document.getElementById('applyKeys');
 
-    let session = []; // array of {role, text, model}
-    let GOOGLE_API_KEY = '';
-    let GOOGLE_CX = '';
+let session = [];
+let GOOGLE_API_KEY = '';
+let GOOGLE_CX = '';
 
-    // model profiles
-    const MODELS = {
-      v7: {label:'Gomega V7', speed:70, verb:1.0, sources:3, desc:'Balanced & up-to-date'},
-      v7mini: {label:'Gomega V7-mini', speed:22, verb:0.5, sources:2, desc:'Fast, concise'},
-      v7image: {label:'Gomega V7-image (BETA)', speed:60, verb:0.5, sources:1, desc:'Image creator (BETA)'},
-      v6: {label:'Gomega V6', speed:85, verb:1.6, sources:4, desc:'Researcher — verbose'},
-      v5: {label:'Gomega V5', speed:64, verb:1.0, sources:3, desc:'Stable & precise'},
-      math: {label:'MathMaster', speed:38, verb:0.2, sources:1, desc:'Calculation specialist'},
-      browsing: {label:'Browsing', speed:72, verb:1.1, sources:4, desc:'Aggressive lookup'}
-    };
+// model profiles (behavioral)
+const MODELS = {
+  v8: {label:'Gomega V8', speed:85, verb:1.3, sources:10, desc:'Flagship — deep reasoning'},
+  v7: {label:'Gomega V7', speed:70, verb:1.0, sources:8, desc:'Balanced & timely'},
+  v7mini: {label:'Gomega V7-mini', speed:22, verb:0.5, sources:4, desc:'Fast & concise'},
+  v6: {label:'Gomega V6', speed:95, verb:1.6, sources:10, desc:'Researcher (aggressive)'},
+  v5: {label:'Gomega V5', speed:64, verb:1.0, sources:6, desc:'Stable'},
+  math: {label:'MathMaster', speed:38, verb:0.2, sources:1, desc:'Calculation specialist'},
+  browsing: {label:'Browsing', speed:72, verb:1.1, sources:10, desc:'Aggressive lookup'}
+};
 
-    function renderModelStats(){
-      const key = modelPicker.value;
-      const m = MODELS[key];
-      modelStatsEl.innerHTML = `<div><strong>${m.label}</strong> — ${m.desc}</div>
-        <div style="margin-top:6px" class="small">Typing: ${m.speed}ms · Verbosity: ${m.verb} · Preferred sources: ${m.sources}</div>`;
+function renderModelStats(){
+  const key = modelPicker.value;
+  const m = MODELS[key];
+  modelStatsEl.innerHTML = `<div><strong>${m.label}</strong> — ${m.desc}</div>
+    <div style="margin-top:6px" class="small">Typing: ${m.speed}ms · Verbosity: ${m.verb} · Preferred sources: ${m.sources}</div>`;
+}
+renderModelStats();
+modelPicker.addEventListener('change', renderModelStats);
+
+applyKeysBtn.addEventListener('click', () => {
+  GOOGLE_API_KEY = googleKeyInput.value.trim();
+  GOOGLE_CX = googleCxInput.value.trim();
+  alert('Google keys updated (if valid, Google Overview will be used).');
+});
+
+// local time
+const localTimeEl = document.getElementById('localTime');
+function tick(){ localTimeEl.textContent = new Date().toLocaleString(); setTimeout(tick,1000); }
+tick();
+
+// small helpers
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function addBubble(role, text, extraHTML){
+  const el = document.createElement('div'); el.className='bubble '+(role==='user'?'user':'ai');
+  el.innerHTML = escapeHtml(text).replace(/\n/g,'<br>') + (extraHTML || '');
+  messagesEl.appendChild(el); messagesEl.scrollTop = messagesEl.scrollHeight; return el;
+}
+function addAIBubbleTypingArea(){
+  const el = document.createElement('div'); el.className='bubble ai';
+  el.innerHTML = `<div class="typingArea"></div><span class="caret"></span>`;
+  messagesEl.appendChild(el); messagesEl.scrollTop = messagesEl.scrollHeight;
+  return el.querySelector('.typingArea');
+}
+
+// human typing effect with punctuation pauses
+async function humanType(el, text, baseSpeed){
+  el.innerHTML = '';
+  for(let i=0;i<text.length;i++){
+    const ch = text[i];
+    el.innerHTML = escapeHtml(text.slice(0,i+1));
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    const variability = Math.random()*0.6 + 0.8; // 0.8..1.4
+    let delay = Math.max(10, Math.round(baseSpeed * variability));
+    if(/[,;:]/.test(ch)) delay += 220;
+    if(/[.!?]/.test(ch)) delay += 420;
+    await new Promise(r => setTimeout(r, delay));
+  }
+}
+
+// ---------- data sources (CORS-friendly attempts) ----------
+async function fetchWikiSummary(q){
+  try{
+    const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, {mode:'cors'});
+    if(!r.ok) return null; const j = await r.json();
+    return {source:'Wikipedia', title:j.title||q, text:j.extract||'', url: (j.content_urls && j.content_urls.desktop) ? j.content_urls.desktop.page : `https://en.wikipedia.org/wiki/${encodeURIComponent(q)}`};
+  }catch(e){ return null; }
+}
+async function fetchWikiSearch(q, limit=5){
+  try{
+    const r = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(q)}&srlimit=${limit}&origin=*`);
+    if(!r.ok) return []; const j = await r.json(); const hits = j.query?.search || [];
+    const out=[];
+    for(const h of hits){ const s = await fetchWikiSummary(h.title); if(s) out.push(s); }
+    return out;
+  }catch(e){ return []; }
+}
+async function fetchDDG(q){
+  try{
+    const r = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`);
+    if(!r.ok) return null; const j = await r.json();
+    let text = j.Abstract || (j.RelatedTopics? j.RelatedTopics.map(t=>t.Text).join('. '):''); let url = j.AbstractURL || '';
+    return {source:'DuckDuckGo', title:j.Heading||q, text, url};
+  }catch(e){ return null; }
+}
+async function fetchGoogleOverview(q){
+  if(!GOOGLE_API_KEY || !GOOGLE_CX) return null;
+  try{
+    const r = await fetch(`https://www.googleapis.com/customsearch/v1?key=${encodeURIComponent(GOOGLE_API_KEY)}&cx=${encodeURIComponent(GOOGLE_CX)}&q=${encodeURIComponent(q)}&num=1`);
+    if(!r.ok) return null; const j = await r.json(); const item = j.items && j.items[0]; if(!item) return null;
+    const snippet = item.snippet || ''; return {source:'Google', title:item.title||q, text:snippet, url:item.link||''};
+  }catch(e){ return null; }
+}
+
+// Proactively expand queries (when thinking mode on)
+const EXPANSIONS = ['history','release date','overview','timeline','founding','company','specifications','launch date','origin'];
+
+// gather up to desired sources
+async function gatherAll(query, desiredCount=10, aggressive=false, onProgress){
+  const tried = []; // track attempted sources for explain view
+  const results = [];
+  const push = (item) => { if(item && item.text && item.text.length>10) results.push(item); };
+
+  onProgress && onProgress('Trying Wikipedia summary...');
+  tried.push('Wikipedia summary');
+  try{ const w = await fetchWikiSummary(query); push(w); }catch(e){}
+
+  onProgress && onProgress('Trying DuckDuckGo...');
+  tried.push('DuckDuckGo');
+  try{ const d = await fetchDDG(query); push(d); }catch(e){}
+
+  onProgress && onProgress('Trying Google Overview (if keys provided)...');
+  tried.push('Google Overview');
+  try{ const g = await fetchGoogleOverview(query); push(g); }catch(e){}
+  
+  // add wiki search hits
+  onProgress && onProgress('Searching Wikipedia hits...');
+  tried.push('Wikipedia search hits');
+  try{
+    const hits = await fetchWikiSearch(query, aggressive?8:6);
+    for(const h of hits) if(!results.find(r=>r.title===h.title)) push(h);
+  }catch(e){}
+
+  // aggressive expansions
+  if(aggressive){
+    for(const ex of EXPANSIONS){
+      if(results.length>=desiredCount) break;
+      const q2 = `${query} ${ex}`;
+      onProgress && onProgress(`Expanding: ${ex}...`);
+      tried.push(`Expansion: ${ex}`);
+      try{
+        const w2 = await fetchWikiSummary(q2);
+        if(w2 && !results.find(r=>r.title===w2.title)) push(w2);
+        if(results.length>=desiredCount) break;
+        const d2 = await fetchDDG(q2);
+        if(d2 && !results.find(r=>r.title===d2.title)) push(d2);
+      }catch(e){}
     }
-    renderModelStats();
-    modelPicker.addEventListener('change', renderModelStats);
+  }
 
-    applyKeysBtn.addEventListener('click', () => {
-      GOOGLE_API_KEY = googleKeyInput.value.trim();
-      GOOGLE_CX = googleCxInput.value.trim();
-      alert('Google keys updated. If provided correctly, Gomega will use Google Overview results.');
+  // dedupe & trim
+  const dedup=[]; const seen=new Set();
+  for(const r of results){
+    const key=(r.title||'')+'|'+(r.source||'');
+    if(!seen.has(key)){ seen.add(key); dedup.push(r); }
+    if(dedup.length>=desiredCount) break;
+  }
+
+  return {items:dedup, tried};
+}
+
+// ---------- smart helpers ----------
+function extractYear(text){
+  if(!text) return null;
+  const m = text.match(/\b(17\d{2}|18\d{2}|19\d{2}|20\d{2}|2100)\b/g);
+  if(!m) return null;
+  const freq={}; for(const y of m) freq[y]=(freq[y]||0)+1;
+  return Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
+}
+
+// safe math parser (sanitized)
+function safeEvalMath(expr){
+  if(!expr || expr.length>250) return null;
+  let s = expr.replace(/[×]/g,'*').replace(/[÷]/g,'/').replace(/[—]/g,'-');
+  s = s.replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-').replace(/\btimes\b/g,'*').replace(/\bdivided by\b/g,'/');
+  if(!/^[0-9+\-*/().\s%^]+$/.test(s)) return null;
+  s = s.replace(/\^/g,'**');
+  try{ const v = Function(`"use strict"; return (${s});`)(); if(typeof v === 'number' && Number.isFinite(v)) return v; }catch(e){ return null; }
+  return null;
+}
+
+// pick best answer and compute confidence
+function pickAnswer(sources, query, modelKey, strictMode){
+  const wantsYear = /\bwhat\s+year|\bwhen\s+was|\bwhen\s+did\b/i.test(query) || /\bonly the year\b/i.test(query) || /\bonly the number\b/i.test(query);
+  const mathVal = safeEvalMath(query);
+
+  // math mode explicit
+  if(modelKey==='math' && mathVal !== null) return {answer:String(mathVal), sources:[], confidence:100};
+
+  // year handling
+  if(wantsYear){
+    const yearHits=[];
+    for(const s of sources){ const y = extractYear(s.text||''); if(y) yearHits.push({y,src:s}); }
+    if(yearHits.length>0){
+      // majority vote
+      const freq={}; for(const h of yearHits) freq[h.y]=(freq[h.y]||0)+1;
+      const best = Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
+      const conf = Math.min(95, 40 + (freq[best]-1)*20 + Math.min(40, sources.length*3));
+      return {answer:best, sources:yearHits.map(h=>({title:h.src.title, url:h.src.url})), confidence:conf};
+    }
+  }
+
+  // general: pick longest text as primary
+  if(sources.length===0) return {answer:"I couldn't find an answer.", sources:[], confidence:10};
+
+  let best = sources[0];
+  for(const s of sources) if((s.text||'').length > (best.text||'').length) best=s;
+  let sentences = (best.text||'').split(/(?<=\.)\s+/).filter(Boolean);
+  const verb = MODELS[modelKey].verb || 1;
+  const take = Math.max(1, Math.floor(verb * 1.6));
+  let answer = sentences.slice(0,take).join(' ').trim();
+  if(!answer) answer = (best.text||'').slice(0,200).trim();
+
+  // compute simple confidence from number of non-empty sources & agreement for keywords
+  const filled = sources.filter(s=>s.text && s.text.length>40).length;
+  let conf = Math.min(95, 30 + filled*8 + Math.min(30, (sources.length-1)*3));
+  // bump if many sources mention same short token (e.g., same year)
+  const commonYears = {};
+  for(const s of sources){ const y = extractYear(s.text||''); if(y) commonYears[y]=(commonYears[y]||0)+1; }
+  if(Object.keys(commonYears).length>0){ const bestY = Object.keys(commonYears).sort((a,b)=>commonYears[b]-commonYears[a])[0]; conf += Math.min(20, (commonYears[bestY]-1)*10); }
+
+  conf = Math.min(99, Math.max(8, Math.round(conf)));
+
+  // strict mode: if asked to only return a single number or year, strip extraneous
+  if(strictMode && /\bonly the year\b|\bonly the number\b/i.test(query)){
+    const num = answer.match(/-?\d+(\.\d+)?/);
+    if(num) return {answer:num[0], sources:sources.map(s=>({title:s.title, url:s.url})), confidence:conf};
+  }
+
+  // include math verification if present
+  if(mathVal !== null && !/\bonly the number\b/i.test(query)) {
+    answer += `\n\n(Computed: ${mathVal})`;
+  }
+
+  return {answer, sources:sources.map(s=>({title:s.title, url:s.url, src:s.source})), confidence:conf};
+}
+
+// ---------- UI flow ----------
+askBtn.addEventListener('click', handleAsk);
+promptEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ handleAsk(); e.preventDefault(); }});
+document.getElementById('clearSession').addEventListener('click', ()=>{ session=[]; sessionListEl.innerText='No messages yet.'; messagesEl.innerHTML=''; });
+
+function updateSessionUI(){
+  if(session.length===0){ sessionListEl.innerText='No messages yet.'; return; }
+  sessionListEl.innerHTML = session.slice(-6).map(m=>`<div style="margin-bottom:6px"><strong style="color:${m.role==='user'?'#9ae6b4':'#93c5fd'}">${escapeHtml(m.role)}</strong>: <span style="color:#cbd5e1">${escapeHtml(m.text).slice(0,120)}</span></div>`).join('');
+}
+
+// progress utilities
+function setThinking(stateText){
+  thinkingBadge.textContent = stateText;
+}
+function setProgress(p){ progressBar.style.width = Math.max(3, Math.min(100, p)) + '%'; }
+function setConfidence(v){ confidenceBadge.textContent = v ? `${v}%` : '—'; }
+
+async function handleAsk(){
+  const query = promptEl.value.trim();
+  if(!query) return;
+  const modelKey = modelPicker.value;
+  const desired = parseInt(sourceCountEl.value || MODELS[modelKey].sources, 10);
+  const thinkingOn = document.getElementById('thinkingToggle').checked;
+  const strictOn = document.getElementById('strictToggle').checked;
+
+  // UI: show user bubble
+  addBubble('user', query);
+  session.push({role:'user', text: query, model:modelKey});
+  updateSessionUI();
+
+  // prepare AI bubble
+  const typingArea = addAIBubbleTypingArea();
+
+  // initial short message
+  await humanType(typingArea, 'Looking up reliable sources...', 40);
+
+  // begin progress & thinking
+  setThinking(thinkingOn ? 'Thinking (deep search)…' : 'Searching…');
+  setProgress(6);
+
+  // gather sources (first pass)
+  lastFetchEl.textContent = 'fetching...';
+  let sources = [], tried = [];
+  try{
+    const agg = await gatherAll(query, desired, thinkingOn || modelKey==='browsing' || modelKey==='v6', (msg)=>{
+      lastAction.textContent = msg;
+      // bump progress slightly
+      const cur = parseInt(progressBar.style.width)||0;
+      setProgress(Math.min(90, cur + 6));
     });
+    sources = agg.items; tried = agg.tried;
+  }catch(e){
+    console.warn('gather error', e);
+  }
 
-    // update local time
-    const localTimeEl = document.getElementById('localTime');
-    function tick(){
-      localTimeEl.textContent = new Date().toLocaleString();
-      setTimeout(tick, 1000);
-    }
-    tick();
+  // if no sources and thinking mode off, try a single aggressive pass automatically
+  if(sources.length === 0 && !thinkingOn){
+    setThinking('No quick results — thinking deeper...');
+    const agg2 = await gatherAll(query, desired, true, (m)=> lastAction.textContent = m);
+    sources = agg2.items; tried = [...tried, ...agg2.tried];
+  }
 
-    // helpers
-    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  // compute picked answer
+  const picked = pickAnswer(sources, query, modelKey, strictOn);
+  setConfidence(picked.confidence);
+  setProgress(95);
 
-    function addBubble(role, text, extraHTML){
-      const el = document.createElement('div');
-      el.className = 'bubble ' + (role==='user' ? 'user' : 'ai');
-      el.innerHTML = escapeHtml(text).replace(/\n/g,'<br>') + (extraHTML ? extraHTML : '');
-      messagesEl.appendChild(el);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-      return el;
-    }
+  // type final answer (slower than before for dramatic thinking)
+  const baseSpeed = MODELS[modelKey].speed || 60;
+  const slowFactor = 1.8; // user asked slower typing
+  const finalSpeed = Math.max(10, Math.round(baseSpeed * slowFactor));
 
-    function addAIBubbleTypingArea(){
-      const el = document.createElement('div');
-      el.className = 'bubble ai';
-      el.innerHTML = `<div class="typingArea"></div><span class="caret"></span>`;
-      messagesEl.appendChild(el);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-      return el.querySelector('.typingArea');
-    }
+  // replace interim typing text with final typed answer
+  typingArea.innerHTML = '';
+  await humanType(typingArea, picked.answer, finalSpeed);
 
-    // typing with randomness & pauses at punctuation to feel human
-    async function humanType(el, text, baseSpeed){
-      el.innerHTML = '';
-      const punctuationPause = 300;
-      for(let i=0;i<text.length;i++){
-        const ch = text[i];
-        el.innerHTML = escapeHtml(text.slice(0, i+1));
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-        // randomize speed a bit and slow down on punctuation
-        const variability = Math.random()*0.5 + 0.75; // 0.75..1.25
-        let delay = Math.max(8, Math.round(baseSpeed * variability));
-        if(/[,;:]/.test(ch)) delay += punctuationPause*0.25;
-        if(/[.!?]/.test(ch)) delay += punctuationPause;
-        await new Promise(r => setTimeout(r, delay));
-      }
-    }
+  // show sources list & corroboration
+  const meta = document.createElement('div');
+  meta.style.marginTop = '8px';
+  meta.style.fontSize = '13px';
+  meta.style.color = 'var(--muted)';
+  if(picked.sources && picked.sources.length>0){
+    meta.innerHTML = `Sources: ${picked.sources.map(s=>`<a class="source-link" href="${s.url||'#'}" target="_blank" rel="noopener">${escapeHtml(s.title||s.src||'source')}</a>`).join(', ')} • ${picked.confidence ? ('Confidence: ' + picked.confidence + '%') : ''}`;
+  } else {
+    meta.innerHTML = 'Sources: none found';
+  }
+  const lastBubble = messagesEl.lastElementChild;
+  if(lastBubble) lastBubble.appendChild(meta);
 
-    // ---------- Data sources ----------
-    async function fetchWikiSummary(q){
-      try{
-        const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, {mode:'cors'});
-        if(!r.ok) return null;
-        const j = await r.json();
-        return {source:'Wikipedia', title:j.title||q, text:j.extract||'', url: (j.content_urls && j.content_urls.desktop) ? j.content_urls.desktop.page : `https://en.wikipedia.org/wiki/${encodeURIComponent(q)}`};
-      }catch(e){ return null; }
-    }
+  // update "Sources checked" panel (latest tried)
+  sourcesList.innerHTML = tried.length ? tried.map(t => `<div>• ${escapeHtml(t)}</div>`).join('') : 'None';
+  lastFetchEl.textContent = new Date().toLocaleString();
 
-    async function fetchWikiSearch(q, limit=3){
-      try{
-        const r = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(q)}&srlimit=${limit}&origin=*`);
-        if(!r.ok) return [];
-        const j = await r.json();
-        const hits = j.query?.search || [];
-        const results = [];
-        for(const h of hits){
-          const s = await fetchWikiSummary(h.title);
-          if(s) results.push(s);
-        }
-        return results;
-      }catch(e){ return []; }
-    }
+  // add explain block (hidden collapsed snippet) for user to open
+  const explainBtn = document.createElement('button');
+  explainBtn.textContent = 'Explain reasoning';
+  explainBtn.style.marginTop = '8px'; explainBtn.style.padding='6px 8px'; explainBtn.style.borderRadius='8px';
+  explainBtn.style.border='1px solid rgba(255,255,255,0.03)'; explainBtn.style.background='transparent'; explainBtn.style.color='var(--muted)'; explainBtn.style.cursor='pointer';
+  let explainOpen = false;
+  const explainBox = document.createElement('div');
+  explainBox.className = 'explain';
+  explainBox.style.display='none';
+  explainBtn.onclick = function(){
+    explainOpen = !explainOpen;
+    explainBox.style.display = explainOpen ? 'block' : 'none';
+    explainBtn.textContent = explainOpen ? 'Hide reasoning' : 'Explain reasoning';
+  };
 
-    async function fetchDDG(q){
-      try{
-        const r = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`);
-        if(!r.ok) return null;
-        const j = await r.json();
-        let text = j.Abstract || (j.RelatedTopics ? j.RelatedTopics.map(t => t.Text).join('. ') : '');
-        let url = j.AbstractURL || '';
-        return {source:'DuckDuckGo', title:j.Heading||q, text:text, url:url};
-      }catch(e){ return null; }
-    }
+  if(picked.sources && picked.sources.length>0){
+    explainBox.innerHTML = `<strong>Steps & snippets</strong><div style="margin-top:8px">${picked.sources.map(s=>`<div style="margin-bottom:8px"><a href="${s.url||'#'}" target="_blank" rel="noopener">${escapeHtml(s.title||s.src||'source')}</a><div style="color:var(--muted);margin-top:4px">${escapeHtml((s.snippet||s.text||'').slice(0,240))}</div></div>`).join('')}</div>`;
+  } else {
+    explainBox.innerHTML = `<div style="color:var(--muted)">Gomega tried multiple sources but couldn't find a usable snippet. It likely means this query is obscure or the target info isn't present in the public sources checked.</div>`;
+  }
 
-    // Optional: Google Custom Search (requires key + cx) - user must paste keys in UI
-    async function fetchGoogleOverview(q){
-      if(!GOOGLE_API_KEY || !GOOGLE_CX) return null;
-      try{
-        const r = await fetch(`https://www.googleapis.com/customsearch/v1?key=${encodeURIComponent(GOOGLE_API_KEY)}&cx=${encodeURIComponent(GOOGLE_CX)}&q=${encodeURIComponent(q)}&num=1`);
-        if(!r.ok) return null;
-        const j = await r.json();
-        const item = j.items && j.items[0];
-        if(!item) return null;
-        const snippet = item.snippet || '';
-        return {source:'Google', title:item.title||q, text:snippet, url:item.link || ''};
-      }catch(e){ return null; }
-    }
+  if(lastBubble){ lastBubble.appendChild(explainBtn); lastBubble.appendChild(explainBox); }
 
-    // Image generation (BETA): attempt Lexica -> Unsplash fallback
-    async function generateImages(prompt, count=2){
-      // 1) Try Lexica API (public search) as a generator placeholder
-      try{
-        const lexicaUrl = `https://lexica.art/api/v1/search?q=${encodeURIComponent(prompt)}`;
-        const r = await fetch(lexicaUrl);
-        if(r.ok){
-          const j = await r.json();
-          if(j.images && j.images.length>0){
-            return j.images.slice(0, count).map(img => ({src: img.src, prompt: img.prompt || prompt}));
-          }
-        }
-      }catch(e){ /* ignore */ }
+  // finalize UI state
+  session.push({role:'ai', text:picked.answer, model:modelKey});
+  updateSessionUI();
+  setProgress(100);
+  setThinking('Idle');
+  // small delay then reset progress bar visually
+  setTimeout(()=>setProgress(0), 900);
+}
 
-      // 2) Unsplash Source fallback (not generative but search-like)
-      try{
-        const imgs = [];
-        for(let i=0;i<count;i++){
-          // use unsplash source to get a photo by query - this returns a redirect to an image
-          const url = `https://source.unsplash.com/collection/190727/800x600?${encodeURIComponent(prompt)}&sig=${Date.now()+i}`;
-          imgs.push({src: url, prompt});
-        }
-        return imgs;
-      }catch(e){ /* ignore */ }
+// helper: gatherAll used above
 
-      return [];
-    }
+// initial welcome
+(function init(){
+  addBubble('ai', 'Hello — I am Gomega AI. Now using up to 10 sources. Toggle Thinking mode for a deeper search. Provide Google API Key + CSE ID if you want Google Overview results.');
+  addBubble('ai', 'Try: "What year was Nokia released in North America?" or "12*(45-5)/3". Toggle Strict mode or include "only the year" for strict outputs.');
+})();
 
-    // ---------- Smart helpers ----------
-    function extractYear(text){
-      if(!text) return null;
-      const m = text.match(/\b(17\d{2}|18\d{2}|19\d{2}|20\d{2}|2100)\b/g);
-      if(!m) return null;
-      const freq = {};
-      for(const y of m) freq[y] = (freq[y]||0)+1;
-      return Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
-    }
-
-    // safe math - allow numbers, whitespace, + - * / ( ) . ^ % only
-    function safeEvalMath(expr){
-      if(!expr || expr.length>200) return null;
-      let s = expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/—/g,'-');
-      s = s.replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-').replace(/\btimes\b/g,'*').replace(/\bdivided by\b/g,'/');
-      // allow only safe chars
-      if(!/^[0-9+\-*/().\s%^]+$/.test(s)) return null;
-      s = s.replace(/\^/g,'**');
-      try{
-        // eslint-disable-next-line no-new-func
-        const v = Function(`"use strict"; return (${s});`)();
-        if(typeof v === 'number' && Number.isFinite(v)) return v;
-        return null;
-      }catch(e){ return null; }
-    }
-
-    // gather sources based on query and desired count
-    async function gather(query, desired=3, aggressive=false){
-      const out = [];
-      // 1) Wikipedia direct
-      const wiki = await fetchWikiSummary(query);
-      if(wiki) out.push(wiki);
-      // 2) DuckDuckGo
-      const ddg = await fetchDDG(query);
-      if(ddg && ddg.text) out.push(ddg);
-      // 3) Google overview if possible
-      const google = await fetchGoogleOverview(query);
-      if(google) out.push(google);
-      // 4) wiki search results
-      if(out.length < desired){
-        const hits = await fetchWikiSearch(query, aggressive ? 5 : 3);
-        for(const h of hits){
-          if(out.length >= desired) break;
-          if(!out.find(o => o.title === h.title)) out.push(h);
-        }
-      }
-      // dedupe & filter
-      const dedup = [];
-      const seen = new Set();
-      for(const r of out){
-        const key = (r.title||'') + '|' + (r.source||'');
-        if(!seen.has(key) && r.text && r.text.length>20){
-          seen.add(key); dedup.push(r);
-        }
-      }
-      return dedup.slice(0, desired);
-    }
-
-    // pick best answer from sources
-    function pickAnswer(sources, query, modelKey){
-      // detect year / when questions
-      const wantsYear = /\bwhat\s+year|\bwhen\s+was|\bwhen\s+did/i.test(query);
-      // detect math expression
-      const mathValue = safeEvalMath(query);
-
-      if(modelKey === 'math' && mathValue !== null) return {answer: String(mathValue), sources: []};
-      if(mathValue !== null && modelKey !== 'v7image'){ // non-math models can still show computed value as extra
-        // we'll return computed value appended as verification later
-      }
-
-      if(wantsYear){
-        for(const s of sources){
-          const y = extractYear(s.text);
-          if(y) return {answer: y, sources: sources.map(s => ({title:s.title, url:s.url}))};
-        }
-      }
-
-      // choose longest extract
-      let best = sources[0];
-      for(const s of sources) if((s.text||'').length > (best.text||'').length) best = s;
-      let answer = (best && best.text) ? best.text.split(/(?<=\.)\s+/).slice(0, Math.max(1, Math.round(MODELS[modelKey].verb*1.5))).join(' ') : "I couldn't find an answer.";
-      // small cleanup
-      answer = answer.replace(/\s+/g,' ').trim();
-
-      return {answer, sources: sources.map(s => ({title:s.title, url:s.url, src:s.source}))};
-    }
-
-    // compute simple corroboration
-    function corroborationText(sources){
-      if(!sources || sources.length <= 1) return 'Limited corroboration';
-      // look for common year matches
-      const years = {};
-      for(const s of sources){
-        const y = extractYear(s.title + ' ' + (s.text||''));
-        if(y) years[y] = (years[y]||0)+1;
-      }
-      const keys = Object.keys(years);
-      if(keys.length===0) return 'Multiple sources';
-      const best = keys.sort((a,b)=>years[b]-years[a])[0];
-      if(years[best] > 1) return `Corroborated: ${best}`;
-      return 'Multiple sources (partial agreement)';
-    }
-
-    // ---------- UI actions ----------
-    askBtn.addEventListener('click', handleAsk);
-    promptEl.addEventListener('keydown', (e) => { if(e.key==='Enter' && !e.shiftKey){ handleAsk(); e.preventDefault(); }});
-
-    document.getElementById('clearSession').addEventListener('click', () => { session = []; sessionListEl.innerText = 'No messages yet.'; messagesEl.innerHTML=''; });
-
-    async function handleAsk(){
-      const query = promptEl.value.trim();
-      if(!query) return;
-      const modelKey = modelPicker.value;
-      const desiredSources = parseInt(sourceCountEl.value || MODELS[modelKey].sources, 10);
-      // show user bubble
-      addBubble('user', query);
-      session.push({role:'user', text: query, model:modelKey});
-      updateSessionUI();
-
-      // If model is image or query starts with "generate:" treat as image generation
-      let isGen = false;
-      let genPrompt = '';
-      if(modelKey === 'v7image' || /^generate[:\s]/i.test(query)){
-        isGen = true;
-        genPrompt = (modelKey==='v7image') ? query : query.replace(/^generate[:\s]+/i, '');
-      }
-
-      if(isGen){
-        // show an AI bubble placeholder with typing
-        const typingArea = addAIBubbleTypingArea();
-        const baseSpeed = MODELS[modelKey].speed * 1.5;
-        await humanType(typingArea, 'Generating images… (BETA)', Math.max(14, Math.round(baseSpeed*0.6)));
-        // run image generation fallback
-        const imgs = await generateImages(genPrompt, 4);
-        // replace bubble content with images
-        const imgContainer = document.createElement('div');
-        imgContainer.style.display = 'grid';
-        imgContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
-        imgContainer.style.gap = '8px';
-        for(const img of imgs){
-          const card = document.createElement('div'); card.className = 'image-card';
-          const imageEl = document.createElement('img');
-          imageEl.src = img.src;
-          imageEl.alt = img.prompt || genPrompt;
-          card.appendChild(imageEl);
-
-          // download button fetches image as blob, creates downloadable link
-          const dl = document.createElement('a');
-          dl.className = 'download-btn';
-          dl.textContent = 'Download';
-          dl.href = img.src;
-          // use download attribute where possible; for cross-origin images this may not always work, but we still provide link
-          dl.setAttribute('download', 'gomega-image.jpg');
-          card.appendChild(dl);
-
-          imgContainer.appendChild(card);
-        }
-        // append to last bubble
-        const lastBubble = messagesEl.lastElementChild;
-        if(lastBubble) lastBubble.innerHTML = ''; // clear typing
-        const wrapper = document.createElement('div');
-        wrapper.appendChild(imgContainer);
-        if(lastBubble) lastBubble.appendChild(wrapper);
-        lastFetchEl.textContent = new Date().toLocaleString();
-        session.push({role:'ai', text: `Generated ${imgs.length} images for "${genPrompt}"`, model:modelKey});
-        updateSessionUI();
-        return;
-      }
-
-      // non-image flow: prepare typing area
-      const typingArea = addAIBubbleTypingArea();
-
-      // show interim text while fetching
-      await humanType(typingArea, 'Searching multiple sources…', 40);
-
-      // perform multi-source gather
-      lastFetchEl.textContent = 'fetching...';
-      let sources = [];
-      try{
-        sources = await gather(query, desiredSources, modelKey === 'browsing' || modelKey === 'v6' || modelKey === 'v7');
-      }catch(e){ console.warn(e); }
-
-      // if still empty and model is aggressive, try again
-      if(sources.length === 0 && (modelKey === 'browsing' || modelKey === 'v6')){
-        try{ sources = await gather(query, desiredSources, true); } catch(e){ }
-      }
-
-      // pick answer
-      const picked = pickAnswer(sources, query, modelKey);
-      let final = picked.answer || "I couldn't find an answer.";
-      // append computed math if present and user didn't ask for strict only-number
-      const mathVal = safeEvalMath(query);
-      const wantsStrictNumber = /\bonly the year\b|\bonly the number\b|\bjust the year\b/i.test(query);
-      if(mathVal !== null && !wantsStrictNumber && modelKey !== 'math'){
-        final = final + `\n\n(Computed: ${mathVal})`;
-      }
-      // for v7mini keep it short
-      if(modelKey === 'v7mini') final = final.split(/(?<=\.)\s+/)[0] || final;
-
-      // clear typing area and type nicely (slow, human-like)
-      const slowFactor = 1.6; // make slower as requested
-      const speed = Math.max(12, Math.round(MODELS[modelKey].speed * slowFactor));
-      // clear typingArea before final typing
-      typingArea.innerHTML = '';
-      await humanType(typingArea, final, speed);
-
-      // append sources & corroboration
-      const meta = document.createElement('div');
-      meta.style.marginTop = '8px';
-      meta.style.fontSize = '13px';
-      meta.style.color = 'var(--muted)';
-      if(picked.sources && picked.sources.length>0){
-        meta.innerHTML = `Sources: ${picked.sources.map(s => `<a class="source-link" href="${s.url||'#'}" target="_blank" rel="noopener">${escapeHtml(s.title||s.src||'source')}</a>`).join(', ')} • ${corroborationText(picked.sources)}`;
-      } else {
-        meta.innerHTML = 'Sources: none found';
-      }
-      const lastBubble = messagesEl.lastElementChild;
-      if(lastBubble) lastBubble.appendChild(meta);
-
-      session.push({role:'ai', text: final, model:modelKey});
-      updateSessionUI();
-      lastFetchEl.textContent = new Date().toLocaleString();
-    }
-
-    function updateSessionUI(){
-      if(session.length===0){ sessionListEl.innerText = 'No messages yet.'; return; }
-      sessionListEl.innerHTML = session.slice(-6).map(m => `<div style="margin-bottom:6px"><strong style="color:${m.role==='user' ? '#9ae6b4' : '#93c5fd'}">${escapeHtml(m.role)}</strong>: <span style="color:#cbd5e1">${escapeHtml(m.text).slice(0,140)}</span></div>`).join('');
-    }
-
-    // ---------- image download helper (for cross-origin fallback, we use direct link; user can right-click) ----------
-    // Note: attempting to fetch images to create same-origin blob may fail due to CORS. We provide direct link + download attribute; browser behavior may vary.
-
-    // ----- initial welcome -----
-    (function init(){
-      addBubble('ai', 'Hello — I am Gomega AI. I can search multiple sources, do safe math, and (BETA) generate images inline. Paste Google API Key + CSE ID to enable Google Overview results.');
-      addBubble('ai', 'Try: "What year was Nokia released in North America?" or "generate: neon city at night".');
-    })();
-
-  </script>
+</script>
 </body>
 </html>
