@@ -1,439 +1,609 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Assistant V5.0</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1e1e2f, #2a2a3d);
-      color: #eee;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      height: 100vh;
-    }
-    h1 {
-      color: #00c3ff;
-      margin-bottom: 10px;
-      animation: fadeIn 1s ease-in-out;
-    }
-    .chat-container {
-      background: #2c2c3a;
-      border-radius: 12px;
-      padding: 20px;
-      width: 90%;
-      max-width: 800px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      display: flex;
-      flex-direction: column;
-      height: 70vh;
-      overflow-y: auto;
-    }
-    .chat-bubble {
-      padding: 12px 16px;
-      margin: 8px 0;
-      border-radius: 10px;
-      max-width: 70%;
-      line-height: 1.4;
-      animation: fadeIn 0.4s ease;
-    }
-    .user {
-      background: #007bff;
-      color: white;
-      align-self: flex-end;
-    }
-    .ai {
-      background: #3a3a4d;
-      color: #eee;
-      align-self: flex-start;
-      position: relative;
-    }
-    .typing {
-      border-right: 2px solid #00c3ff;
-      animation: blink 0.7s infinite;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-    @keyframes blink {
-      0% { border-color: transparent; }
-      50% { border-color: #00c3ff; }
-      100% { border-color: transparent; }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .controls {
-      margin-top: 20px;
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      max-width: 800px;
-    }
-    input, select, button {
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      margin: 0 5px;
-    }
-    input {
-      flex: 1;
-      background: #444;
-      color: #eee;
-    }
-    select {
-      background: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    button {
-      background: #00c3ff;
-      color: #111;
-      cursor: pointer;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-    button:hover {
-      background: #0099cc;
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gomega AI</title>
+  <style>
+    :root{
+      --bg1:#0f1724;
+      --bg2:#111827;
+      --card:#0f1724;
+      --accent:#35d0ff;
+      --accent2:#7c3aed;
+      --muted:#94a3b8;
+      --bubble-user:#064e3b;
+      --bubble-ai:#0b1220;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(56,189,248,0.05), transparent),
+                  linear-gradient(180deg,var(--bg1),var(--bg2));
+      color:#e6eef6;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:20px;
+    }
+
+    header{
+      width:100%;
+      max-width:1100px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:56px;height:56px;border-radius:12px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 6px 18px rgba(44,211,255,0.08);
+      transform:rotate(-8deg);
+    }
+    .logo b{font-size:20px;color:#022;letter-spacing:1px}
+    h1{margin:0;font-size:20px;color: #e6fbff; text-shadow:0 6px 22px rgba(0,0,0,0.6);}
+    .meta{color:var(--muted);font-size:13px}
+
+    .top-controls{
+      width:100%;
+      max-width:1100px;
+      margin-top:18px;
+      display:flex;
+      gap:14px;
+      align-items:center;
+    }
+
+    .model-select{
+      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.03));
+      padding:10px;border-radius:10px;display:flex;gap:10px;align-items:center;
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    select, .sources, input[type="number"]{
+      background:transparent;border:none;color:var(--muted);padding:8px;font-size:14px;
+      outline:none;
+    }
+
+    .container{
+      width:100%;
+      max-width:1100px;
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: 1fr 340px;
+      gap:18px;
+      align-items:start;
+    }
+
+    /* Chat area */
+    .chat-area{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+      padding:18px;border-radius:14px;
+      min-height:520px; max-height:72vh; overflow:auto;
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .messages{display:flex;flex-direction:column;gap:12px}
+
+    .bubble{
+      max-width:78%;
+      padding:12px 14px;border-radius:12px;line-height:1.4;
+      animation: slideUp .28s ease;
+      position:relative;
+    }
+    .bubble.user{background:linear-gradient(90deg,#0b6b4c,#064e3b);align-self:flex-end;border-bottom-right-radius:6px;}
+    .bubble.ai{background:linear-gradient(90deg,#0b1020,#151827);align-self:flex-start;border-bottom-left-radius:6px;color:#dbeafe;}
+
+    @keyframes slideUp{
+      from{opacity:0; transform:translateY(8px)}
+      to{opacity:1; transform:none}
+    }
+
+    /* fancy typing cursor within ai bubble */
+    .caret{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:4px;vertical-align:bottom;
+      animation: blinkCaret 1s steps(2,end) infinite;
+    }
+    @keyframes blinkCaret{50%{opacity:0}}
+
+    /* right pane */
+    .right{
+      padding:18px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
+      border:1px solid rgba(255,255,255,0.02); min-height:520px;
+      display:flex;flex-direction:column;gap:12px;
+    }
+
+    .model-card{
+      display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:10px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03));
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .model-card h3{margin:0;font-size:15px}
+    .model-stats{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13px}
+
+    .input-row{display:flex;gap:12px;margin-top:12px}
+    .prompt{
+      flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--muted);
+      outline:none;font-size:15px;
+    }
+    .ask-btn{padding:12px 16px;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:#062;cursor:pointer;font-weight:700}
+    .ask-btn:active{transform:translateY(1px)}
+
+    .footer{
+      margin-top:10px;color:var(--muted);font-size:13px; text-align:center;
+    }
+
+    /* spinner dots */
+    .dots{display:inline-flex;gap:6px;align-items:center}
+    .dot{width:8px;height:8px;border-radius:50%;background:#2b2b2b;box-shadow:0 0 0 0 rgba(255,255,255,0.1);animation: bounce 1s infinite;}
+    .dot:nth-child(2){animation-delay:.12s}
+    .dot:nth-child(3){animation-delay:.24s}
+    @keyframes bounce{
+      0%{transform:translateY(0);opacity:.6}
+      50%{transform:translateY(-6px);opacity:1}
+      100%{transform:translateY(0);opacity:.6}
+    }
+
+    /* subtle transitions */
+    .fade-in { animation: fadeIn 0.5s ease forwards }
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none }}
+    a.source-link{color:var(--accent); text-decoration:none; font-size:13px; margin-left:8px}
+
+    /* responsive */
+    @media (max-width:960px){
+      .container{grid-template-columns:1fr; padding-bottom:40px}
+      .right{order:2}
+      .chat-area{order:1}
+    }
+  </style>
 </head>
 <body>
-  <h1>AI Assistant V5.0</h1>
-  <div class="chat-container" id="chat"></div>
+  <header>
+    <div class="brand">
+      <div class="logo"><b>G</b></div>
+      <div>
+        <h1>Gomega AI</h1>
+        <div class="meta">Up-to-date browsing • Multi-source corroboration • Session memory</div>
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <div class="meta">Local time: <span id="localTime">—</span></div>
+      <div style="height:2px"></div>
+      <div class="meta">Last fetch: <span id="lastFetch">—</span></div>
+    </div>
+  </header>
 
-  <div class="controls">
-    <input type="text" id="query" placeholder="Ask me anything...">
-    <select id="model">
-      <option value="v5">V5.0 (Balanced & Smart)</option>
-      <option value="v5mini">V5 Mini (Fast & Short Answers)</option>
-      <option value="v3">V3 (Creative but less accurate)</option>
-      <option value="math">Math Master</option>
-    </select>
-    <button onclick="askAI()">Send</button>
-  </div>
+  <div class="top-controls">
+    <div class="model-select">
+      <label style="color:var(--muted);font-size:13px">Model:</label>
+      <select id="modelPicker" title="Choose model" style="background:transparent;color:#e6eef6">
+        <option value="v5">V5.0 — Balanced (slow & accurate)</option>
+        <option value="v5mini">V5mini — Fast (short answers)</option>
+        <option value="v4">V4.2 — Research (verbose)</option>
+        <option value="v3">V3 — Creative</option>
+        <option value="math">MathMaster — Calculation specialist</option>
+        <option value="browsing">Browsing — aggressive multi-source</option>
+      </select>
+      <div style="width:12px"></div>
+      <label style="color:var(--muted);font-size:13px">Sources:</label>
+      <select id="sourceCount" title="Number of sources to use">
+        <option value="3">3 sources</option>
+        <option value="2">2 sources</option>
+        <option value="4">4 sources</option>
+      </select>
+    </div>
+  </div>
 
-  <script>
-    const chatBox = document.getElementById("chat");
+  <div class="container">
+    <div class="chat-area">
+      <div class="messages" id="messages"></div>
+      <div style="height:8px"></div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="prompt" class="prompt" placeholder="Ask a question (e.g. 'What year was Nokia released in North America?')" />
+        <button class="ask-btn" id="askBtn">Ask</button>
+      </div>
+    </div>
 
-    // Function: typing animation
-    function typeWriter(element, text, speed) {
-      let i = 0;
-      function typing() {
-        if (i < text.length) {
-          element.innerHTML = text.substring(0, i+1) + '<span class="typing"></span>';
-          i++;
-          setTimeout(typing, speed);
-        } else {
-          element.innerHTML = text; // remove cursor at end
-        }
-      }
-      typing();
-    }
+    <aside class="right">
+      <div class="model-card">
+        <h3>Active Model Info</h3>
+        <div class="model-stats" id="modelStats">
+          <!-- filled by JS -->
+        </div>
+        <div style="margin-top:8px;color:var(--muted);font-size:13px">
+          Gomega will check multiple public sources (Wikipedia & DuckDuckGo), extract concise facts (e.g., years), do safe math, and show sources. For critical facts, verify externally.
+        </div>
+      </div>
 
-    async function askAI() {
-      const query = document.getElementById("query").value.trim();
-      const model = document.getElementById("model").value;
-      if (!query) return;
+      <div class="model-card" id="sessionCard">
+        <h3>Session Memory</h3>
+        <div id="sessionList" style="color:var(--muted);font-size:13px">No messages yet.</div>
+        <button id="clearSession" style="margin-top:8px;padding:8px;background:#111;border-radius:8px;border:1px solid rgba(255,255,255,0.02);color:var(--muted);cursor:pointer">Clear Session</button>
+      </div>
 
-      // Show user message
-      const userBubble = document.createElement("div");
-      userBubble.className = "chat-bubble user";
-      userBubble.textContent = query;
-      chatBox.appendChild(userBubble);
-      chatBox.scrollTop = chatBox.scrollHeight;
+      <div class="model-card">
+        <h3>Quick Tips</h3>
+        <ul style="margin:6px 0 0 18px;color:var(--muted);font-size:13px">
+          <li>For a single year: ask “What year was X released in North America?”</li>
+          <li>For math: ask expressions (e.g. 12*(5+7)/3) or plain language (e.g. "12 divided by 3")</li>
+          <li>Switch model to "Browsing" for more aggressive lookup</li>
+        </ul>
+      </div>
+      <div style="flex:1"></div>
+      <div class="footer">Built for you — Gomega AI</div>
+    </aside>
+  </div>
 
-      // Prepare AI bubble
-      const aiBubble = document.createElement("div");
-      aiBubble.className = "chat-bubble ai";
-      chatBox.appendChild(aiBubble);
-      chatBox.scrollTop = chatBox.scrollHeight;
+  <script>
+    // -------------------------
+    // Utilities & session state
+    // -------------------------
+    const messagesEl = document.getElementById('messages');
+    const sessionList = document.getElementById('sessionList');
+    const modelStats = document.getElementById('modelStats');
+    const localTimeEl = document.getElementById('localTime');
+    const lastFetchEl = document.getElementById('lastFetch');
 
-      let answer = "";
+    let session = []; // {role:'user'|'ai', text, model}
+    function updateSessionUI(){
+      if(session.length === 0){ sessionList.innerText = 'No messages yet.'; return; }
+      sessionList.innerHTML = session.slice(-6).map(m => `<div style="margin-bottom:6px"><strong style="color:${m.role==='user'?'#9ae6b4':'#93c5fd'}">${m.role}</strong>: <span style="color:#cbd5e1">${escapeHtml(m.text).slice(0,120)}</span></div>`).join('');
+    }
+    function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
 
-      try {
-        // Math mode
-        if (model === "math") {
-          try {
-            answer = eval(query).toString();
-          } catch {
-            answer = "Sorry, I couldn’t calculate that.";
-          }
-        } else {
-          // --- Search Wikipedia ---
-          const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
-          const wikiData = await wikiRes.json();
-          let wikiExtract = wikiData.extract || "";
+    // update local time every second
+    function tickLocalTime(){
+      const now = new Date();
+      localTimeEl.textContent = now.toLocaleString();
+      requestAnimationFrame(()=>setTimeout(tickLocalTime,1000));
+    }
+    tickLocalTime();
 
-          // --- Search DuckDuckGo ---
-          const ddgRes = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json`);
-          const ddgData = await ddgRes.json();
-          let ddgExtract = ddgData.Abstract || "";
+    // model "profiles"
+    const MODELS = {
+      v5: {label:'V5.0', speed:60, verboseness:1.0, sources:3, desc:'Balanced & accurate (slower typing)'},
+      v5mini: {label:'V5mini', speed:18, verboseness:0.4, sources:2, desc:'Fast short answers'},
+      v4: {label:'V4.2', speed:90, verboseness:1.6, sources:4, desc:'Researcher (longer, more sources)'},
+      v3: {label:'V3', speed:80, verboseness:1.2, sources:3, desc:'Creative but less strict'},
+      math: {label:'MathMaster', speed:32, verboseness:0.2, sources:1, desc:'Calculations specialist'},
+      browsing: {label:'Browsing', speed:70, verboseness:1.1, sources:4, desc:'Aggressive multi-source lookup'}
+    };
 
-          // Pick best source
-          answer = wikiExtract || ddgExtract || "I couldn’t find an answer.";
+    function renderModelStats(key){
+      const m = MODELS[key];
+      modelStats.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">
+          <div><strong style="color:#fff">${m.label}</strong> • <span style="color:var(--muted)">${m.desc}</span></div>
+          <div style="display:flex;gap:10px">
+              <div style="color:var(--muted)">Typing: <strong style="color:var(--accent)">${m.speed}ms</strong></div>
+              <div style="color:var(--muted)">Verbosity: <strong style="color:var(--accent)">${m.verboseness}</strong></div>
+              <div style="color:var(--muted)">Sources: <strong style="color:var(--accent)">${m.sources}</strong></div>
+          </div>
+        </div>`;
+    }
 
-          // If asking for year, return only year
-          if (/year|when/i.test(query)) {
-            const yearMatch = answer.match(/\b(1[0-9]{3}|20[0-9]{2}|2100)\b/);
-            if (yearMatch) answer = yearMatch[0];
-          }
+    // initialize default model view
+    renderModelStats(document.getElementById('modelPicker').value);
 
-          // Short answers for Mini model
-          if (model === "v5mini" && answer.length > 80) {
-            answer = answer.split(".")[0] + ".";
-          }
+    document.getElementById('modelPicker').addEventListener('change', e => {
+      renderModelStats(e.target.value);
+    });
 
-          // Creative but less accurate
-          if (model === "v3") {
-            answer += " 🤔 (This might be approximate)";
-          }
-        }
+    document.getElementById('clearSession').addEventListener('click', () => {
+      session = []; updateSessionUI();
+      // clear chat UI
+      messagesEl.innerHTML = '';
+    });
 
-        // Typing speed per model
-        let speed = 50;
-        if (model === "v5mini") speed = 15;
-        if (model === "v5") speed = 40;
-        if (model === "v3") speed = 60;
-        if (model === "math") speed = 30;
+    // -------------------------
+    // Fetch helpers (public sources)
+    // -------------------------
+    async function fetchWikiSummary(q){
+      try{
+        // Wikipedia REST summary for a title (works for article titles)
+        const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, {mode:'cors'});
+        if(!r.ok) return null;
+        const j = await r.json();
+        return {source:'Wikipedia', title:j.title||q, text:j.extract || '', url: j.content_urls ? j.content_urls.desktop.page : `https://en.wikipedia.org/wiki/${encodeURIComponent(q)}`};
+      }catch(e){ return null; }
+    }
 
-        typeWriter(aiBubble, answer, speed);
+    async function fetchWikiSearch(q, limit=3){
+      try{
+        const r = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(q)}&srlimit=${limit}&origin=*`);
+        if(!r.ok) return [];
+        const j = await r.json();
+        const hits = j.query?.search || [];
+        // load summaries for each hit (but limit network calls)
+        const results = [];
+        for(let i=0;i<hits.length;i++){
+          const title = hits[i].title;
+          const sum = await fetchWikiSummary(title);
+          if(sum) results.push(sum);
+        }
+        return results;
+      }catch(e){ return []; }
+    }
 
-      } catch (err) {
-        aiBubble.textContent = "⚠️ Error: " + err.message;
-      }
+    async function fetchDDG(q){
+      try{
+        const r = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`);
+        if(!r.ok) return null;
+        const j = await r.json();
+        let text = j.Abstract || j.RelatedTopics?.map(t=>t.Text).join('. ') || '';
+        let url = j.AbstractURL || '';
+        return {source:'DuckDuckGo', title: j.Heading || q, text: text, url: url};
+      }catch(e){ return null; }
+    }
 
-      chatBox.scrollTop = chatBox.scrollHeight;
-      document.getElementById("query").value = "";
-    }
+    // tries a set of sources, returns array of {source,title,text,url}
+    async function gatherSources(query, desiredCount=3, aggressive=false){
+      const results = [];
+      // 1: try direct wiki summary for the query
+      const wikiDirect = await fetchWikiSummary(query);
+      if(wikiDirect) results.push(wikiDirect);
 
-    // Press Enter to send
-    document.getElementById("query").addEventListener("keypress", function(e) {
-      if (e.key === "Enter") askAI();
-    });
-  </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Assistant V5.0</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1e1e2f, #2a2a3d);
-      color: #eee;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      height: 100vh;
-    }
-    h1 {
-      color: #00c3ff;
-      margin-bottom: 10px;
-      animation: fadeIn 1s ease-in-out;
-    }
-    .chat-container {
-      background: #2c2c3a;
-      border-radius: 12px;
-      padding: 20px;
-      width: 90%;
-      max-width: 800px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      display: flex;
-      flex-direction: column;
-      height: 70vh;
-      overflow-y: auto;
-    }
-    .chat-bubble {
-      padding: 12px 16px;
-      margin: 8px 0;
-      border-radius: 10px;
-      max-width: 70%;
-      line-height: 1.4;
-      animation: fadeIn 0.4s ease;
-    }
-    .user {
-      background: #007bff;
-      color: white;
-      align-self: flex-end;
-    }
-    .ai {
-      background: #3a3a4d;
-      color: #eee;
-      align-self: flex-start;
-      position: relative;
-    }
-    .typing {
-      border-right: 2px solid #00c3ff;
-      animation: blink 0.7s infinite;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-    @keyframes blink {
-      0% { border-color: transparent; }
-      50% { border-color: #00c3ff; }
-      100% { border-color: transparent; }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .controls {
-      margin-top: 20px;
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      max-width: 800px;
-    }
-    input, select, button {
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      margin: 0 5px;
-    }
-    input {
-      flex: 1;
-      background: #444;
-      color: #eee;
-    }
-    select {
-      background: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    button {
-      background: #00c3ff;
-      color: #111;
-      cursor: pointer;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-    button:hover {
-      background: #0099cc;
-    }
-  </style>
-</head>
-<body>
-  <h1>AI Assistant V5.0</h1>
-  <div class="chat-container" id="chat"></div>
+      // 2: ddg
+      const ddg = await fetchDDG(query);
+      if(ddg && ddg.text) results.push(ddg);
 
-  <div class="controls">
-    <input type="text" id="query" placeholder="Ask me anything...">
-    <select id="model">
-      <option value="v5">V5.0 (Balanced & Smart)</option>
-      <option value="v5mini">V5 Mini (Fast & Short Answers)</option>
-      <option value="v3">V3 (Creative but less accurate)</option>
-      <option value="math">Math Master</option>
-    </select>
-    <button onclick="askAI()">Send</button>
-  </div>
+      // 3: wiki search hits
+      const searchHits = await fetchWikiSearch(query, aggressive?5:3);
+      for(const s of searchHits) if(!results.find(r=>r.title===s.title)) results.push(s);
 
-  <script>
-    const chatBox = document.getElementById("chat");
+      // 4: if still not enough and aggressive, try search variations (append "history", "release", "company")
+      if(aggressive && results.length < desiredCount){
+        const extras = ['history','release date','company','overview'];
+        for(const ex of extras){
+          if(results.length>=desiredCount) break;
+          const t = await fetchWikiSummary(`${query} ${ex}`);
+          if(t && !results.find(r=>r.title===t.title)) results.push(t);
+        }
+      }
+      // dedupe and slice
+      const deduped = [];
+      const seen = new Set();
+      for(const r of results){
+        const key = (r.title||'') + '|' + (r.source||'');
+        if(!seen.has(key) && r.text && r.text.length>20){
+          deduped.push(r); seen.add(key);
+        }
+      }
+      return deduped.slice(0, desiredCount);
+    }
 
-    // Function: typing animation
-    function typeWriter(element, text, speed) {
-      let i = 0;
-      function typing() {
-        if (i < text.length) {
-          element.innerHTML = text.substring(0, i+1) + '<span class="typing"></span>';
-          i++;
-          setTimeout(typing, speed);
-        } else {
-          element.innerHTML = text; // remove cursor at end
-        }
-      }
-      typing();
-    }
+    // -------------------------
+    // Smart extraction helpers
+    // -------------------------
+    function extractYearFromText(text){
+      if(!text) return null;
+      const years = text.match(/\b(18\d{2}|19\d{2}|20\d{2}|2100)\b/g);
+      if(!years) return null;
+      // frequency map
+      const freq = {};
+      for(const y of years) freq[y] = (freq[y]||0)+1;
+      const sorted = Object.keys(freq).sort((a,b)=>freq[b]-freq[a]);
+      return sorted[0];
+    }
 
-    async function askAI() {
-      const query = document.getElementById("query").value.trim();
-      const model = document.getElementById("model").value;
-      if (!query) return;
+    // safer math parser: allow numbers, parentheses, decimals, + - * / ^, and textual ops
+    function safeMathEval(input){
+      if(!input || input.length>200) return null;
+      // convert words to ops
+      let s = input.toLowerCase().replace(/÷|×/g, function(m){ return m==='÷' ? '/' : '*';});
+      s = s.replace(/(\d)\s+percent/gi, '$1*0.01');
+      s = s.replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-').replace(/\btimes\b/g,'*').replace(/\bmultiplied by\b/g,'*')
+           .replace(/\bdivided by\b/g,'/').replace(/\bover\b/g,'/').replace(/\binto\b/g,'*')
+           .replace(/\bto the power of\b/g,'^').replace(/\bpower\b/g,'^').replace(/(\d)\s*\^\s*(\d)/g,'$1^$2');
+      // allow only digits, spaces, operators, parentheses, decimal point and ^ 
+      if(!/^[0-9+\-*/().\s%^]+$/.test(s)) return null;
+      // transform ^ to **
+      s = s.replace(/\^/g,'**');
+      try{
+        // eslint-disable-next-line no-new-func
+        const val = Function(`"use strict"; return (${s});`)();
+        if(typeof val === 'number' && Number.isFinite(val)) return val;
+        return null;
+      }catch(e){
+        return null;
+      }
+    }
 
-      // Show user message
-      const userBubble = document.createElement("div");
-      userBubble.className = "chat-bubble user";
-      userBubble.textContent = query;
-      chatBox.appendChild(userBubble);
-      chatBox.scrollTop = chatBox.scrollHeight;
+    // simple "smart answer" combiner: choose best text, extract year if requested, else concise summary
+    function pickBestAnswer(sources, query, modelKey){
+      // join texts as candidates
+      const texts = sources.map(s=>({src:s.source, title:s.title, text:s.text, url:s.url}));
+      // if it's math-like, try to compute
+      const mathVal = safeMathEval(query);
+      if(mathVal !== null && modelKey === 'math') return {answer: String(mathVal), sources:[]};
 
-      // Prepare AI bubble
-      const aiBubble = document.createElement("div");
-      aiBubble.className = "chat-bubble ai";
-      chatBox.appendChild(aiBubble);
-      chatBox.scrollTop = chatBox.scrollHeight;
+      // detect "year" question
+      const asksYear = /\bwhat\s+year|\bwhen\s+was|\breleased in .*year|\breleased in/i.test(query);
+      if(asksYear){
+        // try to find year in all sources
+        const years = [];
+        for(const t of texts){
+          const y = extractYearFromText(t.text || '');
+          if(y) years.push({y,src:t.source, title:t.title, url:t.url});
+        }
+        if(years.length>0){
+          // pick majority or the first
+          const freq = {}; for(const it of years){ freq[it.y] = (freq[it.y]||0)+1; }
+          const pick = Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
+          const chosen = years.find(r=>r.y===pick);
+          return {answer: pick, sources: years.map(x=> ({src:x.src, url:x.url, title:x.title}))};
+        }
+      }
 
-      let answer = "";
+      // general: pick most informative source: longest extract
+      let best = texts[0];
+      for(const t of texts) if((t.text||'').length > (best.text||'').length) best = t;
+      // produce concise answer by taking first 2 sentences trimmed by model verbosity
+      let sentences = (best.text||'').split(/(?<=\.)\s+/).filter(Boolean);
+      const verb = MODELS[modelKey].verboseness || 1;
+      const take = Math.max(1, Math.floor(verb*1.5));
+      const answer = sentences.slice(0,take).join(' ').trim();
+      const srcs = texts.map(t=>({src:t.src, title:t.title, url:t.url}));
+      return {answer: answer || "I couldn't find an answer.", sources: srcs};
+    }
 
-      try {
-        // Math mode
-        if (model === "math") {
-          try {
-            answer = eval(query).toString();
-          } catch {
-            answer = "Sorry, I couldn’t calculate that.";
-          }
-        } else {
-          // --- Search Wikipedia ---
-          const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
-          const wikiData = await wikiRes.json();
-          let wikiExtract = wikiData.extract || "";
+    // -------------------------
+    // UI functions: render bubble with typing
+    // -------------------------
+    function addUserBubble(text){
+      const el = document.createElement('div');
+      el.className = 'bubble user';
+      el.innerText = text;
+      messagesEl.appendChild(el);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
 
-          // --- Search DuckDuckGo ---
-          const ddgRes = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json`);
-          const ddgData = await ddgRes.json();
-          let ddgExtract = ddgData.Abstract || "";
+    function addAIBubbleTyping(){ // returns element to be typed into
+      const el = document.createElement('div');
+      el.className = 'bubble ai';
+      el.innerHTML = '<span class="typingArea"></span><span class="caret"></span>';
+      messagesEl.appendChild(el);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      return el.querySelector('.typingArea');
+    }
 
-          // Pick best source
-          answer = wikiExtract || ddgExtract || "I couldn’t find an answer.";
+    // typed printing with caret handled
+    async function typeToElement(el, text, speed){
+      el.innerHTML = '';
+      for(let i=0;i<text.length;i++){
+        el.innerHTML = escapeHtml(text.slice(0,i+1));
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+        await new Promise(r => setTimeout(r, speed));
+      }
+    }
 
-          // If asking for year, return only year
-          if (/year|when/i.test(query)) {
-            const yearMatch = answer.match(/\b(1[0-9]{3}|20[0-9]{2}|2100)\b/);
-            if (yearMatch) answer = yearMatch[0];
-          }
+    // -------------------------
+    // Main ask handler
+    // -------------------------
+    document.getElementById('askBtn').addEventListener('click', handleAsk);
+    document.getElementById('prompt').addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' && !e.shiftKey){ handleAsk(); e.preventDefault(); }
+    });
 
-          // Short answers for Mini model
-          if (model === "v5mini" && answer.length > 80) {
-            answer = answer.split(".")[0] + ".";
-          }
+    async function handleAsk(){
+      const qInput = document.getElementById('prompt');
+      const query = qInput.value.trim();
+      if(!query) return;
+      const modelKey = document.getElementById('modelPicker').value;
+      const desiredSources = parseInt(document.getElementById('sourceCount').value || MODELS[modelKey].sources,10);
 
-          // Creative but less accurate
-          if (model === "v3") {
-            answer += " 🤔 (This might be approximate)";
-          }
-        }
+      // push user message
+      addUserBubble(query);
+      session.push({role:'user', text: query, model:modelKey});
+      updateSessionUI();
 
-        // Typing speed per model
-        let speed = 50;
-        if (model === "v5mini") speed = 15;
-        if (model === "v5") speed = 40;
-        if (model === "v3") speed = 60;
-        if (model === "math") speed = 30;
+      // show ai bubble (typing)
+      const typingArea = addAIBubbleTyping();
 
-        typeWriter(aiBubble, answer, speed);
+      // show spinner in model stats (lastFetch)
+      lastFetchEl.textContent = 'fetching...';
 
-      } catch (err) {
-        aiBubble.textContent = "⚠️ Error: " + err.message;
-      }
+      // gather sources (aggressive if browsing)
+      const aggressive = modelKey === 'browsing' || modelKey === 'v4';
+      let sources = await gatherSources(query, desiredSources, aggressive);
 
-      chatBox.scrollTop = chatBox.scrollHeight;
-      document.getElementById("query").value = "";
-    }
+      // if not enough sources and model wants more, try again with search
+      if(sources.length === 0 && aggressive){
+        sources = await gatherSources(query, desiredSources, true);
+      }
 
-    // Press Enter to send
-    document.getElementById("query").addEventListener("keypress", function(e) {
-      if (e.key === "Enter") askAI();
-    });
-  </script>
+      // choose best answer
+      const picked = pickBestAnswer(sources, query, modelKey);
+      const rawAnswer = picked.answer || "I couldn't find an answer.";
+      // prepare final display answer (respect model verbosity)
+      let finalAnswer = rawAnswer;
+      // For v5mini prefer single-sentence
+      if(modelKey === 'v5mini') finalAnswer = finalAnswer.split(/(?<=\.)\s+/)[0] || finalAnswer;
+      // v3 adds a playful suffix
+      if(modelKey === 'v3') finalAnswer = finalAnswer + " ✨";
+
+      // If the query is math-like and model not math but expression present, compute and append as verification
+      if(modelKey !== 'math'){
+        const mathVal = safeMathEval(query);
+        if(mathVal !== null){
+          // keep it concise: show computed value as a verification note
+          finalAnswer = finalAnswer + `\n\n(Computed: ${mathVal})`;
+        }
+      }
+
+      // Type answer with model speed (make it intentionally slow per request)
+      const speedBase = MODELS[modelKey].speed;
+      // slow factor to make it slower by default
+      const slowFactor = 1.6;
+      const finalSpeed = Math.max(14, Math.round(speedBase * slowFactor));
+
+      // If answer is exactly numeric (e.g., year or math), render directly (no line breaks)
+      const typingText = finalAnswer;
+
+      // perform typing
+      await typeToElement(typingArea, typingText, finalSpeed);
+
+      // after typing, show sources & corroboration summary below the bubble
+      const metaEl = document.createElement('div');
+      metaEl.style.marginTop = '6px';
+      metaEl.style.fontSize = '13px';
+      metaEl.style.color = 'var(--muted)';
+
+      if(picked.sources && picked.sources.length>0){
+        // simple corroboration: check how many sources contain the same token (e.g. year)
+        const corroboration = computeCorroboration(picked.sources);
+        metaEl.innerHTML = `Sources: ${picked.sources.map(s=> `<a class="source-link" href="${s.url||'#'}" target="_blank" rel="noopener">${escapeHtml(s.title||s.src)}</a>`).join(', ')} • ${corroboration}`;
+      } else {
+        metaEl.innerHTML = `Sources: none found.`;
+      }
+      // append meta under the last message
+      const lastBubble = messagesEl.lastElementChild;
+      if(lastBubble) lastBubble.appendChild(metaEl);
+      // update session + UI
+      session.push({role:'ai', text: finalAnswer, model:modelKey});
+      updateSessionUI();
+      lastFetchEl.textContent = new Date().toLocaleString();
+      // scroll
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      qInput.value = '';
+    }
+
+    function computeCorroboration(sources){
+      if(!sources || sources.length<=1) return 'Limited corroboration';
+      // find numeric tokens in sources
+      const counts = {};
+      for(const s of sources){
+        const y = extractYearFromText((s.title||'') + ' ' + (s.text||''));
+        if(y) counts[y] = (counts[y]||0)+1;
+      }
+      const keys = Object.keys(counts);
+      if(keys.length===0) return 'Multiple sources (no clear numeric match)';
+      const best = keys.sort((a,b)=>counts[b]-counts[a])[0];
+      if(counts[best] > 1) return `Corroborated: ${best}`;
+      return 'Multiple sources (one-of-a-kind matches)';
+    }
+
+    // initial demo/welcome messages
+    (function welcome(){
+      const w1 = document.createElement('div');
+      w1.className='bubble ai fade-in';
+      w1.innerHTML = 'Hello — I am <strong>Gomega AI</strong>. Ask me anything. I check multiple sources and try to be precise.';
+      messagesEl.appendChild(w1);
+
+      const w2 = document.createElement('div');
+      w2.className='bubble ai fade-in';
+      w2.style.animationDelay='0.08s';
+      w2.innerHTML = 'Try: <em>What year was Nokia released in North America?</em> or a math expression like <em>12*(5+7)/3</em>.';
+      messagesEl.appendChild(w2);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    })();
+
+  </script>
 </body>
 </html>
