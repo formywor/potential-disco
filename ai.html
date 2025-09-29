@@ -1,123 +1,85 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Gomega AI — thinking mode & multi-source</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Gomega AI — All-in-one (client-only)</title>
 <style>
   :root{
     --bg1:#071021; --bg2:#0b1220; --card:#0f1724;
     --accent:#34d3ff; --accent2:#7c3aed; --muted:#94a3b8;
     --user:#0b6b4c; --ai:#081029; --glass: rgba(255,255,255,0.03);
+    --ok:#28a745; --warn:#f59e0b; --err:#ef4444;
   }
   *{box-sizing:border-box}
+  html,body{height:100%}
   body{
     margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
     background: radial-gradient(900px 400px at 10% 10%, rgba(56,189,248,0.04), transparent),
                 linear-gradient(180deg,var(--bg1),var(--bg2));
     color:#e6eef6; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:18px;
   }
-  header{ width:100%; max-width:1200px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+
+  .topbar{ width:100%; max-width:1200px; display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
   .brand{ display:flex; gap:12px; align-items:center; }
   .logo{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; transform:rotate(-8deg); box-shadow:0 10px 30px rgba(0,0,0,0.4)}
-  .logo b{ color:#062; font-size:20px; }
-  h1{ margin:0; font-size:20px; color: #e6fbff; text-shadow:0 6px 22px rgba(0,0,0,0.6) }
+  .logo b{ color:#062; font-size:20px }
+  h1{ margin:0; font-size:20px; color:#e6fbff; text-shadow:0 6px 22px rgba(0,0,0,0.6) }
   .meta{ color:var(--muted); font-size:13px }
-
-  .top-row{ width:100%; max-width:1200px; display:flex; gap:12px; align-items:center; margin-bottom:12px; }
-  .controls{ display:flex; gap:12px; align-items:center; background:var(--glass); padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.03) }
-
-  select, input[type="text"], input[type="number"], button, textarea{
-    background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:8px 10px; border-radius:8px; outline:none; font-size:14px;
-  }
 
   .container{ width:100%; max-width:1200px; display:grid; grid-template-columns: 1fr 420px; gap:18px; align-items:start; }
   .chat-area{ background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); padding:18px; border-radius:14px; min-height:640px; max-height:80vh; overflow:auto; border:1px solid rgba(255,255,255,0.02) }
-  .messages{ display:flex; flex-direction:column; gap:12px }
+  .messages{ display:flex; flex-direction:column; gap:12px; padding-right:6px }
 
-  .bubble{ max-width:82%; padding:12px 14px; border-radius:12px; line-height:1.4; position:relative; animation: slideUp .28s ease }
+  .bubble{ max-width:82%; padding:12px 14px; border-radius:12px; line-height:1.45; position:relative; animation: slideUp .28s ease }
   .bubble.user{ background: linear-gradient(90deg,#0b6b4c,#064e3b); color:#d7fff0; align-self:flex-end; border-bottom-right-radius:6px; }
   .bubble.ai{ background: linear-gradient(90deg,#0b1020,#151827); color:#e6eef6; align-self:flex-start; border-bottom-left-radius:6px; }
 
-  @keyframes slideUp { from{ opacity:0; transform:translateY(8px) } to{ opacity:1; transform:none } }
+  @keyframes slideUp { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
 
   .caret{ display:inline-block; width:2px; height:1em; background:var(--accent); margin-left:6px; vertical-align:bottom; animation: blinkCaret 1s steps(2,end) infinite; }
   @keyframes blinkCaret { 50%{ opacity:0 } }
 
-  .controls-bottom{ display:flex; gap:10px; align-items:center; margin-top:12px; }
-  .prompt-input{ flex:1; padding:12px; border-radius:10px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.03); font-size:15px; }
+  .controls{ display:flex; gap:10px; align-items:center; margin-top:10px; }
+  input.prompt{ flex:1; padding:12px; border-radius:10px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.03); outline:none; font-size:15px }
+  button.primary{ padding:12px 18px; border-radius:10px; border:none; background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#062; cursor:pointer; font-weight:700 }
+  button.ghost{ padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.03); background:transparent; color:var(--muted); cursor:pointer }
 
-  .ask-btn{ padding:12px 18px; border-radius:10px; background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#062; font-weight:700; border:none; cursor:pointer }
-  .ask-btn:active{ transform:translateY(1px) }
+  .sidebar{ padding:18px; border-radius:14px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); border:1px solid rgba(255,255,255,0.02); min-height:640px; display:flex; flex-direction:column; gap:12px; }
+  .card{ padding:12px; border-radius:10px; background:transparent; border:1px solid rgba(255,255,255,0.02) }
 
-  .right{ padding:18px; border-radius:14px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); border:1px solid rgba(255,255,255,0.02); min-height:640px; display:flex; flex-direction:column; gap:12px }
-  .card{ padding:12px; border-radius:10px; background:transparent; border:1px solid rgba(255,255,255,0.02); }
-
-  .model-list{ display:flex; flex-direction:column; gap:8px; max-height:220px; overflow:auto; padding-right:6px }
-  .model-item{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); }
+  .models{ display:flex; flex-direction:column; gap:8px; }
+  .modelRow{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); }
   .small{ font-size:13px; color:var(--muted) }
 
-  .badge{ background:rgba(255,255,255,0.02); border-radius:6px; padding:6px 8px; color:var(--muted); font-size:13px; display:inline-block; }
+  .progress{ height:8px; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; width:100% }
+  .bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 180ms linear }
 
-  .progress-wrapper{ display:flex; align-items:center; gap:8px; }
-  .progress{ flex:1; height:8px; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; }
-  .progress-bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 300ms linear; }
+  .sourcesBox{ font-size:13px; color:var(--muted); max-height:140px; overflow:auto; }
 
-  .sources-list{ max-height:120px; overflow:auto; font-size:13px; color:var(--muted); }
+  .photoGrid{ display:flex; gap:8px; flex-wrap:wrap; }
+  .photoCard{ width:100px; height:80px; border-radius:6px; overflow:hidden; background:#000; display:flex; align-items:center; justify-content:center; }
+  .photoCard img{ width:100%; height:100%; object-fit:cover }
 
-  .footer{ text-align:center; color:var(--muted); font-size:13px; margin-top:6px }
+  .explain{ margin-top:8px; font-size:13px; color:var(--muted); border-top:1px dashed rgba(255,255,255,0.03); padding-top:8px }
 
-  .explain{ margin-top:8px; font-size:13px; color:var(--muted); border-top:1px dashed rgba(255,255,255,0.03); padding-top:8px; }
+  .disabled{ opacity:0.5; pointer-events:none }
 
-  @media (max-width:1000px){ .container{ grid-template-columns: 1fr } .right{ order:2 } .chat-area{ order:1 } }
+  @media (max-width:980px){ .container{ grid-template-columns:1fr } .sidebar{ order:2 } .chat-area{ order:1 } }
 </style>
 </head>
 <body>
-  <header>
+  <div class="topbar">
     <div class="brand">
       <div class="logo"><b>G</b></div>
       <div>
         <h1>Gomega AI</h1>
-        <div class="meta">10-source lookup • Thinking mode • Deep-dive & explain reasoning</div>
+        <div class="meta">Client-only • 10-source attempts • Thinking mode • Geometry & math logic</div>
       </div>
     </div>
     <div style="text-align:right">
-      <div class="meta">Local time: <span id="localTime">—</span></div>
-      <div style="height:6px"></div>
-      <div class="meta">Last fetch: <span id="lastFetch">—</span></div>
-    </div>
-  </header>
-
-  <div class="top-row">
-    <div class="controls" style="flex:1">
-      <label class="small" style="margin-right:8px">Model</label>
-      <select id="modelPicker" title="Choose model" style="min-width:220px">
-        <option value="v8">Gomega V8 — Flagship (deep reasoning)</option>
-        <option value="v7">Gomega V7 — Balanced & up-to-date</option>
-        <option value="v7mini">Gomega V7-mini — Fast & concise</option>
-        <option value="v6">Gomega V6 — Researcher (aggressive)</option>
-        <option value="v5">Gomega V5 — Stable</option>
-        <option value="math">MathMaster — Calculations</option>
-        <option value="browsing">Browsing — Aggressive lookup</option>
-      </select>
-
-      <label class="small" style="margin-left:12px">Sources</label>
-      <select id="sourceCount" style="min-width:80px">
-        <option value="10" selected>10</option>
-        <option value="8">8</option>
-        <option value="6">6</option>
-      </select>
-
-      <label class="small" style="margin-left:12px">Thinking mode</label>
-      <input type="checkbox" id="thinkingToggle" title="When enabled, Gomega will 'think' longer and search more aggressively" />
-
-      <label class="small" style="margin-left:12px">Strict mode</label>
-      <input type="checkbox" id="strictToggle" title='When asking for "only the year" or "only the number" this enforces strict outputs' />
-
-      <label class="small" style="margin-left:12px">Google CSE (optional)</label>
-      <input id="googleKey" placeholder="API Key (optional)" style="width:170px" />
-      <input id="googleCx" placeholder="CSE ID (optional)" style="width:140px" />
-      <button id="applyKeys" style="margin-left:8px;padding:8px 10px">Apply</button>
+      <div class="meta">Local: <span id="localTime">—</span></div>
+      <div class="meta">Last: <span id="lastFetch">—</span></div>
     </div>
   </div>
 
@@ -125,431 +87,479 @@
     <div class="chat-area">
       <div class="messages" id="messages"></div>
 
-      <div class="controls-bottom">
-        <input id="prompt" class="prompt-input" placeholder="Ask a question, e.g., 'What year was Nokia released in North America?'" />
-        <button class="ask-btn" id="askBtn">Ask</button>
+      <div class="controls" style="margin-top:12px">
+        <input id="prompt" class="prompt" placeholder="Ask anything (e.g. 'What year was Nokia released in North America?')" />
+        <button id="askBtn" class="primary">Ask</button>
+        <button id="clearBtn" class="ghost">Clear</button>
       </div>
-      <div style="height:6px"></div>
-      <div class="footer small">Tip: use "only the year" or toggle Strict Mode for strict numeric outputs.</div>
+
+      <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+        <label class="small" style="margin-right:6px">Thinking Mode</label>
+        <input type="checkbox" id="thinkingToggle" />
+        <label class="small" style="margin-left:12px">Strict Mode</label>
+        <input type="checkbox" id="strictToggle" />
+      </div>
     </div>
 
-    <aside class="right">
+    <div class="sidebar">
       <div class="card">
-        <h3>Active Model</h3>
-        <div id="modelStats" class="small">—</div>
+        <strong>Models</strong>
+        <div class="models" id="modelList"></div>
       </div>
 
       <div class="card">
-        <h3>Thinking / Progress</h3>
-        <div class="progress-wrapper">
-          <div class="badge" id="thinkingBadge">Idle</div>
-          <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
-          <div class="badge" id="confidenceBadge">—</div>
+        <strong>Thinking & Progress</strong>
+        <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+          <div class="small">Status:</div><div id="thinkingBadge" class="small">Idle</div>
         </div>
-        <div class="explain" id="lastAction">No operations yet.</div>
+        <div style="margin-top:8px" class="progress"><div id="progressBar" class="bar"></div></div>
+        <div style="margin-top:8px" class="small">Confidence: <span id="confidence">—</span></div>
+        <div class="explain" id="lastAction">No action yet.</div>
       </div>
 
       <div class="card">
-        <h3>Sources checked (latest)</h3>
-        <div id="sourcesList" class="sources-list small">None yet</div>
+        <strong>Photos (BETA)</strong>
+        <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+          <input type="file" id="photoInput" accept="image/*">
+          <button id="uploadBtn" class="ghost">Add</button>
+        </div>
+        <div class="photoGrid" id="photoGrid" style="margin-top:8px"></div>
+        <div class="small" style="margin-top:8px">Uploaded photos are kept in the page session and are available while the page is open.</div>
       </div>
 
       <div class="card">
-        <h3>Session Memory</h3>
-        <div id="sessionList" class="small">No messages yet.</div>
-        <button id="clearSession" style="margin-top:8px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer">Clear Session</button>
+        <strong>Session memory</strong>
+        <div id="sessionList" class="small" style="margin-top:8px">No messages yet.</div>
+        <div style="margin-top:8px"><button id="clearSession" class="ghost">Clear Memory</button></div>
       </div>
 
-    </aside>
+      <div class="card small">Note: This is a client-only prototype. It tries multiple public endpoints (Wikipedia & DuckDuckGo). Some sources may fail due to cross-origin restrictions — Gomega will synthesize answers from what it can fetch.</div>
+    </div>
   </div>
 
 <script>
-/* Gomega AI — client-side multi-source assistant (10-source) with thinking mode
-   Notes:
-   - Runs client-side only. Some requests may fail due to CORS; those sources will be skipped.
-   - Provide Google API Key + CSE ID to enable Google Overview results.
+/* Gomega AI — ai.html (client-only)
+   Features:
+   - Up to 10 source attempts (Wikipedia REST + search hits + DuckDuckGo)
+   - Thinking mode (expand query variations)
+   - Local safe math & geometry engine (no web for calculations)
+   - Multiple models with different behaviors
+   - Photo upload (kept client-side)
+   - Input locked while AI typing
+   - Does not show source names/URLs to user
 */
 
+// ---------- State & UI references ----------
 const messagesEl = document.getElementById('messages');
-const modelPicker = document.getElementById('modelPicker');
-const sourceCountEl = document.getElementById('sourceCount');
 const promptEl = document.getElementById('prompt');
 const askBtn = document.getElementById('askBtn');
-const sessionListEl = document.getElementById('sessionList');
-const modelStatsEl = document.getElementById('modelStats');
-const lastFetchEl = document.getElementById('lastFetch');
+const clearBtn = document.getElementById('clearBtn');
+const thinkingToggle = document.getElementById('thinkingToggle');
+const strictToggle = document.getElementById('strictToggle');
 const thinkingBadge = document.getElementById('thinkingBadge');
 const progressBar = document.getElementById('progressBar');
-const confidenceBadge = document.getElementById('confidenceBadge');
-const sourcesList = document.getElementById('sourcesList');
 const lastAction = document.getElementById('lastAction');
-const googleKeyInput = document.getElementById('googleKey');
-const googleCxInput = document.getElementById('googleCx');
-const applyKeysBtn = document.getElementById('applyKeys');
+const confidenceEl = document.getElementById('confidence');
+const lastFetchEl = document.getElementById('lastFetch');
+const photoInput = document.getElementById('photoInput');
+const uploadBtn = document.getElementById('uploadBtn');
+const photoGrid = document.getElementById('photoGrid');
+const sessionList = document.getElementById('sessionList');
+const clearSessionBtn = document.getElementById('clearSession');
 
-let session = [];
-let GOOGLE_API_KEY = '';
-let GOOGLE_CX = '';
+let session = []; // {role, text}
+let photos = [];  // {name, url}
+let typingLocked = false;
 
-// model profiles (behavioral)
+// ---------- Models (behavior differences) ----------
 const MODELS = {
-  v8: {label:'Gomega V8', speed:85, verb:1.3, sources:10, desc:'Flagship — deep reasoning'},
-  v7: {label:'Gomega V7', speed:70, verb:1.0, sources:8, desc:'Balanced & timely'},
-  v7mini: {label:'Gomega V7-mini', speed:22, verb:0.5, sources:4, desc:'Fast & concise'},
-  v6: {label:'Gomega V6', speed:95, verb:1.6, sources:10, desc:'Researcher (aggressive)'},
-  v5: {label:'Gomega V5', speed:64, verb:1.0, sources:6, desc:'Stable'},
-  math: {label:'MathMaster', speed:38, verb:0.2, sources:1, desc:'Calculation specialist'},
-  browsing: {label:'Browsing', speed:72, verb:1.1, sources:10, desc:'Aggressive lookup'}
+  v8:  { label: 'Gomega V8',    speed: 90, verb: 1.4, prefer: 10, desc: 'Flagship — deep reasoning' },
+  v7:  { label: 'Gomega V7',    speed: 70, verb: 1.0, prefer: 8,  desc: 'Balanced & timely' },
+  v7m: { label: 'Gomega V7-mini', speed: 22, verb: 0.5, prefer: 4, desc: 'Fast & concise' },
+  v6:  { label: 'Gomega V6',    speed: 95, verb: 1.6, prefer: 10, desc: 'Researcher (aggressive)' },
+  v5:  { label: 'Gomega V5',    speed: 60, verb: 1.0, prefer: 6,  desc: 'Stable' },
+  math:{ label: 'MathMaster',    speed: 32, verb: 0.2, prefer: 1,  desc: 'Calculation specialist' }
 };
+let currentModelKey = 'v8';
 
-function renderModelStats(){
-  const key = modelPicker.value;
-  const m = MODELS[key];
-  modelStatsEl.innerHTML = `<div><strong>${m.label}</strong> — ${m.desc}</div>
-    <div style="margin-top:6px" class="small">Typing: ${m.speed}ms · Verbosity: ${m.verb} · Preferred sources: ${m.sources}</div>`;
-}
-renderModelStats();
-modelPicker.addEventListener('change', renderModelStats);
-
-applyKeysBtn.addEventListener('click', () => {
-  GOOGLE_API_KEY = googleKeyInput.value.trim();
-  GOOGLE_CX = googleCxInput.value.trim();
-  alert('Google keys updated (if valid, Google Overview will be used).');
+// render model list
+const modelListEl = document.getElementById('modelList');
+Object.keys(MODELS).forEach((k) => {
+  const m = MODELS[k];
+  const row = document.createElement('div'); row.className = 'modelRow';
+  row.innerHTML = `<div><strong>${m.label}</strong><div class="small">${m.desc}</div></div>`;
+  const btn = document.createElement('button'); btn.textContent = (k===currentModelKey ? 'Selected' : 'Select');
+  btn.onclick = () => {
+    currentModelKey = k;
+    Array.from(modelListEl.querySelectorAll('button')).forEach(b => b.textContent = 'Select');
+    btn.textContent = 'Selected';
+    thinkingBadge.textContent = `Model: ${m.label}`;
+  };
+  row.appendChild(btn);
+  modelListEl.appendChild(row);
 });
 
-// local time
-const localTimeEl = document.getElementById('localTime');
-function tick(){ localTimeEl.textContent = new Date().toLocaleString(); setTimeout(tick,1000); }
-tick();
-
-// small helpers
+// ---------- Utilities ----------
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function addBubble(role, text, extraHTML){
-  const el = document.createElement('div'); el.className='bubble '+(role==='user'?'user':'ai');
-  el.innerHTML = escapeHtml(text).replace(/\n/g,'<br>') + (extraHTML || '');
-  messagesEl.appendChild(el); messagesEl.scrollTop = messagesEl.scrollHeight; return el;
-}
-function addAIBubbleTypingArea(){
-  const el = document.createElement('div'); el.className='bubble ai';
-  el.innerHTML = `<div class="typingArea"></div><span class="caret"></span>`;
+function addBubble(role, htmlContent){
+  const el = document.createElement('div'); el.className = 'bubble ' + (role==='user' ? 'user' : 'ai');
+  el.innerHTML = htmlContent;
   messagesEl.appendChild(el); messagesEl.scrollTop = messagesEl.scrollHeight;
-  return el.querySelector('.typingArea');
+  return el;
+}
+function updateSessionUI(){ sessionList.innerHTML = session.slice(-6).map(m => `<div class="small"><strong>${escapeHtml(m.role)}</strong>: ${escapeHtml(m.text).slice(0,140)}</div>`).join('') || 'No messages yet.'; }
+function setProgress(p){ progressBar.style.width = Math.max(3, Math.min(100,p)) + '%'; }
+function setThinkingText(t){ thinkingBadge.textContent = t; lastAction.textContent = t; }
+
+// disable input while typing
+function setTypingLocked(v){
+  typingLocked = v;
+  promptEl.disabled = v;
+  askBtn.disabled = v;
+  clearBtn.disabled = v;
+  if (v) { promptEl.classList.add('disabled'); askBtn.classList.add('disabled'); clearBtn.classList.add('disabled'); }
+  else { promptEl.classList.remove('disabled'); askBtn.classList.remove('disabled'); clearBtn.classList.remove('disabled'); }
 }
 
-// human typing effect with punctuation pauses
-async function humanType(el, text, baseSpeed){
-  el.innerHTML = '';
-  for(let i=0;i<text.length;i++){
-    const ch = text[i];
-    el.innerHTML = escapeHtml(text.slice(0,i+1));
+// human-like typing animation (client)
+async function typeTextInto(elNode, text, speed){
+  elNode.innerHTML = '';
+  for (let i=0;i<text.length;i++){
+    elNode.innerHTML = escapeHtml(text.slice(0,i+1)).replace(/\n/g,'<br>');
     messagesEl.scrollTop = messagesEl.scrollHeight;
-    const variability = Math.random()*0.6 + 0.8; // 0.8..1.4
-    let delay = Math.max(10, Math.round(baseSpeed * variability));
-    if(/[,;:]/.test(ch)) delay += 220;
-    if(/[.!?]/.test(ch)) delay += 420;
+    const variability = 0.8 + Math.random()*0.6;
+    let delay = Math.max(8, Math.round(speed * variability));
+    if (/[,.]/.test(text[i])) delay += 120;
+    if (/[!?]/.test(text[i])) delay += 260;
     await new Promise(r => setTimeout(r, delay));
   }
 }
 
-// ---------- data sources (CORS-friendly attempts) ----------
+// ---------- Safe math & geometry (client-side logic) ----------
+function safeEvalMath(expr){
+  if(!expr || expr.length > 300) return null;
+  let s = String(expr).trim();
+  s = s.replace(/×/g,'*').replace(/÷/g,'/').replace(/—/g,'-');
+  s = s.replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-').replace(/\btimes\b/g,'*').replace(/\bdivided by\b/g,'/');
+  // keep only digits and math chars after basic normalization
+  if(!/^[0-9+\-*/().\s%^]+$/.test(s.replace(/,/g,''))) return null;
+  s = s.replace(/\^/g,'**');
+  try {
+    // safe evaluate using Function in a very limited way
+    const val = Function(`"use strict"; return (${s});`)();
+    if(typeof val === 'number' && Number.isFinite(val)) return +(+val.toFixed(12));
+  } catch(e) { return null; }
+  return null;
+}
+
+// geometry parser: pattern matching similar to server version
+function tryGeometryQuery(q){
+  if(!q || typeof q !== 'string') return null;
+  const s = q.toLowerCase();
+  let m;
+  m = s.match(/area of (?:a |the )?circle(?: with)?(?: radius| r)?[^\d\-]*([-+]?\d*\.?\d+)/i);
+  if(m){ const r=Number(m[1]); if(isFinite(r)){ return {result: +(Math.PI*r*r).toFixed(8), explain:`area of circle radius ${r}`} } }
+  m = s.match(/circumference of (?:a |the )?circle(?: with)?(?: radius| r)?[^\d\-]*([-+]?\d*\.?\d+)/i);
+  if(m){ const r=Number(m[1]); if(isFinite(r)){ return {result: +(2*Math.PI*r).toFixed(8), explain:`circumference of circle radius ${r}`} } }
+  m = s.match(/area of (?:a |the )?rectangle(?: with)?(?: width)?[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i);
+  if(m){ const w=Number(m[1]), h=Number(m[2]); if(isFinite(w)&&isFinite(h)) return {result: +(w*h).toFixed(8), explain:`rectangle area ${w}×${h}`} }
+  m = s.match(/area of (?:a |the )?triangle(?: with)?(?: base)?[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i);
+  if(m){ const b=Number(m[1]), h=Number(m[2]); if(isFinite(b)&&isFinite(h)) return {result: +((b*h)/2).toFixed(8), explain:`triangle area base ${b} × height ${h}`} }
+  m = s.match(/pythagor(?:ean|e).*a[^\d\-]*([-+]?\d*\.?\d+).*b[^\d\-]*([-+]?\d*\.?\d+)/i);
+  if(m){ const a=Number(m[1]), b=Number(m[2]); if(isFinite(a)&&isFinite(b)) return {result: +(Math.sqrt(a*a + b*b)).toFixed(8), explain:`hypotenuse from legs ${a}, ${b}`} }
+  m = s.match(/given\s+a[=\s]*([-+]?\d*\.?\d+)[,;\s]*b[=\s]*([-+]?\d*\.?\d+)/i);
+  if(m){ const a=Number(m[1]), b=Number(m[2]); if(isFinite(a)&&isFinite(b)) return {result: +(Math.sqrt(a*a + b*b)).toFixed(8), explain:`hypotenuse from legs ${a}, ${b}`} }
+  m = s.match(/volume of (?:a |the )?sphere(?: with)?(?: radius)?[^\d\-]*([-+]?\d*\.?\d+)/i);
+  if(m){ const r=Number(m[1]); if(isFinite(r)) return {result: +((4/3)*Math.PI*r*r*r).toFixed(8), explain:`sphere volume radius ${r}`} }
+  m = s.match(/volume of (?:a |the )?cylind(?:er|rical)[^\d\-]*radius[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+height[^\d\-]*([-+]?\d*\.?\d+)/i);
+  if(m){ const r=Number(m[1]), h=Number(m[2]); if(isFinite(r)&&isFinite(h)) return {result: +(Math.PI * r * r * h).toFixed(8), explain:`cylinder volume r ${r} × h ${h}`} }
+  // fallback numeric expression inside string
+  if(/[0-9]/.test(s)){
+    const match = s.match(/[-+*/().0-9,\s%^]+/);
+    if(match){
+      const expr = match[0].replace(/,/g,'');
+      const val = safeEvalMath(expr);
+      if(val !== null) return {result: val, explain: 'evaluated numeric expression'};
+    }
+  }
+  return null;
+}
+
+// ---------- Fetch helpers: Wikipedia & DuckDuckGo (client-side attempts) ----------
 async function fetchWikiSummary(q){
   try{
-    const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, {mode:'cors'});
-    if(!r.ok) return null; const j = await r.json();
-    return {source:'Wikipedia', title:j.title||q, text:j.extract||'', url: (j.content_urls && j.content_urls.desktop) ? j.content_urls.desktop.page : `https://en.wikipedia.org/wiki/${encodeURIComponent(q)}`};
-  }catch(e){ return null; }
+    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, {mode:'cors'});
+    if(!res.ok) return null;
+    const j = await res.json();
+    if(j && j.extract) return j.extract;
+  } catch(e){ /* ignore */ }
+  return null;
 }
-async function fetchWikiSearch(q, limit=5){
+async function fetchWikiSearchSummaries(q, limit=6){
+  const out = [];
   try{
-    const r = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(q)}&srlimit=${limit}&origin=*`);
-    if(!r.ok) return []; const j = await r.json(); const hits = j.query?.search || [];
-    const out=[];
-    for(const h of hits){ const s = await fetchWikiSummary(h.title); if(s) out.push(s); }
-    return out;
-  }catch(e){ return []; }
+    const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(q)}&srlimit=${limit}&origin=*`);
+    if(!res.ok) return out;
+    const j = await res.json();
+    const hits = j.query?.search || [];
+    for(const h of hits){
+      try{
+        const s = await fetchWikiSummary(h.title);
+        if(s) out.push(s);
+      } catch(e){}
+      if(out.length >= limit) break;
+    }
+  } catch(e){}
+  return out;
 }
 async function fetchDDG(q){
   try{
     const r = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`);
-    if(!r.ok) return null; const j = await r.json();
-    let text = j.Abstract || (j.RelatedTopics? j.RelatedTopics.map(t=>t.Text).join('. '):''); let url = j.AbstractURL || '';
-    return {source:'DuckDuckGo', title:j.Heading||q, text, url};
-  }catch(e){ return null; }
-}
-async function fetchGoogleOverview(q){
-  if(!GOOGLE_API_KEY || !GOOGLE_CX) return null;
-  try{
-    const r = await fetch(`https://www.googleapis.com/customsearch/v1?key=${encodeURIComponent(GOOGLE_API_KEY)}&cx=${encodeURIComponent(GOOGLE_CX)}&q=${encodeURIComponent(q)}&num=1`);
-    if(!r.ok) return null; const j = await r.json(); const item = j.items && j.items[0]; if(!item) return null;
-    const snippet = item.snippet || ''; return {source:'Google', title:item.title||q, text:snippet, url:item.link||''};
-  }catch(e){ return null; }
+    if(!r.ok) return null;
+    const j = await r.json();
+    const text = j.Abstract || (j.RelatedTopics ? j.RelatedTopics.map(t=>t.Text).join('. ') : '');
+    return text || null;
+  } catch(e){ return null; }
 }
 
-// Proactively expand queries (when thinking mode on)
-const EXPANSIONS = ['history','release date','overview','timeline','founding','company','specifications','launch date','origin'];
+// gather up to desiredCount snippets, aggressive optionally expands queries
+const EXPANSIONS = ['history','release date','overview','timeline','founding','specifications','launch date','origin','background'];
 
-// gather up to desired sources
-async function gatherAll(query, desiredCount=10, aggressive=false, onProgress){
-  const tried = []; // track attempted sources for explain view
-  const results = [];
-  const push = (item) => { if(item && item.text && item.text.length>10) results.push(item); };
-
-  onProgress && onProgress('Trying Wikipedia summary...');
-  tried.push('Wikipedia summary');
-  try{ const w = await fetchWikiSummary(query); push(w); }catch(e){}
-
-  onProgress && onProgress('Trying DuckDuckGo...');
-  tried.push('DuckDuckGo');
-  try{ const d = await fetchDDG(query); push(d); }catch(e){}
-
-  onProgress && onProgress('Trying Google Overview (if keys provided)...');
-  tried.push('Google Overview');
-  try{ const g = await fetchGoogleOverview(query); push(g); }catch(e){}
-  
-  // add wiki search hits
-  onProgress && onProgress('Searching Wikipedia hits...');
-  tried.push('Wikipedia search hits');
-  try{
-    const hits = await fetchWikiSearch(query, aggressive?8:6);
-    for(const h of hits) if(!results.find(r=>r.title===h.title)) push(h);
-  }catch(e){}
-
-  // aggressive expansions
+async function gatherSnippets(query, desiredCount=10, aggressive=false, progressCallback){
+  const snippets = [];
+  progressCallback && progressCallback('Trying direct summary...');
+  const s1 = await fetchWikiSummary(query);
+  if(s1) snippets.push(s1);
+  progressCallback && progressCallback('Trying DuckDuckGo quick...');
+  const d = await fetchDDG(query);
+  if(d) snippets.push(d);
+  progressCallback && progressCallback('Fetching search hits...');
+  const hits = await fetchWikiSearchSummaries(query, Math.max(3, Math.min(8, desiredCount)));
+  hits.forEach(h => snippets.push(h));
   if(aggressive){
     for(const ex of EXPANSIONS){
-      if(results.length>=desiredCount) break;
-      const q2 = `${query} ${ex}`;
-      onProgress && onProgress(`Expanding: ${ex}...`);
-      tried.push(`Expansion: ${ex}`);
-      try{
-        const w2 = await fetchWikiSummary(q2);
-        if(w2 && !results.find(r=>r.title===w2.title)) push(w2);
-        if(results.length>=desiredCount) break;
-        const d2 = await fetchDDG(q2);
-        if(d2 && !results.find(r=>r.title===d2.title)) push(d2);
-      }catch(e){}
+      if(snippets.length >= desiredCount) break;
+      progressCallback && progressCallback(`Expanding: ${ex}`);
+      const s = await fetchWikiSummary(query + ' ' + ex);
+      if(s) snippets.push(s);
     }
   }
-
-  // dedupe & trim
-  const dedup=[]; const seen=new Set();
-  for(const r of results){
-    const key=(r.title||'')+'|'+(r.source||'');
-    if(!seen.has(key)){ seen.add(key); dedup.push(r); }
-    if(dedup.length>=desiredCount) break;
+  // dedupe by short prefix
+  const seen = new Set();
+  const out = [];
+  for(const t of snippets){
+    const key = t.slice(0,200).replace(/\s+/g,' ').trim();
+    if(!seen.has(key) && t.length>30){ seen.add(key); out.push(t); }
+    if(out.length >= desiredCount) break;
   }
-
-  return {items:dedup, tried};
+  return out;
 }
 
-// ---------- smart helpers ----------
+// ---------- Answer selection & confidence ----------
 function extractYear(text){
   if(!text) return null;
   const m = text.match(/\b(17\d{2}|18\d{2}|19\d{2}|20\d{2}|2100)\b/g);
   if(!m) return null;
-  const freq={}; for(const y of m) freq[y]=(freq[y]||0)+1;
+  const freq={}; for(const y of m) freq[y] = (freq[y]||0)+1;
   return Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
 }
+function pickBest(snippets, query, modelKey, strictOnly){
+  if(!snippets || snippets.length===0) return {answer:"I couldn't find an answer.", sources:[], confidence:10};
 
-// safe math parser (sanitized)
-function safeEvalMath(expr){
-  if(!expr || expr.length>250) return null;
-  let s = expr.replace(/[×]/g,'*').replace(/[÷]/g,'/').replace(/[—]/g,'-');
-  s = s.replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-').replace(/\btimes\b/g,'*').replace(/\bdivided by\b/g,'/');
-  if(!/^[0-9+\-*/().\s%^]+$/.test(s)) return null;
-  s = s.replace(/\^/g,'**');
-  try{ const v = Function(`"use strict"; return (${s});`)(); if(typeof v === 'number' && Number.isFinite(v)) return v; }catch(e){ return null; }
-  return null;
-}
-
-// pick best answer and compute confidence
-function pickAnswer(sources, query, modelKey, strictMode){
-  const wantsYear = /\bwhat\s+year|\bwhen\s+was|\bwhen\s+did\b/i.test(query) || /\bonly the year\b/i.test(query) || /\bonly the number\b/i.test(query);
-  const mathVal = safeEvalMath(query);
-
-  // math mode explicit
-  if(modelKey==='math' && mathVal !== null) return {answer:String(mathVal), sources:[], confidence:100};
-
-  // year handling
+  const wantsYear = /\bwhat\s+year|\bwhen\s+was|\bwhen\s+did\b/i.test(query) || /only the year|just the year/i.test(query);
+  // Year detection
   if(wantsYear){
-    const yearHits=[];
-    for(const s of sources){ const y = extractYear(s.text||''); if(y) yearHits.push({y,src:s}); }
-    if(yearHits.length>0){
-      // majority vote
-      const freq={}; for(const h of yearHits) freq[h.y]=(freq[h.y]||0)+1;
-      const best = Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
-      const conf = Math.min(95, 40 + (freq[best]-1)*20 + Math.min(40, sources.length*3));
-      return {answer:best, sources:yearHits.map(h=>({title:h.src.title, url:h.src.url})), confidence:conf};
+    const years = [];
+    for(const s of snippets){
+      const y = extractYear(s);
+      if(y) years.push(y);
+    }
+    if(years.length>0){
+      const freq = {}; for(const y of years) freq[y] = (freq[y]||0)+1;
+      const chosen = Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
+      const conf = Math.min(95, 40 + (freq[chosen]-1)*20 + Math.min(40, snippets.length*3));
+      return {answer: chosen, sources:[], confidence: conf};
     }
   }
 
-  // general: pick longest text as primary
-  if(sources.length===0) return {answer:"I couldn't find an answer.", sources:[], confidence:10};
-
-  let best = sources[0];
-  for(const s of sources) if((s.text||'').length > (best.text||'').length) best=s;
-  let sentences = (best.text||'').split(/(?<=\.)\s+/).filter(Boolean);
+  // choose the longest snippet as primary
+  let best = snippets.slice().sort((a,b)=>b.length - a.length)[0];
+  // generate concise answer: 1-3 sentences based on model verbosity
+  const sentences = (best||'').split(/(?<=\.)\s+/).filter(Boolean);
   const verb = MODELS[modelKey].verb || 1;
   const take = Math.max(1, Math.floor(verb * 1.6));
-  let answer = sentences.slice(0,take).join(' ').trim();
-  if(!answer) answer = (best.text||'').slice(0,200).trim();
+  let answer = sentences.slice(0, take).join(' ').trim();
+  if(!answer) answer = (best||'').slice(0,300).trim();
 
-  // compute simple confidence from number of non-empty sources & agreement for keywords
-  const filled = sources.filter(s=>s.text && s.text.length>40).length;
-  let conf = Math.min(95, 30 + filled*8 + Math.min(30, (sources.length-1)*3));
-  // bump if many sources mention same short token (e.g., same year)
-  const commonYears = {};
-  for(const s of sources){ const y = extractYear(s.text||''); if(y) commonYears[y]=(commonYears[y]||0)+1; }
-  if(Object.keys(commonYears).length>0){ const bestY = Object.keys(commonYears).sort((a,b)=>commonYears[b]-commonYears[a])[0]; conf += Math.min(20, (commonYears[bestY]-1)*10); }
+  // strict numeric enforcement
+  if(strictOnly && /\bonly the year\b|\bonly the number\b/i.test(query)){
+    const n = answer.match(/-?\d+(\.\d+)?/);
+    if(n) return {answer:n[0], sources:[], confidence: Math.min(90, 20 + snippets.length*6)};
+  }
 
+  // compute simple confidence
+  const filled = snippets.filter(s=>s.length>40).length;
+  let conf = Math.min(95, 30 + filled*8 + Math.min(30, (snippets.length-1)*3));
+  // bump if year common
+  const yearsFound = {};
+  snippets.forEach(s=>{ const y = extractYear(s); if(y) yearsFound[y] = (yearsFound[y]||0)+1; });
+  if(Object.keys(yearsFound).length>0){ const bestY = Object.keys(yearsFound).sort((a,b)=>yearsFound[b]-yearsFound[a])[0]; conf += Math.min(10, (yearsFound[bestY]-1)*5); }
   conf = Math.min(99, Math.max(8, Math.round(conf)));
 
-  // strict mode: if asked to only return a single number or year, strip extraneous
-  if(strictMode && /\bonly the year\b|\bonly the number\b/i.test(query)){
-    const num = answer.match(/-?\d+(\.\d+)?/);
-    if(num) return {answer:num[0], sources:sources.map(s=>({title:s.title, url:s.url})), confidence:conf};
-  }
-
-  // include math verification if present
-  if(mathVal !== null && !/\bonly the number\b/i.test(query)) {
-    answer += `\n\n(Computed: ${mathVal})`;
-  }
-
-  return {answer, sources:sources.map(s=>({title:s.title, url:s.url, src:s.source})), confidence:conf};
+  return {answer, sources:[], confidence:conf};
 }
 
-// ---------- UI flow ----------
-askBtn.addEventListener('click', handleAsk);
-promptEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ handleAsk(); e.preventDefault(); }});
-document.getElementById('clearSession').addEventListener('click', ()=>{ session=[]; sessionListEl.innerText='No messages yet.'; messagesEl.innerHTML=''; });
+// ---------- Main flow: ask handling ----------
+askBtn.addEventListener('click', onAsk);
+promptEl.addEventListener('keydown', (e) => { if(e.key==='Enter' && !e.shiftKey) { onAsk(); e.preventDefault(); } });
+clearBtn.addEventListener('click', () => { messagesEl.innerHTML=''; session=[]; updateSessionUI(); });
 
-function updateSessionUI(){
-  if(session.length===0){ sessionListEl.innerText='No messages yet.'; return; }
-  sessionListEl.innerHTML = session.slice(-6).map(m=>`<div style="margin-bottom:6px"><strong style="color:${m.role==='user'?'#9ae6b4':'#93c5fd'}">${escapeHtml(m.role)}</strong>: <span style="color:#cbd5e1">${escapeHtml(m.text).slice(0,120)}</span></div>`).join('');
+// helper: is query math/geometry
+function looksLikeMath(q){
+  return /[0-9\+\-\*\/\^%()]/.test(q) || /\b(area|circumference|perimeter|volume|pythagor|triangle|circle|radius|diameter|height|base)\b/i.test(q);
 }
 
-// progress utilities
-function setThinking(stateText){
-  thinkingBadge.textContent = stateText;
-}
-function setProgress(p){ progressBar.style.width = Math.max(3, Math.min(100, p)) + '%'; }
-function setConfidence(v){ confidenceBadge.textContent = v ? `${v}%` : '—'; }
-
-async function handleAsk(){
-  const query = promptEl.value.trim();
-  if(!query) return;
-  const modelKey = modelPicker.value;
-  const desired = parseInt(sourceCountEl.value || MODELS[modelKey].sources, 10);
-  const thinkingOn = document.getElementById('thinkingToggle').checked;
-  const strictOn = document.getElementById('strictToggle').checked;
-
-  // UI: show user bubble
-  addBubble('user', query);
-  session.push({role:'user', text: query, model:modelKey});
+async function onAsk(){
+  if(typingLocked) return;
+  const q = (promptEl.value || '').trim();
+  if(!q) return;
+  promptEl.value = '';
+  addBubble('user', escapeHtml(q));
+  session.push({role:'user', text:q});
   updateSessionUI();
 
-  // prepare AI bubble
-  const typingArea = addAIBubbleTypingArea();
-
-  // initial short message
-  await humanType(typingArea, 'Looking up reliable sources...', 40);
-
-  // begin progress & thinking
-  setThinking(thinkingOn ? 'Thinking (deep search)…' : 'Searching…');
+  // prepare AI bubble & lock input
+  setTypingLocked(true);
+  const aiBubble = addBubble('ai', '<span class="small">Gomega is thinking…</span>');
+  const typingArea = aiBubble; // we write into this node
+  setThinkingText('Deciding strategy...');
   setProgress(6);
 
-  // gather sources (first pass)
-  lastFetchEl.textContent = 'fetching...';
-  let sources = [], tried = [];
   try{
-    const agg = await gatherAll(query, desired, thinkingOn || modelKey==='browsing' || modelKey==='v6', (msg)=>{
+    // First: if math-like, try local geometry/math parser
+    const geom = tryGeometryQuery(q);
+    if(geom && (currentModelKey==='math' || looksLikeMath(q))){
+      setThinkingText('Computing (local math & geometry)...');
+      setProgress(28);
+      const textToType = String(geom.result);
+      await typeTextInto(typingArea, textToType, MODELS[currentModelKey].speed * 1.6);
+      // explanation
+      const meta = document.createElement('div'); meta.className='explain'; meta.textContent = `Reason: ${geom.explain}`;
+      aiBubble.appendChild(meta);
+      session.push({role:'ai', text:textToType});
+      updateSessionUI();
+      confidenceEl.textContent = '99%';
+      lastFetchEl.textContent = new Date().toLocaleString();
+      setProgress(100);
+      setThinkingText('Idle');
+      setTimeout(()=>{ setProgress(0); setTypingLocked(false); }, 700);
+      return;
+    }
+
+    // Otherwise do multi-source search (client-side)
+    const desired = 10;
+    const aggressive = thinkingToggle.checked || currentModelKey === 'v6';
+    setThinkingText(aggressive ? 'Thinking (deep search)…' : 'Searching…');
+    setProgress(14);
+
+    // gather snippets with progress updates
+    const snippets = await gatherSnippets(q, desired, aggressive, (msg)=>{
       lastAction.textContent = msg;
-      // bump progress slightly
-      const cur = parseInt(progressBar.style.width)||0;
-      setProgress(Math.min(90, cur + 6));
+      const cur = parseInt(progressBar.style.width) || 10;
+      setProgress(Math.min(90, cur + 8));
     });
-    sources = agg.items; tried = agg.tried;
-  }catch(e){
-    console.warn('gather error', e);
+
+    if(!snippets || snippets.length === 0){
+      // fallback: cannot find
+      await typeTextInto(typingArea, "I couldn't find an answer — I tried looking it up.", MODELS[currentModelKey].speed * 1.8);
+      session.push({role:'ai', text:"I couldn't find an answer — I tried looking it up."});
+      updateSessionUI();
+      confidenceEl.textContent = '10%';
+      setThinkingText('Idle');
+      setProgress(0);
+      setTypingLocked(false);
+      return;
+    }
+
+    // pick best answer and compute confidence
+    setProgress(86);
+    const strictOnly = strictToggle.checked;
+    const picked = pickBest(snippets, q, currentModelKey, strictOnly);
+
+    // If math-like but not math model, compute verification
+    const verification = (looksLikeMath(q) && currentModelKey !== 'math') ? safeEvalMath(q) : null;
+    let finalAnswer = picked.answer;
+    if(verification !== null && !/only the year|only the number/i.test(q)){
+      finalAnswer = finalAnswer + `\n\n(Computed: ${verification})`;
+    }
+
+    // Type answer slowly for realism
+    const speed = Math.max(10, Math.round(MODELS[currentModelKey].speed * 1.8));
+    await typeTextInto(typingArea, finalAnswer, speed);
+
+    // Append meta (confidence). We do NOT reveal sources.
+    const meta = document.createElement('div'); meta.className='explain';
+    meta.innerHTML = `Confidence: ${picked.confidence}%`;
+    aiBubble.appendChild(meta);
+
+    session.push({role:'ai', text: finalAnswer});
+    updateSessionUI();
+    lastFetchEl.textContent = new Date().toLocaleString();
+    confidenceEl.textContent = picked.confidence + '%';
+    setProgress(100);
+    setThinkingText('Idle');
+    setTimeout(()=>{ setProgress(0); setTypingLocked(false); }, 800);
+
+  } catch(err){
+    console.error(err);
+    typingArea.innerHTML = '⚠️ Error: failed to get answer';
+    session.push({role:'ai', text:'Error: failed to get answer'});
+    updateSessionUI();
+    setTypingLocked(false);
+    setThinkingText('Idle');
+    setProgress(0);
   }
-
-  // if no sources and thinking mode off, try a single aggressive pass automatically
-  if(sources.length === 0 && !thinkingOn){
-    setThinking('No quick results — thinking deeper...');
-    const agg2 = await gatherAll(query, desired, true, (m)=> lastAction.textContent = m);
-    sources = agg2.items; tried = [...tried, ...agg2.tried];
-  }
-
-  // compute picked answer
-  const picked = pickAnswer(sources, query, modelKey, strictOn);
-  setConfidence(picked.confidence);
-  setProgress(95);
-
-  // type final answer (slower than before for dramatic thinking)
-  const baseSpeed = MODELS[modelKey].speed || 60;
-  const slowFactor = 1.8; // user asked slower typing
-  const finalSpeed = Math.max(10, Math.round(baseSpeed * slowFactor));
-
-  // replace interim typing text with final typed answer
-  typingArea.innerHTML = '';
-  await humanType(typingArea, picked.answer, finalSpeed);
-
-  // show sources list & corroboration
-  const meta = document.createElement('div');
-  meta.style.marginTop = '8px';
-  meta.style.fontSize = '13px';
-  meta.style.color = 'var(--muted)';
-  if(picked.sources && picked.sources.length>0){
-    meta.innerHTML = `Sources: ${picked.sources.map(s=>`<a class="source-link" href="${s.url||'#'}" target="_blank" rel="noopener">${escapeHtml(s.title||s.src||'source')}</a>`).join(', ')} • ${picked.confidence ? ('Confidence: ' + picked.confidence + '%') : ''}`;
-  } else {
-    meta.innerHTML = 'Sources: none found';
-  }
-  const lastBubble = messagesEl.lastElementChild;
-  if(lastBubble) lastBubble.appendChild(meta);
-
-  // update "Sources checked" panel (latest tried)
-  sourcesList.innerHTML = tried.length ? tried.map(t => `<div>• ${escapeHtml(t)}</div>`).join('') : 'None';
-  lastFetchEl.textContent = new Date().toLocaleString();
-
-  // add explain block (hidden collapsed snippet) for user to open
-  const explainBtn = document.createElement('button');
-  explainBtn.textContent = 'Explain reasoning';
-  explainBtn.style.marginTop = '8px'; explainBtn.style.padding='6px 8px'; explainBtn.style.borderRadius='8px';
-  explainBtn.style.border='1px solid rgba(255,255,255,0.03)'; explainBtn.style.background='transparent'; explainBtn.style.color='var(--muted)'; explainBtn.style.cursor='pointer';
-  let explainOpen = false;
-  const explainBox = document.createElement('div');
-  explainBox.className = 'explain';
-  explainBox.style.display='none';
-  explainBtn.onclick = function(){
-    explainOpen = !explainOpen;
-    explainBox.style.display = explainOpen ? 'block' : 'none';
-    explainBtn.textContent = explainOpen ? 'Hide reasoning' : 'Explain reasoning';
-  };
-
-  if(picked.sources && picked.sources.length>0){
-    explainBox.innerHTML = `<strong>Steps & snippets</strong><div style="margin-top:8px">${picked.sources.map(s=>`<div style="margin-bottom:8px"><a href="${s.url||'#'}" target="_blank" rel="noopener">${escapeHtml(s.title||s.src||'source')}</a><div style="color:var(--muted);margin-top:4px">${escapeHtml((s.snippet||s.text||'').slice(0,240))}</div></div>`).join('')}</div>`;
-  } else {
-    explainBox.innerHTML = `<div style="color:var(--muted)">Gomega tried multiple sources but couldn't find a usable snippet. It likely means this query is obscure or the target info isn't present in the public sources checked.</div>`;
-  }
-
-  if(lastBubble){ lastBubble.appendChild(explainBtn); lastBubble.appendChild(explainBox); }
-
-  // finalize UI state
-  session.push({role:'ai', text:picked.answer, model:modelKey});
-  updateSessionUI();
-  setProgress(100);
-  setThinking('Idle');
-  // small delay then reset progress bar visually
-  setTimeout(()=>setProgress(0), 900);
 }
 
-// helper: gatherAll used above
+// ---------- Photo upload (client-only) ----------
+uploadBtn.addEventListener('click', ()=>{
+  const f = photoInput.files && photoInput.files[0];
+  if(!f){ alert('Choose an image first'); return; }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const url = ev.target.result;
+    photos.push({name: f.name, url});
+    renderPhotos();
+    // add short AI note
+    addBubble('ai', 'Photo added to session (BETA). You can reference it in follow-ups.');
+    session.push({role:'ai', text:'Photo added to session'});
+    updateSessionUI();
+  };
+  reader.readAsDataURL(f);
+});
 
-// initial welcome
+function renderPhotos(){
+  photoGrid.innerHTML = '';
+  photos.forEach(p=>{
+    const c = document.createElement('div'); c.className = 'photoCard';
+    const img = document.createElement('img'); img.src = p.url; img.alt = p.name;
+    c.appendChild(img);
+    photoGrid.appendChild(c);
+  });
+}
+
+// ---------- session controls ----------
+clearSessionBtn.addEventListener('click', ()=>{ session=[]; photos=[]; messagesEl.innerHTML=''; photoGrid.innerHTML=''; updateSessionUI(); });
+
+// ---------- init: welcome & clock ----------
 (function init(){
-  addBubble('ai', 'Hello — I am Gomega AI. Now using up to 10 sources. Toggle Thinking mode for a deeper search. Provide Google API Key + CSE ID if you want Google Overview results.');
-  addBubble('ai', 'Try: "What year was Nokia released in North America?" or "12*(45-5)/3". Toggle Strict mode or include "only the year" for strict outputs.');
+  addBubble('ai', 'Hello — I am Gomega AI (client-only). Ask anything. Enable Thinking Mode for deeper searches. Toggle Strict Mode for strict numeric outputs.');
+  addBubble('ai', 'Try: "What year was Nokia released in North America?" or "Area of circle radius 5" or "12*(45-5)/3".');
+  updateSessionUI();
+  tickLocalTime();
 })();
+
+function tickLocalTime(){ document.getElementById('localTime').textContent = new Date().toLocaleString(); setTimeout(tickLocalTime, 1000); }
 
 </script>
 </body>
