@@ -4,60 +4,72 @@
   <meta charset="UTF-8">
   <title>Ban Codes Manager</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f9f9f9; margin:20px; }
+    body { font-family: Arial, sans-serif; margin:20px; background:#f5f5f5; }
     h1 { color:#333; }
     #codes { margin-top:15px; padding:10px; background:white; border:1px solid #ccc; }
-    .code { display:inline-block; background:#e0eaff; padding:6px 10px; margin:5px; border-radius:6px; }
-    .code button { margin-left:8px; background:#f55; color:white; border:none; border-radius:4px; cursor:pointer; }
+    .chip { display:inline-block; margin:5px; padding:6px 10px; background:#e0eaff; border-radius:6px; }
+    .chip button { margin-left:6px; background:#f55; color:white; border:none; border-radius:4px; cursor:pointer; }
     input { padding:8px; }
-    button { padding:8px 12px; margin-left:5px; cursor:pointer; }
+    button { padding:8px 12px; cursor:pointer; }
   </style>
 </head>
 <body>
   <h1>Ban Codes Manager</h1>
   <div>
-    <input type="text" id="newCode" placeholder="Enter new code">
+    <input id="newCode" type="text" placeholder="Enter new code">
     <button onclick="addCode()">Add Code</button>
+    <button onclick="downloadCodes()">Download Updated File</button>
   </div>
   <div id="codes"></div>
 
   <script>
-    async function fetchCodes() {
-      let res = await fetch("codes.php?action=read");
-      let text = await res.text();
-      let codes = text.trim() ? text.split(",") : [];
-      displayCodes(codes);
+    let codes = [];
+
+    async function loadCodes() {
+      try {
+        let res = await fetch("https://gomega.watch/browser/codes.txt?nocache=" + Date.now());
+        let text = await res.text();
+        codes = text.trim() ? text.split(",").map(c => c.trim()) : [];
+        renderCodes();
+      } catch(e) {
+        alert("Could not load codes.txt");
+      }
     }
 
-    function displayCodes(codes) {
+    function renderCodes() {
       const container = document.getElementById("codes");
       container.innerHTML = "";
       codes.forEach(c => {
         let span = document.createElement("span");
-        span.className = "code";
+        span.className = "chip";
         span.textContent = c;
         let btn = document.createElement("button");
         btn.textContent = "X";
-        btn.onclick = () => deleteCode(c);
+        btn.onclick = () => { codes = codes.filter(x => x !== c); renderCodes(); };
         span.appendChild(btn);
         container.appendChild(span);
       });
     }
 
-    async function addCode() {
-      let code = document.getElementById("newCode").value.trim();
-      if (!code) return;
-      await fetch("codes.php?action=add&code=" + encodeURIComponent(code));
-      document.getElementById("newCode").value = "";
-      fetchCodes();
+    function addCode() {
+      const input = document.getElementById("newCode");
+      let code = input.value.trim();
+      if (code && !codes.includes(code)) {
+        codes.push(code);
+        renderCodes();
+      }
+      input.value = "";
     }
 
-    async function deleteCode(code) {
-      await fetch("codes.php?action=delete&code=" + encodeURIComponent(code));
-      fetchCodes();
+    function downloadCodes() {
+      let blob = new Blob([codes.join(",")], { type: "text/plain" });
+      let a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "codes.txt";
+      a.click();
     }
 
-    fetchCodes();
+    loadCodes();
   </script>
 </body>
 </html>
