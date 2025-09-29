@@ -1,0 +1,17 @@
+{
+  "name": "gomega-proxy",
+  "version": "1.0.0",
+  "description": "Gomega AI small proxy for multi-source search, calc and photo upload (BETA)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "formidable": "^3.7.1",
+    "mathjs": "^11.9.1",
+    "node-fetch": "^2.6.9",
+    "multer": "^1.4.5-lts.1"
+  }
+}
