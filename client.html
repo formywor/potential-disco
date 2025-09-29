@@ -1,0 +1,337 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Gomega AI — Client</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    /* (trimmed/concise) Modern style: chat UI, nicer animations */
+    :root{
+      --bg1:#071021; --bg2:#0b1220; --accent:#34d3ff; --accent2:#7c3aed; --muted:#94a3b8;
+    }
+    body{ margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial; background:linear-gradient(180deg,var(--bg1),var(--bg2)); color:#e6eef6; display:flex; justify-content:center; padding:18px; min-height:100vh; }
+    .app{ width:100%; max-width:1100px; display:grid; grid-template-columns:1fr 380px; gap:18px; }
+    .chat{ background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03)); border-radius:12px; padding:16px; min-height:640px; display:flex; flex-direction:column; }
+    .messages{ flex:1; overflow:auto; display:flex; flex-direction:column; gap:12px; padding-right:6px; }
+    .bubble{ padding:12px 14px; border-radius:12px; max-width:78%; animation:slide .25s ease; }
+    .bubble.user{ align-self:flex-end; background:linear-gradient(90deg,#0b6b4c,#064e3b); color:#d7fff0; border-bottom-right-radius:6px; }
+    .bubble.ai{ align-self:flex-start; background:linear-gradient(90deg,#0b1020,#151827); color:#e6eef6; border-bottom-left-radius:6px; }
+    @keyframes slide{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+    .inputRow{ display:flex; gap:8px; margin-top:12px; }
+    input.prompt{ flex:1; padding:12px; border-radius:10px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.04); outline:none }
+    button{ padding:10px 14px; border-radius:10px; border:none; background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#062; cursor:pointer; font-weight:700 }
+    .sidebar{ background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); border-radius:12px; padding:14px; height:640px; overflow:auto }
+    .card{ background:transparent; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.02); margin-bottom:10px }
+    .small{ font-size:13px; color:var(--muted) }
+    .disabled{ opacity:0.5; pointer-events:none }
+    .spinner{ display:inline-block; width:10px; height:10px; margin-left:8px; border-radius:50%; background:var(--accent); animation:bounce 1s infinite; }
+    @keyframes bounce{ 0%{ transform:translateY(0)} 50%{ transform:translateY(-6px)} 100%{ transform:translateY(0)} }
+    .progress{ height:8px; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; }
+    .bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 200ms linear }
+    .models{ display:flex; flex-direction:column; gap:8px }
+    .modelRow{ display:flex; align-items:center; justify-content:space-between; gap:8px }
+    .upload{ display:flex; gap:8px; align-items:center }
+    @media (max-width:980px){ .app{ grid-template-columns:1fr } .sidebar{ order:2 } .chat{ order:1 } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="chat">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+        <div>
+          <div style="font-weight:700; font-size:18px">Gomega AI</div>
+          <div class="small">Multi-source (server) + logic-based math & geometry</div>
+        </div>
+        <div class="small">Local time: <span id="localTime">—</span></div>
+      </div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="inputRow">
+        <input id="prompt" class="prompt" placeholder='Ask (ex: "What year was Nokia released in North America?")' />
+        <button id="askBtn">Ask</button>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-top:8px">
+        <div class="small">Tip: toggle Thinking Mode for deeper search (sidebar)</div>
+        <div class="small">Strict mode -> numeric-only outputs</div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <div><strong>Models</strong></div>
+          <div><span id="thinkingBadge" class="small">Idle</span></div>
+        </div>
+        <div class="models" id="models">
+          <!-- model rows injected -->
+        </div>
+      </div>
+
+      <div class="card">
+        <strong>Thinking / progress</strong>
+        <div style="margin-top:8px" class="small">Current action: <span id="lastAction">—</span></div>
+        <div style="margin-top:8px" class="progress"><div id="bar" class="bar"></div></div>
+        <div style="margin-top:8px" class="small">Confidence: <span id="confidence">—</span></div>
+      </div>
+
+      <div class="card">
+        <strong>Photo Upload (BETA)</strong>
+        <div class="upload" style="margin-top:8px">
+          <input type="file" id="photo" accept="image/*" />
+          <button id="uploadBtn">Upload</button>
+        </div>
+        <div id="uploadResult" class="small" style="margin-top:8px"></div>
+      </div>
+
+      <div class="card">
+        <strong>Session</strong>
+        <div id="sessionList" class="small" style="margin-top:8px">No messages yet</div>
+        <button id="clearSession" style="margin-top:8px">Clear</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* Client that talks to the server proxy
+   - API_BASE points to the server running server.js
+   - Behavior:
+     - If calc/geometry detected: call /api/calc and use result
+     - Otherwise call /api/search for aggregated snippets and synthesize answer locally
+     - Input disabled while AI is typing
+*/
+
+const API_BASE = location.origin; // if server runs on same host/port, otherwise set full URL e.g. 'https://yourserver:5173'
+const messages = document.getElementById('messages');
+const prompt = document.getElementById('prompt');
+const askBtn = document.getElementById('askBtn');
+const modelsDiv = document.getElementById('models');
+const lastAction = document.getElementById('lastAction');
+const bar = document.getElementById('bar');
+const thinkingBadge = document.getElementById('thinkingBadge');
+const confidenceEl = document.getElementById('confidence');
+const sessionList = document.getElementById('sessionList');
+const uploadBtn = document.getElementById('uploadBtn');
+const photoInput = document.getElementById('photo');
+const uploadResult = document.getElementById('uploadResult');
+
+let session = [];
+let disabled = false;
+
+// models with real differences
+const MODELS = {
+  v8: { label: 'Gomega V8', speed: 90, verb: 1.4, desc: 'deep reasoning', prefers: 10 },
+  v7: { label: 'Gomega V7', speed: 70, verb: 1.0, desc: 'balanced', prefers: 8 },
+  v7mini: { label: 'Gomega V7-mini', speed: 20, verb: 0.5, desc: 'fast short answers', prefers: 4 },
+  v6: { label: 'Gomega V6', speed: 95, verb: 1.6, desc: 'researcher aggressive', prefers: 10 },
+  v5: { label: 'Gomega V5', speed: 60, verb: 1.0, desc: 'stable', prefers: 6 },
+  math: { label: 'MathMaster', speed: 32, verb: 0.2, desc: 'calculation specialist', prefers: 1 }
+};
+
+let currentModelKey = 'v8';
+let thinkingMode = false;
+let strictMode = false;
+
+// create model rows in UI
+for (const key of Object.keys(MODELS)) {
+  const m = MODELS[key];
+  const row = document.createElement('div'); row.className = 'modelRow';
+  const left = document.createElement('div'); left.innerHTML = `<strong>${m.label}</strong><div class="small">${m.desc}</div>`;
+  const right = document.createElement('div');
+  const btn = document.createElement('button'); btn.textContent = 'Select';
+  btn.onclick = () => {
+    currentModelKey = key;
+    document.querySelectorAll('.modelRow button').forEach(b => b.textContent = 'Select');
+    btn.textContent = 'Selected';
+    thinkingBadge.textContent = `Model: ${m.label}`;
+  };
+  if (key === currentModelKey) btn.textContent = 'Selected';
+  right.appendChild(btn);
+  row.appendChild(left); row.appendChild(right);
+  modelsDiv.appendChild(row);
+}
+
+// small helper add bubble
+function addBubble(role, text) {
+  const el = document.createElement('div'); el.className = 'bubble ' + (role === 'user' ? 'user' : 'ai');
+  el.innerHTML = text.replace(/\n/g,'<br>');
+  messages.appendChild(el);
+  messages.scrollTop = messages.scrollHeight;
+  return el;
+}
+
+function updateSessionUI() {
+  if (session.length === 0) { sessionList.textContent = 'No messages yet'; return; }
+  sessionList.innerHTML = session.slice(-6).map(s => `<div class="small"><strong>${s.role}</strong>: ${s.text.slice(0,140)}</div>`).join('');
+}
+
+// disable input while typing
+function setDisabled(v) {
+  disabled = v;
+  prompt.disabled = v;
+  askBtn.disabled = v;
+  if (v) {
+    prompt.classList.add('disabled');
+    askBtn.classList.add('disabled');
+  } else {
+    prompt.classList.remove('disabled');
+    askBtn.classList.remove('disabled');
+  }
+}
+
+// human-like typing in client bubble
+async function clientType(el, text, baseSpeed) {
+  el.innerHTML = '';
+  for (let i = 0; i < text.length; i++) {
+    el.innerHTML = escapeHtml(text.slice(0, i + 1)).replace(/\n/g,'<br>');
+    messages.scrollTop = messages.scrollHeight;
+    const variability = 0.8 + Math.random() * 0.6;
+    let delay = Math.max(8, Math.round(baseSpeed * variability));
+    if (/[,.]/.test(text[i])) delay += 120;
+    if (/[!?]/.test(text[i])) delay += 240;
+    await new Promise(r => setTimeout(r, delay));
+  }
+}
+
+// escape HTML
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// detect if query is likely math/geometry (client-side quick check)
+function likelyMath(q) {
+  return /[\d\+\-\*\/\^%\(\)]/.test(q) || /\b(area|circumference|perimeter|volume|pythagor|triangle|circle|radius|diameter|height|base)\b/i.test(q);
+}
+
+// ask handler
+askBtn.addEventListener('click', onAsk);
+prompt.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { onAsk(); e.preventDefault(); } });
+
+async function onAsk() {
+  if (disabled) return;
+  const q = prompt.value.trim();
+  if (!q) return;
+  // push user
+  addBubble('user', escapeHtml(q));
+  session.push({ role: 'user', text: q });
+  updateSessionUI();
+  prompt.value = '';
+
+  // prepare AI bubble and disable input
+  setDisabled(true);
+  const aiBubble = addBubble('ai', ''); // typing area
+  const typingArea = aiBubble;
+  typingArea.innerHTML = '<span style="opacity:0.7">Gomega is thinking<span class="spinner"></span></span>';
+
+  // set progress
+  bar.style.width = '6%';
+  document.getElementById('lastAction').textContent = 'Deciding whether to compute or search...';
+  thinkingBadge.textContent = 'Working...';
+  confidenceEl = document.getElementById('confidence');
+
+  try {
+    // If math-like, prefer server calculation (server uses geometry logic/mathjs)
+    if (likelyMath(q) && currentModelKey === 'math') {
+      // call calc endpoint
+      document.getElementById('lastAction').textContent = 'Computing (server logic)...';
+      bar.style.width = '16%';
+      const resp = await fetch(`${API_BASE}/api/calc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q })
+      });
+      const j = await resp.json();
+      const result = j.result || j.error || 'Could not compute';
+      // type the result slower
+      await clientType(typingArea, String(result), MODELS[currentModelKey].speed * 1.6);
+      // show explanation if present
+      if (j.explanation) {
+        const meta = document.createElement('div'); meta.className='small'; meta.style.marginTop='8px'; meta.textContent = `Explanation: ${j.explanation}`;
+        aiBubble.appendChild(meta);
+      }
+      confidenceEl.textContent = j.result ? '99%' : '10%';
+      bar.style.width = '100%';
+      session.push({ role: 'ai', text: String(result) });
+      updateSessionUI();
+      setTimeout(()=>{ bar.style.width='0%'; thinkingBadge.textContent='Idle'; setDisabled(false); }, 600);
+      return;
+    }
+
+    // otherwise call server search
+    document.getElementById('lastAction').textContent = 'Searching aggregated sources (server)...';
+    bar.style.width = '20%';
+    const desired = MODELS[currentModelKey].prefers || 8;
+    const thinkingFlag = document.getElementById('thinkingBadge').textContent.includes('Thinking') || document.getElementById('thinkingBadge').textContent.includes('Working') || document.querySelector('#thinkingToggle')?.checked;
+    // quick server call
+    const resp = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(q)}&count=${desired}&thinking=${thinkingFlag ? '1' : '0'}`);
+    const j = await resp.json();
+    bar.style.width = '65%';
+    const snippets = (j.snippets && j.snippets.length) ? j.snippets : [];
+
+    // if no snippets, show fallback
+    if (!snippets || snippets.length === 0) {
+      await clientType(typingArea, "I couldn't find an answer — I tried looking it up.", MODELS[currentModelKey].speed * 1.8);
+      confidenceEl.textContent = '10%';
+      session.push({ role: 'ai', text: "I couldn't find an answer" });
+      updateSessionUI();
+      setDisabled(false);
+      bar.style.width='0%';
+      thinkingBadge.textContent='Idle';
+      return;
+    }
+
+    // Synthesize a concise answer locally by selecting the best snippet (longest) and trimming to model verboseness
+    let best = snippets.reduce((a,b) => (b.length > a.length ? b : a), snippets[0] || '');
+    const verb = MODELS[currentModelKey].verb || 1;
+    // take number of sentences proportional to verboseness
+    const sentences = best.split(/(?<=\.)\s+/).filter(Boolean);
+    const take = Math.max(1, Math.round(verb * 1.6));
+    let answer = sentences.slice(0, take).join(' ').trim();
+    if (!answer) answer = best.slice(0,300);
+
+    // If user requested only the year / numeric strict mode, try to extract number
+    const wantsOnlyYear = /only the year|only the number|just the year/i.test(q) || strictMode;
+    if (wantsOnlyYear) {
+      const match = answer.match(/\b(17\d{2}|18\d{2}|19\d{2}|20\d{2}|2100)\b/);
+      if (match) answer = match[0];
+      else {
+        // try to find number anywhere in all snippets
+        for (const s of snippets) {
+          const m = s.match(/-?\d+(\.\d+)?/);
+          if (m) { answer = m[0]; break; }
+        }
+      }
+    }
+
+    // For math-like queries (non-math model), call server calc to verify and append verification
+    if (likelyMath(q) && currentModelKey !== 'math') {
+      bar.style.width = '80%';
+      const calcResp = await fetch(`${API_BASE}/api/calc`, {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ query: q })
+      });
+      const calcJ = await calcResp.json();
+      if (calcJ && calcJ.result) {
+        answer += `\n\n(Computed: ${calcJ.result})`;
+      }
+    }
+
+    // Type final answer
+    await clientType(typingArea, answer, MODELS[currentModelKey].speed * 1.6);
+
+    // show hidden info (no sources visible). show confidence computed roughly by snippet count
+    const conf = Math.min(98, 30 + snippets.length * 6);
+    confidenceEl.textContent = conf + '%';
+
+    const meta = document.createElement('div'); meta.className='small'; meta.style.marginTop='8px';
+    meta.textContent = `Confidence: ${conf}% (internal)`;
+    aiBubble.appendChild(meta);
+
+    session.push({ role: 'ai', text: answer });
+    updateSessionUI();
+    bar.style.width = '100%';
+    thinkingBadge.textContent = 'Idle';
+    setTimeout(()=>{ bar.style.width='0%'; setDisabled(false); }, 600);
+
+  } catch (err) {
+    console.error(err);
+    typingArea.innerHTML = '⚠️ Error: service failed';
+    session.push({ role: 'ai', text: 'Error: failed to get answer' });
+    updateSessionUI();
