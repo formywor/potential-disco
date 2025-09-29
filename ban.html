@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ban Codes Manager</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f9f9f9; margin:20px; }
+    h1 { color:#333; }
+    #codes { margin-top:15px; padding:10px; background:white; border:1px solid #ccc; }
+    .code { display:inline-block; background:#e0eaff; padding:6px 10px; margin:5px; border-radius:6px; }
+    .code button { margin-left:8px; background:#f55; color:white; border:none; border-radius:4px; cursor:pointer; }
+    input { padding:8px; }
+    button { padding:8px 12px; margin-left:5px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <h1>Ban Codes Manager</h1>
+  <div>
+    <input type="text" id="newCode" placeholder="Enter new code">
+    <button onclick="addCode()">Add Code</button>
+  </div>
+  <div id="codes"></div>
+
+  <script>
+    async function fetchCodes() {
+      let res = await fetch("codes.php?action=read");
+      let text = await res.text();
+      let codes = text.trim() ? text.split(",") : [];
+      displayCodes(codes);
+    }
+
+    function displayCodes(codes) {
+      const container = document.getElementById("codes");
+      container.innerHTML = "";
+      codes.forEach(c => {
+        let span = document.createElement("span");
+        span.className = "code";
+        span.textContent = c;
+        let btn = document.createElement("button");
+        btn.textContent = "X";
+        btn.onclick = () => deleteCode(c);
+        span.appendChild(btn);
+        container.appendChild(span);
+      });
+    }
+
+    async function addCode() {
+      let code = document.getElementById("newCode").value.trim();
+      if (!code) return;
+      await fetch("codes.php?action=add&code=" + encodeURIComponent(code));
+      document.getElementById("newCode").value = "";
+      fetchCodes();
+    }
+
+    async function deleteCode(code) {
+      await fetch("codes.php?action=delete&code=" + encodeURIComponent(code));
+      fetchCodes();
+    }
+
+    fetchCodes();
+  </script>
+</body>
+</html>
