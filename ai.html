@@ -1,566 +1,439 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Gomega AI — All-in-one (client-only)</title>
-<style>
-  :root{
-    --bg1:#071021; --bg2:#0b1220; --card:#0f1724;
-    --accent:#34d3ff; --accent2:#7c3aed; --muted:#94a3b8;
-    --user:#0b6b4c; --ai:#081029; --glass: rgba(255,255,255,0.03);
-    --ok:#28a745; --warn:#f59e0b; --err:#ef4444;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
-    background: radial-gradient(900px 400px at 10% 10%, rgba(56,189,248,0.04), transparent),
-                linear-gradient(180deg,var(--bg1),var(--bg2));
-    color:#e6eef6; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:18px;
-  }
-
-  .topbar{ width:100%; max-width:1200px; display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
-  .brand{ display:flex; gap:12px; align-items:center; }
-  .logo{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; transform:rotate(-8deg); box-shadow:0 10px 30px rgba(0,0,0,0.4)}
-  .logo b{ color:#062; font-size:20px }
-  h1{ margin:0; font-size:20px; color:#e6fbff; text-shadow:0 6px 22px rgba(0,0,0,0.6) }
-  .meta{ color:var(--muted); font-size:13px }
-
-  .container{ width:100%; max-width:1200px; display:grid; grid-template-columns: 1fr 420px; gap:18px; align-items:start; }
-  .chat-area{ background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); padding:18px; border-radius:14px; min-height:640px; max-height:80vh; overflow:auto; border:1px solid rgba(255,255,255,0.02) }
-  .messages{ display:flex; flex-direction:column; gap:12px; padding-right:6px }
-
-  .bubble{ max-width:82%; padding:12px 14px; border-radius:12px; line-height:1.45; position:relative; animation: slideUp .28s ease }
-  .bubble.user{ background: linear-gradient(90deg,#0b6b4c,#064e3b); color:#d7fff0; align-self:flex-end; border-bottom-right-radius:6px; }
-  .bubble.ai{ background: linear-gradient(90deg,#0b1020,#151827); color:#e6eef6; align-self:flex-start; border-bottom-left-radius:6px; }
-
-  @keyframes slideUp { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
-
-  .caret{ display:inline-block; width:2px; height:1em; background:var(--accent); margin-left:6px; vertical-align:bottom; animation: blinkCaret 1s steps(2,end) infinite; }
-  @keyframes blinkCaret { 50%{ opacity:0 } }
-
-  .controls{ display:flex; gap:10px; align-items:center; margin-top:10px; }
-  input.prompt{ flex:1; padding:12px; border-radius:10px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.03); outline:none; font-size:15px }
-  button.primary{ padding:12px 18px; border-radius:10px; border:none; background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#062; cursor:pointer; font-weight:700 }
-  button.ghost{ padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.03); background:transparent; color:var(--muted); cursor:pointer }
-
-  .sidebar{ padding:18px; border-radius:14px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); border:1px solid rgba(255,255,255,0.02); min-height:640px; display:flex; flex-direction:column; gap:12px; }
-  .card{ padding:12px; border-radius:10px; background:transparent; border:1px solid rgba(255,255,255,0.02) }
-
-  .models{ display:flex; flex-direction:column; gap:8px; }
-  .modelRow{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); }
-  .small{ font-size:13px; color:var(--muted) }
-
-  .progress{ height:8px; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; width:100% }
-  .bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 180ms linear }
-
-  .sourcesBox{ font-size:13px; color:var(--muted); max-height:140px; overflow:auto; }
-
-  .photoGrid{ display:flex; gap:8px; flex-wrap:wrap; }
-  .photoCard{ width:100px; height:80px; border-radius:6px; overflow:hidden; background:#000; display:flex; align-items:center; justify-content:center; }
-  .photoCard img{ width:100%; height:100%; object-fit:cover }
-
-  .explain{ margin-top:8px; font-size:13px; color:var(--muted); border-top:1px dashed rgba(255,255,255,0.03); padding-top:8px }
-
-  .disabled{ opacity:0.5; pointer-events:none }
-
-  @media (max-width:980px){ .container{ grid-template-columns:1fr } .sidebar{ order:2 } .chat-area{ order:1 } }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Assistant V5.0</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #2a2a3d);
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      height: 100vh;
+    }
+    h1 {
+      color: #00c3ff;
+      margin-bottom: 10px;
+      animation: fadeIn 1s ease-in-out;
+    }
+    .chat-container {
+      background: #2c2c3a;
+      border-radius: 12px;
+      padding: 20px;
+      width: 90%;
+      max-width: 800px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      height: 70vh;
+      overflow-y: auto;
+    }
+    .chat-bubble {
+      padding: 12px 16px;
+      margin: 8px 0;
+      border-radius: 10px;
+      max-width: 70%;
+      line-height: 1.4;
+      animation: fadeIn 0.4s ease;
+    }
+    .user {
+      background: #007bff;
+      color: white;
+      align-self: flex-end;
+    }
+    .ai {
+      background: #3a3a4d;
+      color: #eee;
+      align-self: flex-start;
+      position: relative;
+    }
+    .typing {
+      border-right: 2px solid #00c3ff;
+      animation: blink 0.7s infinite;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    @keyframes blink {
+      0% { border-color: transparent; }
+      50% { border-color: #00c3ff; }
+      100% { border-color: transparent; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      max-width: 800px;
+    }
+    input, select, button {
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      margin: 0 5px;
+    }
+    input {
+      flex: 1;
+      background: #444;
+      color: #eee;
+    }
+    select {
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button {
+      background: #00c3ff;
+      color: #111;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #0099cc;
+    }
+  </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="brand">
-      <div class="logo"><b>G</b></div>
-      <div>
-        <h1>Gomega AI</h1>
-        <div class="meta">Client-only • 10-source attempts • Thinking mode • Geometry & math logic</div>
-      </div>
-    </div>
-    <div style="text-align:right">
-      <div class="meta">Local: <span id="localTime">—</span></div>
-      <div class="meta">Last: <span id="lastFetch">—</span></div>
-    </div>
-  </div>
+  <h1>AI Assistant V5.0</h1>
+  <div class="chat-container" id="chat"></div>
 
-  <div class="container">
-    <div class="chat-area">
-      <div class="messages" id="messages"></div>
+  <div class="controls">
+    <input type="text" id="query" placeholder="Ask me anything...">
+    <select id="model">
+      <option value="v5">V5.0 (Balanced & Smart)</option>
+      <option value="v5mini">V5 Mini (Fast & Short Answers)</option>
+      <option value="v3">V3 (Creative but less accurate)</option>
+      <option value="math">Math Master</option>
+    </select>
+    <button onclick="askAI()">Send</button>
+  </div>
 
-      <div class="controls" style="margin-top:12px">
-        <input id="prompt" class="prompt" placeholder="Ask anything (e.g. 'What year was Nokia released in North America?')" />
-        <button id="askBtn" class="primary">Ask</button>
-        <button id="clearBtn" class="ghost">Clear</button>
-      </div>
+  <script>
+    const chatBox = document.getElementById("chat");
 
-      <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-        <label class="small" style="margin-right:6px">Thinking Mode</label>
-        <input type="checkbox" id="thinkingToggle" />
-        <label class="small" style="margin-left:12px">Strict Mode</label>
-        <input type="checkbox" id="strictToggle" />
-      </div>
-    </div>
+    // Function: typing animation
+    function typeWriter(element, text, speed) {
+      let i = 0;
+      function typing() {
+        if (i < text.length) {
+          element.innerHTML = text.substring(0, i+1) + '<span class="typing"></span>';
+          i++;
+          setTimeout(typing, speed);
+        } else {
+          element.innerHTML = text; // remove cursor at end
+        }
+      }
+      typing();
+    }
 
-    <div class="sidebar">
-      <div class="card">
-        <strong>Models</strong>
-        <div class="models" id="modelList"></div>
-      </div>
+    async function askAI() {
+      const query = document.getElementById("query").value.trim();
+      const model = document.getElementById("model").value;
+      if (!query) return;
 
-      <div class="card">
-        <strong>Thinking & Progress</strong>
-        <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
-          <div class="small">Status:</div><div id="thinkingBadge" class="small">Idle</div>
-        </div>
-        <div style="margin-top:8px" class="progress"><div id="progressBar" class="bar"></div></div>
-        <div style="margin-top:8px" class="small">Confidence: <span id="confidence">—</span></div>
-        <div class="explain" id="lastAction">No action yet.</div>
-      </div>
+      // Show user message
+      const userBubble = document.createElement("div");
+      userBubble.className = "chat-bubble user";
+      userBubble.textContent = query;
+      chatBox.appendChild(userBubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
 
-      <div class="card">
-        <strong>Photos (BETA)</strong>
-        <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-          <input type="file" id="photoInput" accept="image/*">
-          <button id="uploadBtn" class="ghost">Add</button>
-        </div>
-        <div class="photoGrid" id="photoGrid" style="margin-top:8px"></div>
-        <div class="small" style="margin-top:8px">Uploaded photos are kept in the page session and are available while the page is open.</div>
-      </div>
+      // Prepare AI bubble
+      const aiBubble = document.createElement("div");
+      aiBubble.className = "chat-bubble ai";
+      chatBox.appendChild(aiBubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
 
-      <div class="card">
-        <strong>Session memory</strong>
-        <div id="sessionList" class="small" style="margin-top:8px">No messages yet.</div>
-        <div style="margin-top:8px"><button id="clearSession" class="ghost">Clear Memory</button></div>
-      </div>
+      let answer = "";
 
-      <div class="card small">Note: This is a client-only prototype. It tries multiple public endpoints (Wikipedia & DuckDuckGo). Some sources may fail due to cross-origin restrictions — Gomega will synthesize answers from what it can fetch.</div>
-    </div>
-  </div>
+      try {
+        // Math mode
+        if (model === "math") {
+          try {
+            answer = eval(query).toString();
+          } catch {
+            answer = "Sorry, I couldn’t calculate that.";
+          }
+        } else {
+          // --- Search Wikipedia ---
+          const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
+          const wikiData = await wikiRes.json();
+          let wikiExtract = wikiData.extract || "";
 
-<script>
-/* Gomega AI — ai.html (client-only)
-   Features:
-   - Up to 10 source attempts (Wikipedia REST + search hits + DuckDuckGo)
-   - Thinking mode (expand query variations)
-   - Local safe math & geometry engine (no web for calculations)
-   - Multiple models with different behaviors
-   - Photo upload (kept client-side)
-   - Input locked while AI typing
-   - Does not show source names/URLs to user
-*/
+          // --- Search DuckDuckGo ---
+          const ddgRes = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json`);
+          const ddgData = await ddgRes.json();
+          let ddgExtract = ddgData.Abstract || "";
 
-// ---------- State & UI references ----------
-const messagesEl = document.getElementById('messages');
-const promptEl = document.getElementById('prompt');
-const askBtn = document.getElementById('askBtn');
-const clearBtn = document.getElementById('clearBtn');
-const thinkingToggle = document.getElementById('thinkingToggle');
-const strictToggle = document.getElementById('strictToggle');
-const thinkingBadge = document.getElementById('thinkingBadge');
-const progressBar = document.getElementById('progressBar');
-const lastAction = document.getElementById('lastAction');
-const confidenceEl = document.getElementById('confidence');
-const lastFetchEl = document.getElementById('lastFetch');
-const photoInput = document.getElementById('photoInput');
-const uploadBtn = document.getElementById('uploadBtn');
-const photoGrid = document.getElementById('photoGrid');
-const sessionList = document.getElementById('sessionList');
-const clearSessionBtn = document.getElementById('clearSession');
+          // Pick best source
+          answer = wikiExtract || ddgExtract || "I couldn’t find an answer.";
 
-let session = []; // {role, text}
-let photos = [];  // {name, url}
-let typingLocked = false;
+          // If asking for year, return only year
+          if (/year|when/i.test(query)) {
+            const yearMatch = answer.match(/\b(1[0-9]{3}|20[0-9]{2}|2100)\b/);
+            if (yearMatch) answer = yearMatch[0];
+          }
 
-// ---------- Models (behavior differences) ----------
-const MODELS = {
-  v8:  { label: 'Gomega V8',    speed: 90, verb: 1.4, prefer: 10, desc: 'Flagship — deep reasoning' },
-  v7:  { label: 'Gomega V7',    speed: 70, verb: 1.0, prefer: 8,  desc: 'Balanced & timely' },
-  v7m: { label: 'Gomega V7-mini', speed: 22, verb: 0.5, prefer: 4, desc: 'Fast & concise' },
-  v6:  { label: 'Gomega V6',    speed: 95, verb: 1.6, prefer: 10, desc: 'Researcher (aggressive)' },
-  v5:  { label: 'Gomega V5',    speed: 60, verb: 1.0, prefer: 6,  desc: 'Stable' },
-  math:{ label: 'MathMaster',    speed: 32, verb: 0.2, prefer: 1,  desc: 'Calculation specialist' }
-};
-let currentModelKey = 'v8';
+          // Short answers for Mini model
+          if (model === "v5mini" && answer.length > 80) {
+            answer = answer.split(".")[0] + ".";
+          }
 
-// render model list
-const modelListEl = document.getElementById('modelList');
-Object.keys(MODELS).forEach((k) => {
-  const m = MODELS[k];
-  const row = document.createElement('div'); row.className = 'modelRow';
-  row.innerHTML = `<div><strong>${m.label}</strong><div class="small">${m.desc}</div></div>`;
-  const btn = document.createElement('button'); btn.textContent = (k===currentModelKey ? 'Selected' : 'Select');
-  btn.onclick = () => {
-    currentModelKey = k;
-    Array.from(modelListEl.querySelectorAll('button')).forEach(b => b.textContent = 'Select');
-    btn.textContent = 'Selected';
-    thinkingBadge.textContent = `Model: ${m.label}`;
-  };
-  row.appendChild(btn);
-  modelListEl.appendChild(row);
-});
+          // Creative but less accurate
+          if (model === "v3") {
+            answer += " 🤔 (This might be approximate)";
+          }
+        }
 
-// ---------- Utilities ----------
-function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function addBubble(role, htmlContent){
-  const el = document.createElement('div'); el.className = 'bubble ' + (role==='user' ? 'user' : 'ai');
-  el.innerHTML = htmlContent;
-  messagesEl.appendChild(el); messagesEl.scrollTop = messagesEl.scrollHeight;
-  return el;
-}
-function updateSessionUI(){ sessionList.innerHTML = session.slice(-6).map(m => `<div class="small"><strong>${escapeHtml(m.role)}</strong>: ${escapeHtml(m.text).slice(0,140)}</div>`).join('') || 'No messages yet.'; }
-function setProgress(p){ progressBar.style.width = Math.max(3, Math.min(100,p)) + '%'; }
-function setThinkingText(t){ thinkingBadge.textContent = t; lastAction.textContent = t; }
+        // Typing speed per model
+        let speed = 50;
+        if (model === "v5mini") speed = 15;
+        if (model === "v5") speed = 40;
+        if (model === "v3") speed = 60;
+        if (model === "math") speed = 30;
 
-// disable input while typing
-function setTypingLocked(v){
-  typingLocked = v;
-  promptEl.disabled = v;
-  askBtn.disabled = v;
-  clearBtn.disabled = v;
-  if (v) { promptEl.classList.add('disabled'); askBtn.classList.add('disabled'); clearBtn.classList.add('disabled'); }
-  else { promptEl.classList.remove('disabled'); askBtn.classList.remove('disabled'); clearBtn.classList.remove('disabled'); }
-}
+        typeWriter(aiBubble, answer, speed);
 
-// human-like typing animation (client)
-async function typeTextInto(elNode, text, speed){
-  elNode.innerHTML = '';
-  for (let i=0;i<text.length;i++){
-    elNode.innerHTML = escapeHtml(text.slice(0,i+1)).replace(/\n/g,'<br>');
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-    const variability = 0.8 + Math.random()*0.6;
-    let delay = Math.max(8, Math.round(speed * variability));
-    if (/[,.]/.test(text[i])) delay += 120;
-    if (/[!?]/.test(text[i])) delay += 260;
-    await new Promise(r => setTimeout(r, delay));
-  }
-}
+      } catch (err) {
+        aiBubble.textContent = "⚠️ Error: " + err.message;
+      }
 
-// ---------- Safe math & geometry (client-side logic) ----------
-function safeEvalMath(expr){
-  if(!expr || expr.length > 300) return null;
-  let s = String(expr).trim();
-  s = s.replace(/×/g,'*').replace(/÷/g,'/').replace(/—/g,'-');
-  s = s.replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-').replace(/\btimes\b/g,'*').replace(/\bdivided by\b/g,'/');
-  // keep only digits and math chars after basic normalization
-  if(!/^[0-9+\-*/().\s%^]+$/.test(s.replace(/,/g,''))) return null;
-  s = s.replace(/\^/g,'**');
-  try {
-    // safe evaluate using Function in a very limited way
-    const val = Function(`"use strict"; return (${s});`)();
-    if(typeof val === 'number' && Number.isFinite(val)) return +(+val.toFixed(12));
-  } catch(e) { return null; }
-  return null;
-}
+      chatBox.scrollTop = chatBox.scrollHeight;
+      document.getElementById("query").value = "";
+    }
 
-// geometry parser: pattern matching similar to server version
-function tryGeometryQuery(q){
-  if(!q || typeof q !== 'string') return null;
-  const s = q.toLowerCase();
-  let m;
-  m = s.match(/area of (?:a |the )?circle(?: with)?(?: radius| r)?[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const r=Number(m[1]); if(isFinite(r)){ return {result: +(Math.PI*r*r).toFixed(8), explain:`area of circle radius ${r}`} } }
-  m = s.match(/circumference of (?:a |the )?circle(?: with)?(?: radius| r)?[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const r=Number(m[1]); if(isFinite(r)){ return {result: +(2*Math.PI*r).toFixed(8), explain:`circumference of circle radius ${r}`} } }
-  m = s.match(/area of (?:a |the )?rectangle(?: with)?(?: width)?[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const w=Number(m[1]), h=Number(m[2]); if(isFinite(w)&&isFinite(h)) return {result: +(w*h).toFixed(8), explain:`rectangle area ${w}×${h}`} }
-  m = s.match(/area of (?:a |the )?triangle(?: with)?(?: base)?[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const b=Number(m[1]), h=Number(m[2]); if(isFinite(b)&&isFinite(h)) return {result: +((b*h)/2).toFixed(8), explain:`triangle area base ${b} × height ${h}`} }
-  m = s.match(/pythagor(?:ean|e).*a[^\d\-]*([-+]?\d*\.?\d+).*b[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const a=Number(m[1]), b=Number(m[2]); if(isFinite(a)&&isFinite(b)) return {result: +(Math.sqrt(a*a + b*b)).toFixed(8), explain:`hypotenuse from legs ${a}, ${b}`} }
-  m = s.match(/given\s+a[=\s]*([-+]?\d*\.?\d+)[,;\s]*b[=\s]*([-+]?\d*\.?\d+)/i);
-  if(m){ const a=Number(m[1]), b=Number(m[2]); if(isFinite(a)&&isFinite(b)) return {result: +(Math.sqrt(a*a + b*b)).toFixed(8), explain:`hypotenuse from legs ${a}, ${b}`} }
-  m = s.match(/volume of (?:a |the )?sphere(?: with)?(?: radius)?[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const r=Number(m[1]); if(isFinite(r)) return {result: +((4/3)*Math.PI*r*r*r).toFixed(8), explain:`sphere volume radius ${r}`} }
-  m = s.match(/volume of (?:a |the )?cylind(?:er|rical)[^\d\-]*radius[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+height[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const r=Number(m[1]), h=Number(m[2]); if(isFinite(r)&&isFinite(h)) return {result: +(Math.PI * r * r * h).toFixed(8), explain:`cylinder volume r ${r} × h ${h}`} }
-  // fallback numeric expression inside string
-  if(/[0-9]/.test(s)){
-    const match = s.match(/[-+*/().0-9,\s%^]+/);
-    if(match){
-      const expr = match[0].replace(/,/g,'');
-      const val = safeEvalMath(expr);
-      if(val !== null) return {result: val, explain: 'evaluated numeric expression'};
-    }
-  }
-  return null;
-}
+    // Press Enter to send
+    document.getElementById("query").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") askAI();
+    });
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Assistant V5.0</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #2a2a3d);
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      height: 100vh;
+    }
+    h1 {
+      color: #00c3ff;
+      margin-bottom: 10px;
+      animation: fadeIn 1s ease-in-out;
+    }
+    .chat-container {
+      background: #2c2c3a;
+      border-radius: 12px;
+      padding: 20px;
+      width: 90%;
+      max-width: 800px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      height: 70vh;
+      overflow-y: auto;
+    }
+    .chat-bubble {
+      padding: 12px 16px;
+      margin: 8px 0;
+      border-radius: 10px;
+      max-width: 70%;
+      line-height: 1.4;
+      animation: fadeIn 0.4s ease;
+    }
+    .user {
+      background: #007bff;
+      color: white;
+      align-self: flex-end;
+    }
+    .ai {
+      background: #3a3a4d;
+      color: #eee;
+      align-self: flex-start;
+      position: relative;
+    }
+    .typing {
+      border-right: 2px solid #00c3ff;
+      animation: blink 0.7s infinite;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    @keyframes blink {
+      0% { border-color: transparent; }
+      50% { border-color: #00c3ff; }
+      100% { border-color: transparent; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      max-width: 800px;
+    }
+    input, select, button {
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      margin: 0 5px;
+    }
+    input {
+      flex: 1;
+      background: #444;
+      color: #eee;
+    }
+    select {
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button {
+      background: #00c3ff;
+      color: #111;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #0099cc;
+    }
+  </style>
+</head>
+<body>
+  <h1>AI Assistant V5.0</h1>
+  <div class="chat-container" id="chat"></div>
 
-// ---------- Fetch helpers: Wikipedia & DuckDuckGo (client-side attempts) ----------
-async function fetchWikiSummary(q){
-  try{
-    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`, {mode:'cors'});
-    if(!res.ok) return null;
-    const j = await res.json();
-    if(j && j.extract) return j.extract;
-  } catch(e){ /* ignore */ }
-  return null;
-}
-async function fetchWikiSearchSummaries(q, limit=6){
-  const out = [];
-  try{
-    const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(q)}&srlimit=${limit}&origin=*`);
-    if(!res.ok) return out;
-    const j = await res.json();
-    const hits = j.query?.search || [];
-    for(const h of hits){
-      try{
-        const s = await fetchWikiSummary(h.title);
-        if(s) out.push(s);
-      } catch(e){}
-      if(out.length >= limit) break;
-    }
-  } catch(e){}
-  return out;
-}
-async function fetchDDG(q){
-  try{
-    const r = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`);
-    if(!r.ok) return null;
-    const j = await r.json();
-    const text = j.Abstract || (j.RelatedTopics ? j.RelatedTopics.map(t=>t.Text).join('. ') : '');
-    return text || null;
-  } catch(e){ return null; }
-}
+  <div class="controls">
+    <input type="text" id="query" placeholder="Ask me anything...">
+    <select id="model">
+      <option value="v5">V5.0 (Balanced & Smart)</option>
+      <option value="v5mini">V5 Mini (Fast & Short Answers)</option>
+      <option value="v3">V3 (Creative but less accurate)</option>
+      <option value="math">Math Master</option>
+    </select>
+    <button onclick="askAI()">Send</button>
+  </div>
 
-// gather up to desiredCount snippets, aggressive optionally expands queries
-const EXPANSIONS = ['history','release date','overview','timeline','founding','specifications','launch date','origin','background'];
+  <script>
+    const chatBox = document.getElementById("chat");
 
-async function gatherSnippets(query, desiredCount=10, aggressive=false, progressCallback){
-  const snippets = [];
-  progressCallback && progressCallback('Trying direct summary...');
-  const s1 = await fetchWikiSummary(query);
-  if(s1) snippets.push(s1);
-  progressCallback && progressCallback('Trying DuckDuckGo quick...');
-  const d = await fetchDDG(query);
-  if(d) snippets.push(d);
-  progressCallback && progressCallback('Fetching search hits...');
-  const hits = await fetchWikiSearchSummaries(query, Math.max(3, Math.min(8, desiredCount)));
-  hits.forEach(h => snippets.push(h));
-  if(aggressive){
-    for(const ex of EXPANSIONS){
-      if(snippets.length >= desiredCount) break;
-      progressCallback && progressCallback(`Expanding: ${ex}`);
-      const s = await fetchWikiSummary(query + ' ' + ex);
-      if(s) snippets.push(s);
-    }
-  }
-  // dedupe by short prefix
-  const seen = new Set();
-  const out = [];
-  for(const t of snippets){
-    const key = t.slice(0,200).replace(/\s+/g,' ').trim();
-    if(!seen.has(key) && t.length>30){ seen.add(key); out.push(t); }
-    if(out.length >= desiredCount) break;
-  }
-  return out;
-}
+    // Function: typing animation
+    function typeWriter(element, text, speed) {
+      let i = 0;
+      function typing() {
+        if (i < text.length) {
+          element.innerHTML = text.substring(0, i+1) + '<span class="typing"></span>';
+          i++;
+          setTimeout(typing, speed);
+        } else {
+          element.innerHTML = text; // remove cursor at end
+        }
+      }
+      typing();
+    }
 
-// ---------- Answer selection & confidence ----------
-function extractYear(text){
-  if(!text) return null;
-  const m = text.match(/\b(17\d{2}|18\d{2}|19\d{2}|20\d{2}|2100)\b/g);
-  if(!m) return null;
-  const freq={}; for(const y of m) freq[y] = (freq[y]||0)+1;
-  return Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
-}
-function pickBest(snippets, query, modelKey, strictOnly){
-  if(!snippets || snippets.length===0) return {answer:"I couldn't find an answer.", sources:[], confidence:10};
+    async function askAI() {
+      const query = document.getElementById("query").value.trim();
+      const model = document.getElementById("model").value;
+      if (!query) return;
 
-  const wantsYear = /\bwhat\s+year|\bwhen\s+was|\bwhen\s+did\b/i.test(query) || /only the year|just the year/i.test(query);
-  // Year detection
-  if(wantsYear){
-    const years = [];
-    for(const s of snippets){
-      const y = extractYear(s);
-      if(y) years.push(y);
-    }
-    if(years.length>0){
-      const freq = {}; for(const y of years) freq[y] = (freq[y]||0)+1;
-      const chosen = Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
-      const conf = Math.min(95, 40 + (freq[chosen]-1)*20 + Math.min(40, snippets.length*3));
-      return {answer: chosen, sources:[], confidence: conf};
-    }
-  }
+      // Show user message
+      const userBubble = document.createElement("div");
+      userBubble.className = "chat-bubble user";
+      userBubble.textContent = query;
+      chatBox.appendChild(userBubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
 
-  // choose the longest snippet as primary
-  let best = snippets.slice().sort((a,b)=>b.length - a.length)[0];
-  // generate concise answer: 1-3 sentences based on model verbosity
-  const sentences = (best||'').split(/(?<=\.)\s+/).filter(Boolean);
-  const verb = MODELS[modelKey].verb || 1;
-  const take = Math.max(1, Math.floor(verb * 1.6));
-  let answer = sentences.slice(0, take).join(' ').trim();
-  if(!answer) answer = (best||'').slice(0,300).trim();
+      // Prepare AI bubble
+      const aiBubble = document.createElement("div");
+      aiBubble.className = "chat-bubble ai";
+      chatBox.appendChild(aiBubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
 
-  // strict numeric enforcement
-  if(strictOnly && /\bonly the year\b|\bonly the number\b/i.test(query)){
-    const n = answer.match(/-?\d+(\.\d+)?/);
-    if(n) return {answer:n[0], sources:[], confidence: Math.min(90, 20 + snippets.length*6)};
-  }
+      let answer = "";
 
-  // compute simple confidence
-  const filled = snippets.filter(s=>s.length>40).length;
-  let conf = Math.min(95, 30 + filled*8 + Math.min(30, (snippets.length-1)*3));
-  // bump if year common
-  const yearsFound = {};
-  snippets.forEach(s=>{ const y = extractYear(s); if(y) yearsFound[y] = (yearsFound[y]||0)+1; });
-  if(Object.keys(yearsFound).length>0){ const bestY = Object.keys(yearsFound).sort((a,b)=>yearsFound[b]-yearsFound[a])[0]; conf += Math.min(10, (yearsFound[bestY]-1)*5); }
-  conf = Math.min(99, Math.max(8, Math.round(conf)));
+      try {
+        // Math mode
+        if (model === "math") {
+          try {
+            answer = eval(query).toString();
+          } catch {
+            answer = "Sorry, I couldn’t calculate that.";
+          }
+        } else {
+          // --- Search Wikipedia ---
+          const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
+          const wikiData = await wikiRes.json();
+          let wikiExtract = wikiData.extract || "";
 
-  return {answer, sources:[], confidence:conf};
-}
+          // --- Search DuckDuckGo ---
+          const ddgRes = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json`);
+          const ddgData = await ddgRes.json();
+          let ddgExtract = ddgData.Abstract || "";
 
-// ---------- Main flow: ask handling ----------
-askBtn.addEventListener('click', onAsk);
-promptEl.addEventListener('keydown', (e) => { if(e.key==='Enter' && !e.shiftKey) { onAsk(); e.preventDefault(); } });
-clearBtn.addEventListener('click', () => { messagesEl.innerHTML=''; session=[]; updateSessionUI(); });
+          // Pick best source
+          answer = wikiExtract || ddgExtract || "I couldn’t find an answer.";
 
-// helper: is query math/geometry
-function looksLikeMath(q){
-  return /[0-9\+\-\*\/\^%()]/.test(q) || /\b(area|circumference|perimeter|volume|pythagor|triangle|circle|radius|diameter|height|base)\b/i.test(q);
-}
+          // If asking for year, return only year
+          if (/year|when/i.test(query)) {
+            const yearMatch = answer.match(/\b(1[0-9]{3}|20[0-9]{2}|2100)\b/);
+            if (yearMatch) answer = yearMatch[0];
+          }
 
-async function onAsk(){
-  if(typingLocked) return;
-  const q = (promptEl.value || '').trim();
-  if(!q) return;
-  promptEl.value = '';
-  addBubble('user', escapeHtml(q));
-  session.push({role:'user', text:q});
-  updateSessionUI();
+          // Short answers for Mini model
+          if (model === "v5mini" && answer.length > 80) {
+            answer = answer.split(".")[0] + ".";
+          }
 
-  // prepare AI bubble & lock input
-  setTypingLocked(true);
-  const aiBubble = addBubble('ai', '<span class="small">Gomega is thinking…</span>');
-  const typingArea = aiBubble; // we write into this node
-  setThinkingText('Deciding strategy...');
-  setProgress(6);
+          // Creative but less accurate
+          if (model === "v3") {
+            answer += " 🤔 (This might be approximate)";
+          }
+        }
 
-  try{
-    // First: if math-like, try local geometry/math parser
-    const geom = tryGeometryQuery(q);
-    if(geom && (currentModelKey==='math' || looksLikeMath(q))){
-      setThinkingText('Computing (local math & geometry)...');
-      setProgress(28);
-      const textToType = String(geom.result);
-      await typeTextInto(typingArea, textToType, MODELS[currentModelKey].speed * 1.6);
-      // explanation
-      const meta = document.createElement('div'); meta.className='explain'; meta.textContent = `Reason: ${geom.explain}`;
-      aiBubble.appendChild(meta);
-      session.push({role:'ai', text:textToType});
-      updateSessionUI();
-      confidenceEl.textContent = '99%';
-      lastFetchEl.textContent = new Date().toLocaleString();
-      setProgress(100);
-      setThinkingText('Idle');
-      setTimeout(()=>{ setProgress(0); setTypingLocked(false); }, 700);
-      return;
-    }
+        // Typing speed per model
+        let speed = 50;
+        if (model === "v5mini") speed = 15;
+        if (model === "v5") speed = 40;
+        if (model === "v3") speed = 60;
+        if (model === "math") speed = 30;
 
-    // Otherwise do multi-source search (client-side)
-    const desired = 10;
-    const aggressive = thinkingToggle.checked || currentModelKey === 'v6';
-    setThinkingText(aggressive ? 'Thinking (deep search)…' : 'Searching…');
-    setProgress(14);
+        typeWriter(aiBubble, answer, speed);
 
-    // gather snippets with progress updates
-    const snippets = await gatherSnippets(q, desired, aggressive, (msg)=>{
-      lastAction.textContent = msg;
-      const cur = parseInt(progressBar.style.width) || 10;
-      setProgress(Math.min(90, cur + 8));
-    });
+      } catch (err) {
+        aiBubble.textContent = "⚠️ Error: " + err.message;
+      }
 
-    if(!snippets || snippets.length === 0){
-      // fallback: cannot find
-      await typeTextInto(typingArea, "I couldn't find an answer — I tried looking it up.", MODELS[currentModelKey].speed * 1.8);
-      session.push({role:'ai', text:"I couldn't find an answer — I tried looking it up."});
-      updateSessionUI();
-      confidenceEl.textContent = '10%';
-      setThinkingText('Idle');
-      setProgress(0);
-      setTypingLocked(false);
-      return;
-    }
+      chatBox.scrollTop = chatBox.scrollHeight;
+      document.getElementById("query").value = "";
+    }
 
-    // pick best answer and compute confidence
-    setProgress(86);
-    const strictOnly = strictToggle.checked;
-    const picked = pickBest(snippets, q, currentModelKey, strictOnly);
-
-    // If math-like but not math model, compute verification
-    const verification = (looksLikeMath(q) && currentModelKey !== 'math') ? safeEvalMath(q) : null;
-    let finalAnswer = picked.answer;
-    if(verification !== null && !/only the year|only the number/i.test(q)){
-      finalAnswer = finalAnswer + `\n\n(Computed: ${verification})`;
-    }
-
-    // Type answer slowly for realism
-    const speed = Math.max(10, Math.round(MODELS[currentModelKey].speed * 1.8));
-    await typeTextInto(typingArea, finalAnswer, speed);
-
-    // Append meta (confidence). We do NOT reveal sources.
-    const meta = document.createElement('div'); meta.className='explain';
-    meta.innerHTML = `Confidence: ${picked.confidence}%`;
-    aiBubble.appendChild(meta);
-
-    session.push({role:'ai', text: finalAnswer});
-    updateSessionUI();
-    lastFetchEl.textContent = new Date().toLocaleString();
-    confidenceEl.textContent = picked.confidence + '%';
-    setProgress(100);
-    setThinkingText('Idle');
-    setTimeout(()=>{ setProgress(0); setTypingLocked(false); }, 800);
-
-  } catch(err){
-    console.error(err);
-    typingArea.innerHTML = '⚠️ Error: failed to get answer';
-    session.push({role:'ai', text:'Error: failed to get answer'});
-    updateSessionUI();
-    setTypingLocked(false);
-    setThinkingText('Idle');
-    setProgress(0);
-  }
-}
-
-// ---------- Photo upload (client-only) ----------
-uploadBtn.addEventListener('click', ()=>{
-  const f = photoInput.files && photoInput.files[0];
-  if(!f){ alert('Choose an image first'); return; }
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    const url = ev.target.result;
-    photos.push({name: f.name, url});
-    renderPhotos();
-    // add short AI note
-    addBubble('ai', 'Photo added to session (BETA). You can reference it in follow-ups.');
-    session.push({role:'ai', text:'Photo added to session'});
-    updateSessionUI();
-  };
-  reader.readAsDataURL(f);
-});
-
-function renderPhotos(){
-  photoGrid.innerHTML = '';
-  photos.forEach(p=>{
-    const c = document.createElement('div'); c.className = 'photoCard';
-    const img = document.createElement('img'); img.src = p.url; img.alt = p.name;
-    c.appendChild(img);
-    photoGrid.appendChild(c);
-  });
-}
-
-// ---------- session controls ----------
-clearSessionBtn.addEventListener('click', ()=>{ session=[]; photos=[]; messagesEl.innerHTML=''; photoGrid.innerHTML=''; updateSessionUI(); });
-
-// ---------- init: welcome & clock ----------
-(function init(){
-  addBubble('ai', 'Hello — I am Gomega AI (client-only). Ask anything. Enable Thinking Mode for deeper searches. Toggle Strict Mode for strict numeric outputs.');
-  addBubble('ai', 'Try: "What year was Nokia released in North America?" or "Area of circle radius 5" or "12*(45-5)/3".');
-  updateSessionUI();
-  tickLocalTime();
-})();
-
-function tickLocalTime(){ document.getElementById('localTime').textContent = new Date().toLocaleString(); setTimeout(tickLocalTime, 1000); }
-
-</script>
+    // Press Enter to send
+    document.getElementById("query").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") askAI();
+    });
+  </script>
 </body>
 </html>
