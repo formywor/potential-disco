@@ -1,703 +1,765 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Gomega AI</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <style>
-  /* ---------- Typography & layout ---------- */
+  /* ---------- Visuals ---------- */
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
   :root{
-    --bg-1:#071021; --bg-2:#0b1220;
-    --card:#0f1724; --muted:#9fb0c8;
-    --accent1:#34d3ff; --accent2:#7c3aed;
+    --bg1:#071021; --bg2:#0b1220; --card:#0f1724;
+    --accent:#34d3ff; --accent2:#7c3aed; --muted:#94a3b8;
     --glass: rgba(255,255,255,0.03);
-    --success:#28a745; --danger:#ef4444;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial; color:#eaf6ff;
-    background: radial-gradient(800px 400px at 10% 20%, rgba(52,211,255,0.035), transparent),
-                linear-gradient(180deg,var(--bg-1),var(--bg-2));
-    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-    display:flex; justify-content:center; align-items:center; padding:20px;
+    margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial; color:#e6eef6;
+    background: radial-gradient(900px 400px at 10% 10%, rgba(56,189,248,0.03), transparent),
+                linear-gradient(180deg,var(--bg1),var(--bg2));
+    -webkit-font-smoothing:antialiased; display:flex; justify-content:center; padding:20px;
   }
 
-  .app {
-    width:100%; max-width:1200px; height:88vh; display:grid; grid-template-columns: 1fr 360px; gap:18px;
-    align-items:stretch;
-  }
+  .wrap { width:100%; max-width:1150px; display:grid; grid-template-columns: 1fr 380px; gap:18px; align-items:start; }
 
-  /* --------------- Chat column --------------- */
+  /* Chat area */
   .chat {
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border: 1px solid rgba(255,255,255,0.03); border-radius:14px; padding:14px; display:flex; flex-direction:column;
-    min-height:0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
+    padding:18px; border-radius:14px; min-height:640px; max-height:88vh; display:flex; flex-direction:column;
+    border:1px solid rgba(255,255,255,0.02); overflow:hidden;
   }
+  .top {
+    display:flex; align-items:center; gap:12px; margin-bottom:8px;
+  }
+  .logo { width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; transform:rotate(-8deg); box-shadow:0 10px 30px rgba(0,0,0,0.4) }
+  .logo b{ color:#062; font-size:20px }
+  .title { font-size:18px; margin:0 }
+  .subtitle { color:var(--muted); font-size:13px; margin-top:4px; }
 
-  .header {
-    display:flex; align-items:center; gap:12px; padding:8px 6px; border-bottom:1px solid rgba(255,255,255,0.02);
-  }
-  .logo {
-    width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent1),var(--accent2));
-    display:flex; align-items:center; justify-content:center; font-weight:700; color:#022; font-size:20px; transform:rotate(-6deg);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-  }
-  .title { font-size:18px; font-weight:700; }
-  .subtitle { color:var(--muted); font-size:13px; }
+  .messages { flex:1; overflow:auto; padding-right:10px; display:flex; flex-direction:column; gap:12px; transition: all 160ms ease; }
+  .bubble { max-width:82%; padding:12px 14px; border-radius:12px; line-height:1.45; position:relative; animation: slideUp .28s ease; box-shadow: 0 8px 30px rgba(2,6,23,0.4) }
+  .bubble.user { background: linear-gradient(90deg,#0b6b4c,#064e3b); color:#d7fff0; align-self:flex-end; border-bottom-right-radius:6px; transform-origin:100% 50%; }
+  .bubble.ai { background: linear-gradient(90deg,#0b1020,#151827); color:#e6eef6; align-self:flex-start; border-bottom-left-radius:6px; transform-origin:0% 50%; }
+  @keyframes slideUp { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
 
-  .messages {
-    padding:18px; overflow:auto; flex:1; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth;
-  }
+  .controls { display:flex; gap:10px; align-items:center; margin-top:12px; }
+  .prompt { flex:1; padding:12px; border-radius:10px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.03); outline:none; font-size:15px; transition: box-shadow .18s; }
+  .prompt:focus { box-shadow: 0 6px 30px rgba(52,211,255,0.06); }
+  .btn { padding:12px 18px; border-radius:10px; border:none; background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#062; cursor:pointer; font-weight:700 }
+  .ghost { padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.03); background:transparent; color:var(--muted); cursor:pointer }
 
-  .msg {
-    max-width:78%; padding:12px 14px; border-radius:12px; line-height:1.45; animation: msgIn .22s ease;
-    position:relative; box-shadow: 0 6px 24px rgba(2,6,23,0.45);
-    word-break:break-word;
-  }
-  @keyframes msgIn { from{opacity:.0; transform:translateY(6px)} to{opacity:1; transform:none} }
+  .infoRow { display:flex; gap:10px; align-items:center; margin-top:8px; color:var(--muted); font-size:13px; }
 
-  .user { align-self:flex-end; background: linear-gradient(90deg,#0b6b4c,#064e3b); color:#e6fff3; border-bottom-right-radius:6px; }
-  .ai   { align-self:flex-start; background: linear-gradient(90deg,#0b1730,#12172e); color:#dfefff; border-bottom-left-radius:6px; }
-
-  .metaRow { display:flex; align-items:center; gap:8px; margin-top:8px; color:var(--muted); font-size:12px; }
-
-  .controls {
-    padding:14px; border-top:1px solid rgba(255,255,255,0.02); display:flex; gap:10px; align-items:center;
-    background: linear-gradient(180deg, rgba(255,255,255,0.005), rgba(0,0,0,0.02));
-  }
-
-  .input {
-    flex:1; display:flex; gap:8px; align-items:center;
-  }
-  .textIn {
-    flex:1; padding:12px 14px; border-radius:10px; background:transparent; color:inherit;
-    border:1px solid rgba(255,255,255,0.03); outline:none; font-size:15px;
-  }
-  .btn {
-    background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:#022; border:none; padding:11px 16px; border-radius:10px; cursor:pointer; font-weight:700;
-  }
-  .ghost { background:transparent; border:1px solid rgba(255,255,255,0.04); padding:10px 12px; border-radius:10px; color:var(--muted); cursor:pointer; }
-
-  /* typing indicator */
-  .typing {
-    display:inline-flex; gap:6px; align-items:center; margin-left:8px;
-  }
-  .dot { width:8px; height:8px; background:#9fb0c8; border-radius:50%; opacity:.8; animation: jump 1s infinite; }
-  .dot:nth-child(2){ animation-delay:0.15s }
-  .dot:nth-child(3){ animation-delay:0.3s }
-  @keyframes jump { 0%{transform:translateY(0);opacity:0.6} 50%{transform:translateY(-6px);opacity:1} 100%{transform:translateY(0);opacity:0.6} }
-
-  /* --------------- Sidebar --------------- */
-  .side {
-    border-radius:14px; padding:14px; background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
-    border:1px solid rgba(255,255,255,0.02); display:flex; flex-direction:column; gap:12px; min-height:0;
-  }
+  /* Sidebar */
+  .sidebar { padding:18px; border-radius:14px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); border:1px solid rgba(255,255,255,0.02); min-height:640px; display:flex; flex-direction:column; gap:12px; }
   .card { padding:12px; border-radius:10px; background:transparent; border:1px solid rgba(255,255,255,0.02); }
   .models { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
-  .modelBtn { display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); border:1px solid rgba(255,255,255,0.02); cursor:pointer; }
-  .modelBtn.selected { box-shadow: 0 10px 30px rgba(20,20,40,0.25); border:1px solid rgba(255,255,255,0.04); background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:#022; }
-  .small{ font-size:13px; color:var(--muted); }
+  .model { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px; border-radius:10px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); cursor:pointer; border:1px solid rgba(255,255,255,0.02); }
+  .model.selected { background: linear-gradient(90deg,var(--accent),var(--accent2)); color:#022; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
 
-  .progress { height:8px; border-radius:8px; background:rgba(255,255,255,0.02); overflow:hidden; }
-  .progressBar { height:100%; width:0%; background:linear-gradient(90deg,var(--accent1),var(--accent2)); transition:width 280ms linear; }
+  .progress { height:8px; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; width:100% }
+  .bar { height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 180ms linear }
 
-  .photoGrid { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
-  .photoThumb { width:86px; height:66px; border-radius:8px; overflow:hidden; position:relative; background:#0b1220; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.02); }
-  .photoThumb img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .photoControls { position:absolute; bottom:6px; left:6px; right:6px; display:flex; gap:6px; justify-content:center; }
+  .photoGrid { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px }
+  .photoCard { width:86px; height:66px; border-radius:6px; overflow:hidden; background:#000; display:flex; align-items:center; justify-content:center; position:relative; border:1px solid rgba(255,255,255,0.02) }
+  .photoCard img { width:100%; height:100%; object-fit:cover }
+  .photoActions { position:absolute; bottom:6px; left:6px; right:6px; display:flex; gap:6px; justify-content:center }
 
-  .premiumBadge { padding:6px 8px; border-radius:8px; background:linear-gradient(90deg,#ffd166,#f0a500); color:#082; font-weight:700; font-size:12px; display:inline-block; }
+  .explain { margin-top:8px; font-size:13px; color:var(--muted); border-top:1px dashed rgba(255,255,255,0.03); padding-top:8px }
 
-  /* small screens */
-  @media (max-width:980px){
-    .app{ grid-template-columns: 1fr; height:94vh; }
-    .side{ order:2; }
-  }
+  .typing { display:inline-flex; gap:6px; align-items:center; margin-left:8px; }
+  .dot { width:8px; height:8px; background:#9fb0c8; border-radius:50%; opacity:.9; animation: jump 1s infinite; }
+  .dot:nth-child(2){ animation-delay:0.15s } .dot:nth-child(3){ animation-delay:0.3s }
+  @keyframes jump { 0%{transform:translateY(0);opacity:0.6} 50%{transform:translateY(-6px);opacity:1} 100%{transform:translateY(0);opacity:0.6} }
+
+  .small { font-size:13px; color:var(--muted) }
+
+  @media (max-width:980px){ .wrap{ grid-template-columns:1fr } .sidebar{ order:2 } .chat{ order:1 } }
 </style>
 </head>
 <body>
-  <div class="app" role="application" aria-label="Gomega AI chat">
+  <div class="wrap">
     <!-- CHAT -->
-    <section class="chat" id="chat">
-      <div class="header">
-        <div class="logo">G</div>
+    <div class="chat" role="main" aria-label="Gomega AI chat">
+      <div class="top">
+        <div class="logo"><b>G</b></div>
         <div>
           <div class="title">Gomega AI</div>
-          <div class="subtitle">Fast, smart answers — client-hosted UI</div>
+          <div class="subtitle">Fast, focused answers — math & lookups. Photo BETA (5/day free)</div>
         </div>
-        <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
-          <div id="premiumIndicator" class="small" style="display:flex;gap:8px;align-items:center"></div>
-          <div class="small">Local time: <span id="localTime">—</span></div>
+        <div style="margin-left:auto; text-align:right;">
+          <div class="small">Local: <span id="localTime">—</span></div>
+          <div class="small">Last: <span id="lastFetch">—</span></div>
         </div>
+      </div>
+
+      <div id="warning" class="small" style="background:rgba(255,255,255,0.02);padding:8px;border-radius:8px;margin-bottom:10px;color:var(--muted)">
+        Note: The page will attempt to use your API key if available. Do not expose a long-lived secret on public machines. Use a server proxy for production.
       </div>
 
       <div class="messages" id="messages" aria-live="polite"></div>
 
-      <div class="controls" aria-hidden="false">
-        <div class="input">
-          <input id="prompt" class="textIn" autocomplete="off" placeholder="Ask Gomega something — math, facts, images..." />
-          <div id="typingIndicator" style="display:none" class="typing" title="Gomega is typing">
-            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-          </div>
-        </div>
-
-        <input id="fileInput" type="file" accept="image/*" style="display:none" />
-        <button id="attachBtn" class="ghost" title="Attach photo">📷</button>
-        <button id="sendBtn" class="btn">Send</button>
+      <div class="controls">
+        <input id="prompt" class="prompt" placeholder="Ask / math (e.g. 'Simplify 4a-2(5a-7)')"/>
+        <select id="modelSelect" title="Choose model" style="border-radius:10px;padding:8px;background:transparent;color:inherit;border:1px solid rgba(255,255,255,0.03)">
+          <!-- filled by JS -->
+        </select>
+        <button id="askBtn" class="btn">Ask</button>
+        <button id="setKeyBtn" class="ghost">Set Key</button>
       </div>
-    </section>
+
+      <div class="infoRow">
+        <div><label class="small">Thinking</label> <input type="checkbox" id="thinkingToggle"/></div>
+        <div><label class="small">Strict</label> <input type="checkbox" id="strictToggle"/></div>
+        <div style="margin-left:auto"><button id="clearBtn" class="ghost">Clear UI</button></div>
+      </div>
+    </div>
 
     <!-- SIDEBAR -->
-    <aside class="side" id="sidebar">
+    <aside class="sidebar" aria-label="sidebar">
       <div class="card">
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <div><strong>Models</strong><div class="small">Pick a behavior profile</div></div>
-          <div class="small" id="modelHint">Hidden model details</div>
-        </div>
-
-        <div class="models" id="models"></div>
+        <strong>Models</strong>
+        <div class="small">Gomega profiles — pick a behavior. Premium models are marked.</div>
+        <div class="models" id="modelList"></div>
       </div>
 
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <strong>Session</strong>
-          <button id="clearSession" class="ghost">Clear</button>
+        <strong>Progress & session</strong>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+          <div class="small">Status:</div><div id="thinkingBadge" class="small">Idle</div>
         </div>
-        <div class="small" style="margin-top:8px">Messages today: <span id="msgCount">0</span></div>
-        <div class="small" style="margin-top:6px">Photo sends left: <span id="photoLeft">5</span></div>
-        <div style="margin-top:8px" class="progress"><div id="progressBar" class="progressBar"></div></div>
+        <div style="margin-top:8px" class="progress"><div id="progressBar" class="bar"></div></div>
+        <div style="margin-top:8px" class="small">Confidence: <span id="confidence">—</span></div>
+        <div class="explain" id="lastAction">No action yet.</div>
       </div>
 
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div><strong>Photos (BETA)</strong><div class="small">Uploads stored locally</div></div>
-          <div><button id="addPhoto" class="small ghost">Add</button></div>
+        <strong>Photos (BETA)</strong>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+          <input type="file" id="photoInput" accept="image/*" style="flex:1">
+          <button id="addPhotoBtn" class="ghost">Add</button>
         </div>
+        <div style="margin-top:8px" class="small">Daily sends left: <span id="photoQuota">5</span>/5</div>
         <div class="photoGrid" id="photoGrid"></div>
-        <div class="small" style="margin-top:8px">Photos appear inline in the chat and are downloadable. Premium users: unlimited.</div>
+        <div class="small" style="margin-top:8px">Photos are local and downloadable. Premium users: unlimited.</div>
       </div>
 
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div><strong>Premium</strong><div class="small">Unlock extra limits</div></div>
-          <div><button id="enterCode" class="small ghost">Enter code</button></div>
-        </div>
-        <div class="small" style="margin-top:8px">Premium unlocks unlimited messages & photos for this browser session.</div>
+        <strong>Session memory</strong>
+        <div id="sessionList" class="small" style="margin-top:8px">No messages yet.</div>
+        <div style="margin-top:8px"><button id="clearSession" class="ghost">Clear Memory</button></div>
       </div>
     </aside>
   </div>
 
 <script>
-/* Gomega AI — single-file client.
-   - Looks for /browser/api.txt (if present) and uses that API key.
-   - Loads premium codes from /browser/premiumcodes.txt silently (if available).
-   - Premium: unlimited messages/photos. Non-premium: limits enforced.
-   - Photo upload UI + inline chat preview & download.
-   - Input blocked while AI is typing.
-   - The assistant's system identity is "Gomega AI".
-   - If user asks "who made you", assistant replies with ScriptNova message.
-*/
+/* ----------------------------
+   Gomega AI — updated script
+   - safer model fallback to avoid invalid model id errors
+   - improved UI behavior, typing lock, premium gating
+   - image upload + inline download
+   - local math & geometry engine
+   - uses API key from window.OpenAPI OR /browser/api.txt OR sessionStorage
+-----------------------------*/
 
-/* ----------------------- Config / Limits ----------------------- */
-const NONPREMIUM_DAILY_MSG_LIMIT = 40;     // e.g., messages/day for non-premium
-const NONPREMIUM_DAILY_PHOTO_LIMIT = 5;    // photos/day for non-premium
-const USAGE_STORAGE_PREFIX = 'gomega_usage_'; // keys per day
+/* ---------- Config & state ---------- */
+const DAILY_QUOTA = 5;
+const NONPREMIUM_MSG_LIMIT = 40;
 
-/* ----------------------- State ----------------------- */
-let apiKey = null;                 // loaded from /browser/api.txt or session prompt
-let premium = false;
-let premiumCodes = [];             // loaded silently if hosted
-let selectedModelKey = 'v7';       // friendly label -> internal mapping hidden from user
-let modelProfiles = {
-  v8:  {label:'Gomega V8 (premium)', hiddenModel:'***', speed:80, verbosity:1.6, premium:true},
-  v7:  {label:'Gomega V7', hiddenModel:'***', speed:66, verbosity:1.0, premium:false},
-  v7m: {label:'Gomega V7-mini', hiddenModel:'***', speed:22, verbosity:0.6, premium:false},
-  v6:  {label:'Gomega V6 (premium)', hiddenModel:'***', speed:92, verbosity:1.4, premium:true},
-  v5:  {label:'Gomega V5', hiddenModel:'***', speed:58, verbosity:1.0, premium:false},
-  math:{label:'MathMaster', hiddenModel:'***', speed:30, verbosity:0.2, premium:false}
+const MODEL_CONFIG = {
+  'gomega-v8':  { label:'Gomega V8', openai:'gpt-4', speed:90, verb:1.6, premium:true },
+  'gomega-v6':  { label:'Gomega V6', openai:'gpt-4', speed:88, verb:1.5, premium:true },
+  'gomega-v7':  { label:'Gomega V7', openai:'gpt-3.5-turbo', speed:70, verb:1.0, premium:false },
+  'gomega-v7mini': { label:'Gomega V7-mini', openai:'gpt-3.5-turbo', speed:28, verb:0.5, premium:false },
+  'gomega-v5':  { label:'Gomega V5', openai:'gpt-3.5-turbo', speed:60, verb:1.0, premium:false },
+  'mathmaster': { label:'MathMaster', openai:'gpt-3.5-turbo', speed:36, verb:0.2, premium:false }
 };
 
-let isTyping = false;
-let sessionMessages = []; // last messages for context (local)
-let localPhotos = []; // {id,name,dataURL,sent:boolean}
+let currentModelKey = 'gomega-v7';
+let session = [];
+let photos = []; // {id,name,url,sent}
+let premiumUnlocked = false;
+let premiumCodes = [];
+let typingLocked = false;
 
-/* ----------------------- DOM ----------------------- */
-const $ = id => document.getElementById(id);
-const messagesEl = $('messages');
-const promptEl = $('prompt');
-const sendBtn = $('sendBtn');
-const attachBtn = $('attachBtn');
-const fileInput = $('fileInput');
-const addPhotoBtn = $('addPhoto');
-const photoGrid = $('photoGrid');
-const msgCountEl = $('msgCount');
-const photoLeftEl = $('photoLeft');
-const progressBarEl = $('progressBar');
-const modelsEl = $('models');
-const premiumIndicatorEl = $('premiumIndicator');
-const enterCodeBtn = $('enterCode');
-const clearSessionBtn = $('clearSession');
-const typingIndicator = $('typingIndicator');
-const localTimeEl = $('localTime');
+/* ---------- DOM refs ---------- */
+const messagesEl = document.getElementById('messages');
+const promptEl = document.getElementById('prompt');
+const askBtn = document.getElementById('askBtn');
+const setKeyBtn = document.getElementById('setKeyBtn');
+const modelSelect = document.getElementById('modelSelect');
+const modelListEl = document.getElementById('modelList');
+const thinkingToggle = document.getElementById('thinkingToggle');
+const strictToggle = document.getElementById('strictToggle');
+const thinkingBadge = document.getElementById('thinkingBadge');
+const progressBar = document.getElementById('progressBar');
+const lastAction = document.getElementById('lastAction');
+const confidenceEl = document.getElementById('confidence');
+const lastFetchEl = document.getElementById('lastFetch');
+const photoInput = document.getElementById('photoInput');
+const addPhotoBtn = document.getElementById('addPhotoBtn');
+const photoGrid = document.getElementById('photoGrid');
+const photoQuotaEl = document.getElementById('photoQuota');
+const sessionListEl = document.getElementById('sessionList');
+const clearSessionBtn = document.getElementById('clearSession');
+const clearBtn = document.getElementById('clearBtn');
 
-/* ----------------------- Utilities ----------------------- */
-function nowDateKey(){
-  const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+/* ---------- API key handling ---------- */
+// Sources checked in order:
+// 1) window.OpenAPI (you may inject it during your build process)
+// 2) /browser/api.txt (optional file on same origin)
+// 3) sessionStorage (when user pastes it via Set Key)
+const STORAGE_KEY = 'gomega_openai_key';
+
+function setOpenAIKey(k){
+  if(!k){ sessionStorage.removeItem(STORAGE_KEY); return; }
+  sessionStorage.setItem(STORAGE_KEY, k);
 }
-function usageKey(type){
-  return USAGE_STORAGE_PREFIX + type + '_' + nowDateKey();
-}
-function getUsage(type){
-  return parseInt(localStorage.getItem(usageKey(type)) || '0', 10);
-}
-function incUsage(type, n=1){
-  const k = usageKey(type), v = getUsage(type) + n; localStorage.setItem(k, String(v)); updateUsageUI(); return v;
-}
-function resetDailyIfNeeded(){ /* placeholder if you want to expire older keys */ }
-function updateUsageUI(){
-  msgCountEl.textContent = getUsage('msg');
-  const left = Math.max(0, NONPREMIUM_DAILY_PHOTO_LIMIT - getUsage('photo'));
-  photoLeftEl.textContent = premium ? '∞' : left;
-  const p = Math.min(100, Math.round((getUsage('msg') / (premium ? (NONPREMIUM_DAILY_MSG_LIMIT*3) : NONPREMIUM_DAILY_MSG_LIMIT)) * 100));
-  progressBarEl.style.width = p + '%';
-  premiumIndicatorEl.innerHTML = premium ? '<span class="premiumBadge">PREMIUM</span>' : '<span class="small">Free</span>';
+function getOpenAIKey(){
+  if(window.OpenAPI) return window.OpenAPI;
+  const s = sessionStorage.getItem(STORAGE_KEY); if(s) return s;
+  return null;
 }
 
-/* ----------------------- Load API Key & Premium Codes ----------------------- */
-/* Try to fetch /browser/api.txt silently. If found and non-empty, use it.
-   If not, we will prompt user to paste key when necessary.
-*/
-async function tryLoadApiKeyFile(){
+async function tryLoadApiTxt(){
   try {
     const res = await fetch('/browser/api.txt', {cache:'no-cache'});
     if(!res.ok) return;
     const txt = (await res.text()).trim();
-    if(txt) { apiKey = txt; console.log('API key loaded from /browser/api.txt'); }
+    if(txt) { sessionStorage.setItem(STORAGE_KEY, txt); console.log('Loaded API key from /browser/api.txt'); }
   } catch(e){
     // ignore
   }
 }
 
-// Try to load premium codes (file is optional)
-async function tryLoadPremiumCodes(){
-  try{
+// UI set key
+setKeyBtn.addEventListener('click', ()=>{
+  const prev = getOpenAIKey() || '';
+  const k = prompt('Paste your OpenAI API key for this browser session (visible in this browser session). For production, use a secure server proxy.', prev);
+  if(k) { setOpenAIKey(k.trim()); alert('API key stored for this browser session.'); }
+});
+
+/* ---------- Premium codes (silent load) ---------- */
+async function loadPremiumCodes(){
+  try {
     const res = await fetch('/browser/premiumcodes.txt', {cache:'no-cache'});
     if(!res.ok) return;
-    const txt = (await res.text()).trim();
-    if(!txt) return;
+    const txt = await res.text();
     premiumCodes = txt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-    console.log('Premium codes loaded: count=', premiumCodes.length);
-  }catch(e){
+    console.log('Premium codes loaded:', premiumCodes.length);
+  } catch(e){
     // ignore
   }
 }
+// apply code input
+document.getElementById('applyCodeBtn')?.addEventListener('click', ()=>{
+  const code = document.getElementById('premiumCodeInput').value.trim();
+  if(!code) return alert('Enter code first');
+  if(premiumCodes.includes(code) || code==='PREMIUM'){ premiumUnlocked = true; sessionStorage.setItem('gomega_premium','1'); alert('Premium unlocked for this session!'); renderModels(); updateQuotaUI(); }
+  else alert('Invalid code or list not available.');
+});
 
-/* ----------------------- Models UI ----------------------- */
-function renderModels(){
-  modelsEl.innerHTML = '';
-  for(const key of Object.keys(modelProfiles)){
-    const p = modelProfiles[key];
-    const div = document.createElement('div');
-    div.className = 'modelBtn' + (selectedModelKey === key ? ' selected' : '');
-    div.innerHTML = `<div>
-                      <div style="font-weight:700">${escapeHtml(p.label)}</div>
-                      <div class="small">${p.premium ? 'Premium' : 'Standard'}</div>
-                     </div>
-                     <div class="small">${selectedModelKey===key ? 'Selected' : 'Select'}</div>`;
-    div.onclick = () => {
-      if(p.premium && !premium){
-        alert('This model is premium. Enter a premium code to unlock premium features.');
-        return;
-      }
-      selectedModelKey = key;
-      renderModels();
-    };
-    modelsEl.appendChild(div);
-  }
+/* ---------- UI helpers ---------- */
+function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function addBubble(role, html){
+  const el = document.createElement('div'); el.className = 'bubble ' + (role==='user' ? 'user' : 'ai'); el.innerHTML = html;
+  messagesEl.appendChild(el); messagesEl.scrollTop = messagesEl.scrollHeight; return el;
+}
+function updateSessionUI(){ sessionListEl.innerHTML = session.slice(-6).map(m=>`<div class="small"><strong>${escapeHtml(m.role)}</strong>: ${escapeHtml(m.text).slice(0,140)}</div>`).join('') || 'No messages yet.'; }
+function setProgress(p){ progressBar.style.width = Math.max(3, Math.min(100,p)) + '%'; }
+function setThinkingText(t){ thinkingBadge.textContent = t; lastAction.textContent = t; }
+
+/* lock/unlock typing */
+function setTypingLocked(v){
+  typingLocked = v;
+  promptEl.disabled = v;
+  askBtn.disabled = v;
+  setKeyBtn.disabled = v;
+  addPhotoBtn.disabled = v;
+  photoInput.disabled = v;
+  if(v){ promptEl.classList.add('disabled'); askBtn.classList.add('disabled'); } else { promptEl.classList.remove('disabled'); askBtn.classList.remove('disabled'); }
 }
 
-/* ----------------------- Chat UI helpers ----------------------- */
-function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function addMessageBubble(role, html, metaText){
-  const div = document.createElement('div');
-  div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
-  div.innerHTML = html;
-  if(metaText){
-    const meta = document.createElement('div'); meta.className = 'metaRow'; meta.textContent = metaText; div.appendChild(meta);
-  }
-  messagesEl.appendChild(div);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-  return div;
-}
-function clearMessages(){ messagesEl.innerHTML = ''; sessionMessages=[]; localPhotos=[]; renderPhotos(); updateUsageUI(); }
-
-/* ----------------------- Typing animation ----------------------- */
-async function typeIntoBubble(bubbleEl, text, speed){
-  bubbleEl.innerHTML = '';
+/* typing animation */
+async function typeTextInto(node, text, speed){
+  node.innerHTML = '';
   for(let i=0;i<text.length;i++){
-    bubbleEl.innerHTML = escapeHtml(text.slice(0,i+1)).replace(/\n/g,'<br>');
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-    // speed modifier + punctuation pause
     const ch = text[i];
-    const variability = 0.8 + Math.random() * 0.5;
+    node.innerHTML = escapeHtml(text.slice(0,i+1)).replace(/\n/g,'<br>');
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    const variability = 0.8 + Math.random()*0.6;
     let delay = Math.max(6, Math.round(speed * variability));
-    if(/[,;]/.test(ch)) delay += 80;
-    if(/[.!?]/.test(ch)) delay += 220;
+    if(/[,;]/.test(ch)) delay += 90;
+    if(/[.!?]/.test(ch)) delay += 200;
     await new Promise(r=>setTimeout(r, delay));
   }
 }
 
-/* ----------------------- Photo upload UI ----------------------- */
-function renderPhotos(){
-  photoGrid.innerHTML = '';
-  for(const p of localPhotos){
-    const thumb = document.createElement('div'); thumb.className='photoThumb';
-    const img = document.createElement('img'); img.src = p.dataURL; img.alt = p.name;
-    thumb.appendChild(img);
-    const controls = document.createElement('div'); controls.className='photoControls';
-    const sendBtn = document.createElement('button'); sendBtn.className='small ghost'; sendBtn.textContent = p.sent ? 'Sent' : 'Send';
-    sendBtn.onclick = () => {
-      if(p.sent){ alert('Already sent'); return; }
-      if(!premium && getUsage('photo') >= NONPREMIUM_DAILY_PHOTO_LIMIT){ alert('Daily photo send limit reached for free users.'); return; }
-      sendImageToChat(p);
-      p.sent = true; incUsage('photo', 1); renderPhotos();
-    };
-    const removeBtn = document.createElement('button'); removeBtn.className='small ghost'; removeBtn.textContent='Remove';
-    removeBtn.onclick = () => { localPhotos = localPhotos.filter(x=>x.id !== p.id); renderPhotos(); };
-    controls.appendChild(sendBtn); controls.appendChild(removeBtn);
-    thumb.appendChild(controls);
-    photoGrid.appendChild(thumb);
+/* ---------- Algebra / geometry / numeric (unchanged engine) ---------- */
+/* Tokenizer/Parser/Simplifier + evaluateNumeric + geometryQuery (kept same as earlier robust implementation) */
+
+function tokenize(expr){
+  const s = String(expr); const tokens=[]; const isNum = c=>/[0-9.]/.test(c); const isAlpha = c=>/[a-zA-Z]/.test(c);
+  let i=0;
+  while(i<s.length){
+    const c=s[i];
+    if(/\s/.test(c)){ i++; continue; }
+    if(c==='+'||c==='-'||c==='*'||c==='/'||c==='^'||c==='('||c===')'){ tokens.push({type:c,val:c}); i++; continue; }
+    if(isNum(c)){ let j=i; while(j<s.length && /[0-9.]/.test(s[j])) j++; tokens.push({type:'num', val:s.slice(i,j)}); i=j; continue; }
+    if(isAlpha(c)){ let j=i; while(j<s.length && /[a-zA-Z0-9_]/.test(s[j])) j++; tokens.push({type:'id', val:s.slice(i,j)}); i=j; continue; }
+    i++;
   }
-  updateUsageUI();
-}
-
-/* send image into chat (user message with inline image) */
-function sendImageToChat(photo){
-  const html = `<div style="font-size:13px;color:var(--muted);margin-bottom:6px">Image: ${escapeHtml(photo.name)}</div>
-                <a href="${photo.dataURL}" download="${escapeHtml(photo.name)}"><img src="${photo.dataURL}" style="max-width:320px;border-radius:8px;display:block"></a>`;
-  addMessageBubble('user', html, 'Uploaded image');
-  sessionMessages.push({role:'user', text:`[image:${photo.name}]`, image:photo.dataURL});
-  // show immediate UI update done above
-}
-
-/* file add handler */
-$('addPhoto').addEventListener('click', ()=> fileInput.click());
-fileInput.addEventListener('change', (e)=>{
-  const f = e.target.files && e.target.files[0];
-  if(!f) return;
-  if(!/^image\//.test(f.type)){ alert('Only image files allowed'); return; }
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    const id = 'ph' + Date.now();
-    localPhotos.push({id, name: f.name, dataURL: ev.target.result, sent:false});
-    renderPhotos();
-  };
-  reader.readAsDataURL(f);
-});
-
-/* also attach button to file input */
-attachBtn.addEventListener('click', ()=> fileInput.click());
-
-/* ----------------------- Premium code entry ----------------------- */
-enterCodeBtn.addEventListener('click', async ()=>{
-  const code = prompt('Enter your premium unlock code:');
-  if(!code) return;
-  // if we have premiumCodes loaded, check silently
-  if(premiumCodes && premiumCodes.length && premiumCodes.includes(code.trim())){
-    premium = true; alert('Premium unlocked for this browser session.');
-    renderModels(); updateUsageUI(); return;
+  const out=[];
+  for(let k=0;k<tokens.length;k++){
+    out.push(tokens[k]);
+    if(k+1<tokens.length){
+      const a=tokens[k], b=tokens[k+1];
+      const aok=(a.type==='num'||a.type==='id'||a.type===')'); const bok=(b.type==='id'||b.type==='num'||b.type==='(');
+      if(aok && bok) out.push({type:'*',val:'*'});
+    }
   }
-  // otherwise allow a one-off code 'PREMIUM' for testing (optional)
-  if(code.trim() === 'PREMIUM'){ premium=true; alert('Premium unlocked (test code).'); renderModels(); updateUsageUI(); return; }
-  alert('Code not valid (or premium list not available).');
-});
-
-/* ----------------------- Clear session ----------------------- */
-clearSessionBtn.addEventListener('click', ()=>{
-  if(!confirm('Clear chat and session memory?')) return;
-  clearMessages();
-  // reset usage counters for convenience (keeps daily keys)
-  localStorage.removeItem(usageKey('msg')); localStorage.removeItem(usageKey('photo'));
-  updateUsageUI();
-});
-
-/* ----------------------- "who made you" quick rule ----------------------- */
-function overrideIfWhoMadeYou(userText){
-  if(!userText) return null;
-  if(/\bwho (made|created) you\b/i.test(userText) || /\bwho (is )?your maker\b/i.test(userText)){
-    return 'I was made by ScriptNova. Follow @scriptnovaa on Instagram.';
+  return out;
+}
+function makeTerm(coeff, vars){ return {coeff, vars:Object.assign({}, vars)}; }
+function termKey(vars){ const keys=Object.keys(vars).filter(k=>vars[k]!==0).sort(); if(keys.length===0) return ''; return keys.map(k=>`${k}^${vars[k]}`).join('*'); }
+function multiplyVars(a,b){ const r=Object.assign({}, a); for(const k in b) r[k]=(r[k]||0)+b[k]; for(const k in r) if(r[k]===0) delete r[k]; return r; }
+function parseExpression(tokens){
+  let pos=0;
+  function peek(){ return tokens[pos]||null; }
+  function consume(t){ const cur=tokens[pos]; if(!cur) return null; if(t && cur.type!==t) return null; pos++; return cur; }
+  function parsePrimary(){
+    const cur=peek(); if(!cur) return [{coeff:0, vars:{}}];
+    if(cur.type==='num'){ consume('num'); return [makeTerm(Number(cur.val),{})]; }
+    if(cur.type==='id'){ consume('id'); const v={}; v[cur.val]=1; return [makeTerm(1,v)]; }
+    if(cur.type==='('){ consume('('); const expr=parseAddSub(); consume(')'); return expr; }
+    consume(); return [{coeff:0,vars:{}}];
   }
-  return null;
+  function parsePow(){
+    let base=parsePrimary();
+    while(peek() && peek().type==='^'){ consume('^'); const right=peek(); if(right && right.type==='num'){ const exp=Number(consume('num').val); let raised=[]; for(const t of base){ let seed=[makeTerm(1,{})]; for(let e=0;e<exp;e++) seed = multiplyTermLists(seed,[t]); for(const s of seed) raised.push(s);} base=raised; } else break; }
+    return base;
+  }
+  function parseMulDiv(){
+    let left=parsePow();
+    while(peek() && (peek().type==='*' || peek().type==='/')){ const op=consume().type; const right=parsePow(); if(op==='*') left = multiplyTermLists(left,right); else { if(right.length===1 && Object.keys(right[0].vars).length===0 && right[0].coeff!==0){ const d=right[0].coeff; left = left.map(t=>makeTerm(t.coeff/d, t.vars)); } } }
+    return left;
+  }
+  function parseAddSub(){
+    let left=parseMulDiv();
+    while(peek() && (peek().type==='+'||peek().type==='-')){ const op=consume().type; const right=parseMulDiv(); if(op==='+') left=addTermLists(left,right); else left=addTermLists(left,right.map(t=>makeTerm(-t.coeff,t.vars))); }
+    return left;
+  }
+  function multiplyTermLists(A,B){ const out=[]; for(const a of A) for(const b of B) out.push(makeTerm(a.coeff*b.coeff, multiplyVars(a.vars,b.vars))); return combineLikeTerms(out); }
+  function addTermLists(A,B){ return combineLikeTerms(A.concat(B)); }
+  const expr=parseAddSub(); return combineLikeTerms(expr);
 }
-
-/* ----------------------- Local math & simplification (basic) ----------------------- */
-/* We include a simplified algebra/geometry evaluator to handle many math queries locally.
-   If it detects a simplifiable algebra expression or geometry question it returns a result.
-   (Code is intentionally compact but robust enough for school-level problems.)
-*/
-
-function looksLikeMath(q){
-  if(!q) return false;
-  if(/\b(simplify|evaluate|what is|compute|area of|circumference|perimeter|volume|pythagor)\b/i.test(q)) return true;
-  if(/[0-9]/.test(q) && /[+\-*/^()]/.test(q)) return true;
-  return false;
+function combineLikeTerms(terms){
+  const map=new Map();
+  for(const t of terms){ const vars={}; for(const k in t.vars) if(t.vars[k]!==0) vars[k]=t.vars[k]; const key=termKey(vars); const prev=map.get(key)||0; map.set(key, prev + (Number(t.coeff)||0)); }
+  const out=[];
+  for(const [k,coeff] of map.entries()){ if(Math.abs(coeff) < 1e-12) continue; const vars={}; if(k){ k.split('*').forEach(part=>{ const [name,exp]=part.split('^'); vars[name]=Number(exp); }); } out.push(makeTerm(coeff, vars)); }
+  out.sort((a,b)=>{ const av=Object.keys(a.vars).length, bv=Object.keys(b.vars).length; if(av!==bv) return bv-av; const ak=termKey(a.vars), bk=termKey(b.vars); return ak<bk?-1:(ak>bk?1:0); });
+  return out;
 }
-
-/* Very small numeric evaluator (safe-ish) */
+function termsToString(terms){
+  if(!terms || terms.length===0) return '0';
+  const parts=[];
+  for(const t of terms){
+    const coeff=t.coeff; const vars=t.vars||{}; const varNames=Object.keys(vars).sort();
+    let varStr=varNames.map(v => vars[v]===1 ? v : `${v}^${vars[v]}`).join('*');
+    const absCoeff=Math.abs(coeff);
+    if(varStr){
+      let coeffStr='';
+      if(Math.abs(absCoeff-1) < 1e-12) coeffStr = (coeff<0)?'-':'';
+      else coeffStr = (coeff<0?'-':'') + (absCoeff%1===0 ? String(absCoeff) : String(Number(absCoeff.toFixed(8))));
+      parts.push(coeffStr + varStr);
+    } else {
+      const num = (coeff%1===0) ? String(coeff) : String(Number(coeff.toFixed(8)));
+      parts.push(num);
+    }
+  }
+  let out='';
+  for(const p of parts){ if(out==='') out=p; else { if(p[0]==='-') out += ' - ' + p.slice(1); else out += ' + ' + p; } }
+  return out.replace(/\*/g,'');
+}
+function simplifyAlgebra(expr){
+  try{ const tokens = tokenize(expr); if(tokens.length===0) return null; const terms = parseExpression(tokens); if(!terms || terms.length===0) return '0'; return termsToString(terms); } catch(e){ return null; }
+}
 function evaluateNumeric(expr){
   if(!expr || expr.length > 500) return null;
   const allowed = expr.replace(/[^0-9+\-*/().,^\s%]/g,' ');
   const sanitized = allowed.replace(/\^/g,'**').replace(/%/g,'*0.01');
-  try{
-    const fn = Function(`"use strict"; return (${sanitized});`);
-    const val = fn();
-    if(typeof val === 'number' && Number.isFinite(val)) return +Number(val.toFixed(12));
-    return null;
-  }catch(e){ return null; }
+  try{ const fn = Function(`"use strict"; return (${sanitized});`); const val = fn(); if(typeof val === 'number' && Number.isFinite(val)) return +Number(val.toFixed(12)); return null; } catch(e){ return null; }
 }
-
-/* basic geometry patterns */
 function geometryQuery(q){
   if(!q) return null;
-  const s = q.toLowerCase();
-  let m;
+  const s=q.toLowerCase(); let m;
   m = s.match(/area of (?:a |the )?circle(?:.*?)(?:radius|r)?[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer:(Math.PI*r*r).toFixed(8), note:`area circle r=${r}`} }
+  if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer:(Math.PI*r*r).toFixed(8), explain:`area circle r=${r}`}; }
   m = s.match(/circumference of (?:a |the )?circle(?:.*?)(?:radius|r)?[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer:(2*Math.PI*r).toFixed(8), note:`circumference r=${r}`} }
+  if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer:(2*Math.PI*r).toFixed(8), explain:`circumference r=${r}`}; }
   m = s.match(/area of (?:a |the )?triangle(?:.*?)(?:base|b)[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const b=Number(m[1]), h=Number(m[2]); if(isFinite(b)&&isFinite(h)) return {answer:((b*h)/2).toFixed(8), note:`triangle b=${b}, h=${h}`} }
+  if(m){ const b=Number(m[1]), h=Number(m[2]); if(isFinite(b)&&isFinite(h)) return {answer:((b*h)/2).toFixed(8), explain:`triangle b=${b} h=${h}`}; }
   m = s.match(/area of (?:a |the )?rectangle(?:.*?)(?:width|w)[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const w=Number(m[1]), h=Number(m[2]); if(isFinite(w)&&isFinite(h)) return {answer:(w*h).toFixed(8), note:`rectangle ${w}x${h}`} }
+  if(m){ const w=Number(m[1]), h=Number(m[2]); if(isFinite(w)&&isFinite(h)) return {answer:(w*h).toFixed(8), explain:`rectangle ${w}x${h}`}; }
   return null;
 }
 
-/* ----------------------- OpenAI call ----------------------- */
-async function callOpenAI(promptText, opts={}) {
-  // ensure we have apiKey
-  if(!apiKey){
-    // Attempt to load from file once more; if not, ask user to paste
-    await tryLoadApiKeyFile();
-    if(!apiKey){
-      const pasted = prompt('Paste your OpenAI API key for this browser session (sessionStorage). Warning: this is visible to anyone with access to this browser.');
-      if(!pasted) throw new Error('No API key set.');
-      apiKey = pasted.trim();
-    }
+/* ---------- Simple snippet gatherers (fallback when OpenAI fails) ---------- */
+async function fetchWikiSummary(q){ try{ const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`); if(!r.ok) return null; const j = await r.json(); return j.extract || null; }catch(e){return null} }
+async function fetchDDG(q){ try{ const r = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`); if(!r.ok) return null; const j = await r.json(); return j.Abstract || (j.RelatedTopics ? j.RelatedTopics.map(t=>t.Text).join('. ') : null); }catch(e){return null} }
+async function gatherSnippets(query, desired=6, aggressive=false, progressCb){
+  const snippets = [];
+  if(progressCb) progressCb('Trying Wikipedia summary...');
+  const s1 = await fetchWikiSummary(query); if(s1) snippets.push(s1);
+  if(progressCb) progressCb('Trying DuckDuckGo...');
+  const d = await fetchDDG(query); if(d) snippets.push(d);
+  if(aggressive){
+    const exps=['history','release date','overview','timeline','founding'];
+    for(const ex of exps){ if(snippets.length>=desired) break; if(progressCb) progressCb('Expanding: ' + ex); const t = await fetchWikiSummary(query + ' ' + ex); if(t) snippets.push(t); }
   }
+  // dedupe
+  const seen = new Set(), out=[];
+  for(const t of snippets){ const k = t.slice(0,200).replace(/\s+/g,' ').trim(); if(!seen.has(k)){ seen.add(k); out.push(t); } if(out.length>=desired) break; }
+  return out;
+}
 
-  // Prepare messages: system + recent chat (we include last few local messages)
-  const systemMessage = { role:'system', content: 'You are Gomega AI. Answer concisely and clearly. Do not reveal your internal model mapping.' };
-  // Build a short context: last 6 messages
-  const ctx = sessionMessages.slice(-6).map(m => ({role:m.role, content:m.text}));
-  ctx.push({role:'user', content: promptText});
+/* ---------- Pick best snippet (same logic) ---------- */
+function extractYear(text){
+  if(!text) return null;
+  const m = text.match(/\b(17\d{2}|18\d{2}|19\d{2}|20\d{2}|2100)\b/g);
+  if(!m) return null;
+  const freq={}; for(const y of m) freq[y]=(freq[y]||0)+1;
+  return Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
+}
+function pickBest(snips, query, modelKey, strictOnly){
+  if(!snips || snips.length===0) return {answer:"I couldn't find an answer.", confidence:8};
+  const wantsYear = /\bwhat\s+year|\bwhen\s+was|\bwhen\s+did\b/i.test(query) || /only the year|just the year/i.test(query);
+  if(wantsYear){
+    const years=[]; for(const s of snips){ const y = extractYear(s); if(y) years.push(y); }
+    if(years.length>0){ const freq={}; for(const y of years) freq[y]=(freq[y]||0)+1; const pick = Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0]; const conf = Math.min(95, 40 + (freq[pick]-1)*20 + Math.min(40, snips.length*3)); return {answer: pick, confidence:conf}; }
+  }
+  let best = snips.slice().sort((a,b)=>b.length - a.length)[0];
+  const sentences = (best||'').split(/(?<=\.)\s+/).filter(Boolean);
+  const verb = MODEL_CONFIG[modelKey].verb || 1;
+  const take = Math.max(1, Math.floor(verb * 1.6));
+  let answer = sentences.slice(0,take).join(' ').trim();
+  if(!answer) answer = (best||'').slice(0,300).trim();
+  if(strictOnly && /\bonly the year\b|\bonly the number\b/i.test(query)){
+    const n = answer.match(/-?\d+(\.\d+)?/);
+    if(n) return {answer:n[0], confidence: Math.min(90, 20 + snips.length*6)};
+  }
+  const filled = snips.filter(s=>s.length>40).length;
+  let conf = Math.min(95, 30 + filled*8 + Math.min(30, (snips.length-1)*3));
+  const yearsFound = {}; snips.forEach(s=>{ const y = extractYear(s); if(y) yearsFound[y] = (yearsFound[y]||0)+1; });
+  if(Object.keys(yearsFound).length>0){ const bestY = Object.keys(yearsFound).sort((a,b)=>yearsFound[b]-yearsFound[a])[0]; conf += Math.min(10, (yearsFound[bestY]-1)*5); }
+  conf = Math.min(99, Math.max(8, Math.round(conf)));
+  return {answer, confidence:conf};
+}
 
-  const body = {
-    model: modelProfiles[selectedModelKey].hiddenModel || 'gpt-4o-mini', // hidden mapping in code (replace with your chosen model strings on server if needed)
-    messages: [systemMessage, ...ctx],
-    temperature: opts.temperature ?? 0.2,
-    max_tokens: opts.max_tokens ?? 800
+/* ---------- Photo BETA (UI) ---------- */
+function quotaKeyForToday(){
+  const d = new Date(); const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+  return `gomega_photo_quota_${y}${m}${day}`;
+}
+function getQuotaUsed(){ return parseInt(localStorage.getItem(quotaKeyForToday()) || '0', 10); }
+function incrementQuota(){ const k = quotaKeyForToday(); const u = getQuotaUsed()+1; localStorage.setItem(k,String(u)); updateQuotaUI(); return u; }
+function updateQuotaUI(){ photoQuotaEl.textContent = premiumUnlocked ? '∞' : Math.max(0, DAILY_QUOTA - getQuotaUsed()); }
+
+/* photo handlers */
+addPhotoBtn.addEventListener('click', ()=>{
+  const f = photoInput.files && photoInput.files[0];
+  if(!f) { alert('Choose an image file first'); return; }
+  if(!/^image\//.test(f.type)) { alert('Only images allowed'); return; }
+  if(!premiumUnlocked && getQuotaUsed() >= DAILY_QUOTA){ alert('Daily photo send limit reached (5). Try again tomorrow or unlock premium.'); return; }
+  const r = new FileReader();
+  r.onload = (ev) => {
+    const id = 'p' + Date.now();
+    photos.push({id, name: f.name, url: ev.target.result, sent:false});
+    renderPhotos();
   };
+  r.readAsDataURL(f);
+});
+function renderPhotos(){
+  photoGrid.innerHTML = '';
+  photos.forEach(p=>{
+    const card = document.createElement('div'); card.className='photoCard';
+    const img = document.createElement('img'); img.src = p.url; img.alt = p.name;
+    card.appendChild(img);
+    const actions = document.createElement('div'); actions.className='photoActions';
+    const sendBtn = document.createElement('button'); sendBtn.className='small'; sendBtn.textContent = p.sent ? 'Sent' : 'Send';
+    sendBtn.onclick = () => {
+      if(p.sent){ alert('Already sent'); return; }
+      if(!premiumUnlocked && getQuotaUsed() >= DAILY_QUOTA){ alert('Daily photo send limit reached (5). Try again tomorrow.'); return; }
+      addImageToChatAsUser(p);
+      p.sent = true; if(!premiumUnlocked) incrementQuota(); renderPhotos();
+    };
+    const removeBtn = document.createElement('button'); removeBtn.className='small'; removeBtn.textContent='Remove';
+    removeBtn.onclick = ()=>{ photos = photos.filter(x=>x.id !== p.id); renderPhotos(); };
+    actions.appendChild(sendBtn); actions.appendChild(removeBtn);
+    card.appendChild(actions);
+    photoGrid.appendChild(card);
+  });
+  updateQuotaUI();
+}
+function addImageToChatAsUser(photo){
+  const html = `<div style="font-size:13px;color:var(--muted);margin-bottom:6px">Image: ${escapeHtml(photo.name)}</div>
+                <a href="${photo.url}" download="${escapeHtml(photo.name)}"><img src="${photo.url}" style="max-width:320px;width:100%;border-radius:8px" alt="${escapeHtml(photo.name)}"></a>`;
+  addBubble('user', html);
+  session.push({role:'user', text:`[image:${photo.name}]`, img: photo.url});
+  updateSessionUI();
+}
 
-  // Send request
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+/* ---------- Model UI ---------- */
+function renderModels(){
+  modelSelect.innerHTML = '';
+  modelListEl.innerHTML = '';
+  for(const key of Object.keys(MODEL_CONFIG)){
+    const cfg = MODEL_CONFIG[key];
+    const opt = document.createElement('option'); opt.value = key; opt.textContent = cfg.label; if(cfg.premium && !premiumUnlocked) opt.disabled = true; modelSelect.appendChild(opt);
+
+    const row = document.createElement('div'); row.className='model'; if(key===currentModelKey) row.classList.add('selected');
+    row.innerHTML = `<div><strong>${escapeHtml(cfg.label)}</strong><div class="small">${cfg.premium ? 'Premium' : 'Standard'}</div></div><div class="small">${key===currentModelKey ? 'Selected' : 'Select'}</div>`;
+    row.onclick = () => {
+      if(cfg.premium && !premiumUnlocked){ alert('This is a premium model. Enter a premium code to unlock.'); return; }
+      currentModelKey = key; renderModels(); setThinkingText(`Model: ${cfg.label}`);
+    };
+    modelListEl.appendChild(row);
+  }
+  modelSelect.value = currentModelKey;
+}
+renderModels();
+
+/* ---------- OpenAI call with fallback ---------- */
+async function callOpenAI(promptText, modelKey, options = {}){
+  const key = getOpenAIKey();
+  if(!key) throw new Error('No OpenAI key set. Click "Set Key" and paste your OpenAI API key for this session.');
+
+  const cfg = MODEL_CONFIG[modelKey] || MODEL_CONFIG['gomega-v7'];
+  const systemMsg = { role:'system', content: 'You are Gomega AI — concise assistant. Do not reveal your underlying model identifier.' };
+  const messages = [ systemMsg, { role:'user', content: promptText } ];
+
+  // Build request
+  let body = { model: cfg.openai, messages, temperature: options.temperature ?? 0.2, max_tokens: options.max_tokens ?? 800 };
+
+  // Try primary model, if 400 model error occurs retry with safe fallback
+  let res = await fetch('https://api.openai.com/v1/chat/completions', {
     method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
+    headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${key}` },
     body: JSON.stringify(body)
   });
 
   if(!res.ok){
     const txt = await res.text();
-    let msg = `OpenAI request failed (${res.status})`;
-    try {
-      const j = JSON.parse(txt); if(j.error && j.error.message) msg += ': ' + j.error.message;
-    } catch(e) { msg += ': ' + txt; }
-    throw new Error(msg);
+    // If the error suggests invalid model, try fallback to gpt-3.5-turbo
+    if(res.status === 400 && /model/i.test(txt)){
+      try{
+        console.warn('Primary model failed, retrying with fallback gpt-3.5-turbo');
+        body.model = 'gpt-3.5-turbo';
+        res = await fetch('https://api.openai.com/v1/chat/completions', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${key}` },
+          body: JSON.stringify(body)
+        });
+      }catch(e){}
+    }
   }
-  const j = await res.json();
-  // support both chat completion and older responses
-  const reply = j.choices && j.choices[0] && (j.choices[0].message?.content || j.choices[0].text) ? (j.choices[0].message?.content || j.choices[0].text) : (j?.output?.[0]?.content?.[0]?.text || 'No response');
+
+  if(!res.ok){
+    const text = await res.text();
+    let err = `OpenAI request failed (${res.status})`;
+    try{ const json = JSON.parse(text); if(json.error && json.error.message) err += `: ${json.error.message}`; else err += ': ' + text; } catch(e){ err += ': ' + text; }
+    throw new Error(err);
+  }
+
+  const data = await res.json();
+  const reply = data.choices && data.choices[0] && (data.choices[0].message?.content || data.choices[0].text) ? (data.choices[0].message?.content || data.choices[0].text) : 'No response';
   return reply;
 }
 
-/* ----------------------- Main send flow ----------------------- */
-async function handleSend(imageObj=null){
-  if(isTyping) return;
-  let userText = (promptEl.value || '').trim();
-  if(!userText && !imageObj) return;
-  // enforce non-premium message/day limit
-  if(!premium && getUsage('msg') >= NONPREMIUM_DAILY_MSG_LIMIT){
-    alert('Daily message limit reached for free users. Unlock premium for unlimited use.');
-    return;
-  }
+/* ---------- Helper override: who made you ---------- */
+function whoMadeYouOverride(text){
+  if(!text) return null;
+  if(/\bwho (made|created) you\b/i.test(text) || /\byou (made|created) by\b/i.test(text)) return 'I was made by ScriptNova. Follow @scriptnovaa on Instagram.';
+  return null;
+}
 
-  // Add user message bubble (text and/or image)
-  if(userText){
-    addMessageBubble('user', `<div>${escapeHtml(userText)}</div>`);
-    sessionMessages.push({role:'user', text:userText});
-    incUsage('msg', 1);
-  }
-  if(imageObj){
-    addMessageBubble('user', `<div style="font-size:13px;color:var(--muted);margin-bottom:6px">Image: ${escapeHtml(imageObj.name)}</div>
-      <a href="${imageObj.dataURL}" download="${escapeHtml(imageObj.name)}"><img src="${imageObj.dataURL}" style="max-width:320px;border-radius:8px;display:block"></a>`);
-    sessionMessages.push({role:'user', text:`[image:${imageObj.name}]`, image: imageObj.dataURL});
-    incUsage('photo', 1);
-  }
+/* ---------- Main ask flow ---------- */
+askBtn.addEventListener('click', onAsk);
+promptEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); onAsk(); }});
+clearBtn.addEventListener('click', ()=>{ messagesEl.innerHTML=''; session=[]; updateSessionUI(); });
 
+function looksLikeMath(q){
+  return /[0-9\+\-\*\/\^%()]/.test(q) || /\b(area|circumference|perimeter|volume|pythagor|triangle|circle|radius|simplify)\b/i.test(q);
+}
+
+async function onAsk(){
+  if(typingLocked) return;
+  const qRaw = (promptEl.value || '').trim();
+  if(!qRaw) return;
   promptEl.value = '';
-  renderPhotos(); updateUsageUI();
+  addBubble('user', escapeHtml(qRaw));
+  session.push({role:'user', text:qRaw});
+  updateSessionUI();
 
-  // try local quick answers first
-  const whoMade = overrideIfWhoMadeYou(userText);
-  if(whoMade){
-    // immediate response (no API)
-    isTyping = true; setTyping(true);
-    const aiBubble = addMessageBubble('ai','<div></div>');
-    await typeIntoBubble(aiBubble, whoMade, 36);
-    sessionMessages.push({role:'assistant', text:whoMade});
-    isTyping=false; setTyping(false);
-    updateUsageUI();
-    return;
-  }
+  setTypingLocked(true);
+  const aiNode = addBubble('ai', '<span class="small">Gomega is thinking…</span>');
+  setThinkingText('Deciding strategy...');
+  setProgress(6);
 
-  // local math check
-  if(looksLikeMath(userText)){
-    const geom = geometryQuery(userText);
-    if(geom){
-      isTyping = true; setTyping(true);
-      const aiBubble = addMessageBubble('ai','<div></div>');
-      await typeIntoBubble(aiBubble, geom.answer + (geom.note ? `\n\n(${geom.note})` : ''), 36);
-      sessionMessages.push({role:'assistant', text:geom.answer});
-      isTyping=false; setTyping(false);
-      updateUsageUI();
-      return;
-    }
-    const numeric = evaluateNumeric(userText);
-    if(numeric !== null && (selectedModelKey === 'math' || userText.split(/\s+/).length < 10)){
-      isTyping = true; setTyping(true);
-      const aiBubble = addMessageBubble('ai','<div></div>');
-      await typeIntoBubble(aiBubble, String(numeric), 36);
-      sessionMessages.push({role:'assistant', text:String(numeric)});
-      isTyping=false; setTyping(false);
-      updateUsageUI();
-      return;
-    }
-  }
-
-  // Otherwise call OpenAI
-  isTyping = true; setTyping(true);
-  const aiBubble = addMessageBubble('ai','<div></div>');
   try{
-    const reply = await callOpenAI(userText || (imageObj ? `[image:${imageObj.name}]` : ''), {temperature:0.12, max_tokens:700});
-    const final = (typeof reply === 'string') ? reply : JSON.stringify(reply);
-    await typeIntoBubble(aiBubble, final, modelProfiles[selectedModelKey].speed || 60);
-    sessionMessages.push({role:'assistant', text:final});
-  } catch(e){
-    const errText = '⚠️ Error: ' + (e.message || 'Failed to fetch');
-    await typeIntoBubble(aiBubble, errText, 50);
-    sessionMessages.push({role:'assistant', text:errText});
-  } finally {
-    isTyping = false; setTyping(false);
-    updateUsageUI();
-  }
-}
-
-/* ----------------------- Typing UI toggle ----------------------- */
-function setTyping(v){
-  if(v){
-    typingIndicator.style.display = 'inline-flex';
-    promptEl.disabled = true;
-    sendBtn.disabled = true;
-    attachBtn.disabled = true;
-  } else {
-    typingIndicator.style.display = 'none';
-    promptEl.disabled = false;
-    sendBtn.disabled = false;
-    attachBtn.disabled = false;
-    promptEl.focus();
-  }
-}
-
-/* ----------------------- Events ----------------------- */
-sendBtn.addEventListener('click', ()=> handleSend());
-promptEl.addEventListener('keydown', (e)=>{
-  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); handleSend(); }
-});
-
-/* Attach file input direct send (images) */
-fileInput.addEventListener('change', (ev)=>{
-  const f = ev.target.files && ev.target.files[0];
-  if(!f) return;
-  if(!/^image\//.test(f.type)){ alert('Only images allowed'); return; }
-  if(!premium && getUsage('photo') >= NONPREMIUM_DAILY_PHOTO_LIMIT){ alert('Daily photo send limit reached for free users.'); fileInput.value=''; return; }
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const id = 'img' + Date.now();
-    const obj = {id, name: f.name, dataURL: e.target.result, sent:false};
-    // add to localPhotos and auto-send
-    localPhotos.push(obj);
-    renderPhotos();
-    // auto-send the image into chat
-    handleSend(obj);
-  };
-  reader.readAsDataURL(f);
-});
-
-/* photo-sending button in sidebar triggers file select */
-addPhotoBtn.addEventListener('click', ()=> fileInput.click());
-
-/* Enter premium code button */
-$('enterCode').addEventListener('click', ()=> enterCodeBtn.click());
-
-/* Load initial */
-async function init(){
-  // try load api & premium codes silently
-  await tryLoadApiKeyFile();
-  await tryLoadPremiumCodes(); // populates premiumCodes array if available
-
-  // If premiumCodes contains codes, prompt user silently? no - we keep silent; they can enter code in UI
-  // For convenience, set premium=true if localStorage has a flag
-  premium = !!sessionStorage.getItem('gomega_premium_active');
-
-  renderModels();
-  updateUsageUI();
-  // initial message
-  addMessageBubble('ai', '<div style="font-weight:700">Hello — I am Gomega AI.</div><div class="small" style="margin-top:6px">I can do algebra, geometry, quick lookups, and accept images (BETA). Paste an API key into /browser/api.txt on the site, or paste one when prompted.</div>');
-  // update clock
-  setInterval(()=>{ localTimeEl.textContent = new Date().toLocaleString(); }, 1000);
-
-  // wire enterCode and premium state toggle: when user enters valid code, set premium for session
-  enterCodeBtn.addEventListener('click', async ()=>{
-    const code = prompt('Enter premium code:');
-    if(!code) return;
-    if(premiumCodes && premiumCodes.length && premiumCodes.includes(code.trim())){
-      premium = true; sessionStorage.setItem('gomega_premium_active','1'); alert('Premium unlocked for this session.');
-      renderModels(); updateUsageUI();
-      return;
+    // quick override
+    const who = whoMadeYouOverride(qRaw);
+    if(who){
+      await typeTextInto(aiNode, who, 48);
+      session.push({role:'ai', text:who});
+      lastFetchEl.textContent = new Date().toLocaleString(); setProgress(100); setThinkingText('Idle');
+      setTimeout(()=>{ setProgress(0); setTypingLocked(false); },700); return;
     }
-    if(code.trim() === 'PREMIUM'){ premium = true; sessionStorage.setItem('gomega_premium_active','1'); alert('Premium unlocked (test code).'); renderModels(); updateUsageUI(); return; }
-    alert('Code invalid or premium list not available.');
-  });
 
-  // clear session handler
-  clearSessionBtn.addEventListener('click', ()=> {
-    if(confirm('Clear chat?')) { clearMessages(); localStorage.removeItem(usageKey('msg')); localStorage.removeItem(usageKey('photo')); updateUsageUI(); }
-  });
+    // 1) algebra simplification
+    const needSimplify = /\bsimplify\b/i.test(qRaw) || /[a-zA-Z]/.test(qRaw) && /[+\-*/^()]/.test(qRaw);
+    if(needSimplify){
+      setThinkingText('Simplifying algebra locally...');
+      setProgress(26);
+      const simplified = simplifyAlgebra(qRaw) || simplifyAlgebra(qRaw.replace(/simplify/i,'').trim());
+      if(simplified){
+        await typeTextInto(aiNode, simplified, MODEL_CONFIG[currentModelKey].speed * 1.4);
+        session.push({role:'ai', text:simplified});
+        confidenceEl.textContent = '99%';
+        lastFetchEl.textContent = new Date().toLocaleString();
+        setProgress(100); setThinkingText('Idle');
+        setTimeout(()=>{ setProgress(0); setTypingLocked(false); },700); return;
+      }
+    }
+
+    // 2) geometry/numeric local
+    const geom = geometryQuery(qRaw);
+    if(geom && (currentModelKey==='mathmaster' || looksLikeMath(qRaw))){
+      setThinkingText('Computing geometry locally...');
+      setProgress(30);
+      await typeTextInto(aiNode, String(geom.answer), MODEL_CONFIG[currentModelKey].speed * 1.4);
+      const meta = document.createElement('div'); meta.className='explain'; meta.textContent = `Reason: ${geom.explain}`; aiNode.appendChild(meta);
+      session.push({role:'ai', text:String(geom.answer)});
+      confidenceEl.textContent = '99%'; lastFetchEl.textContent = new Date().toLocaleString();
+      setProgress(100); setThinkingText('Idle'); setTimeout(()=>{ setProgress(0); setTypingLocked(false); },700); return;
+    }
+    const numeric = evaluateNumeric(qRaw);
+    if(numeric !== null && currentModelKey === 'mathmaster'){
+      setThinkingText('Evaluating expression...');
+      setProgress(30);
+      await typeTextInto(aiNode, String(numeric), MODEL_CONFIG[currentModelKey].speed * 1.4);
+      session.push({role:'ai', text:String(numeric)});
+      confidenceEl.textContent = '99%'; lastFetchEl.textContent = new Date().toLocaleString();
+      setProgress(100); setThinkingText('Idle'); setTimeout(()=>{ setProgress(0); setTypingLocked(false); },700); return;
+    }
+
+    // 3) OpenAI call
+    const key = getOpenAIKey();
+    if(key){
+      setThinkingText('Calling OpenAI...');
+      setProgress(18);
+      const selectedModelKey = modelSelect.value || currentModelKey;
+      const cfg = MODEL_CONFIG[selectedModelKey];
+      if(cfg.premium && !premiumUnlocked) throw new Error('This model is premium. Enter a premium code to unlock.');
+
+      try{
+        const reply = await callOpenAI(qRaw, selectedModelKey, { temperature: 0.12, max_tokens: 700 });
+        setProgress(70);
+        await typeTextInto(aiNode, reply, cfg.speed * 1.4);
+        session.push({role:'ai', text: reply});
+        updateSessionUI();
+        confidenceEl.textContent = '—'; lastFetchEl.textContent = new Date().toLocaleString();
+        setProgress(100); setThinkingText('Idle'); setTimeout(()=>{ setProgress(0); setTypingLocked(false); },800);
+        return;
+      } catch(openErr){
+        console.warn('OpenAI failed:', openErr);
+        // continue to fallback to client-side lookup
+      }
+    }
+
+    // 4) fallback: multi-source gather
+    setThinkingText('Searching multiple sources (client-side)...');
+    setProgress(14);
+    const aggressive = thinkingToggle.checked || currentModelKey === 'gomega-v6' || currentModelKey === 'gomega-v8';
+    const snippets = await gatherSnippets(qRaw, 10, aggressive, (msg)=>{ lastAction.textContent = msg; const cur = parseInt(progressBar.style.width) || 10; setProgress(Math.min(90, cur + 8)); });
+
+    if(!snippets || snippets.length===0){
+      await typeTextInto(aiNode, "I couldn't find an answer — I tried looking it up.", MODEL_CONFIG[currentModelKey].speed * 1.8);
+      session.push({role:'ai', text:"I couldn't find an answer — I tried looking it up."});
+      updateSessionUI(); confidenceEl.textContent='10%'; setTypingLocked(false); setThinkingText('Idle'); setProgress(0); return;
+    }
+
+    setProgress(86);
+    const strict = strictToggle.checked;
+    const picked = pickBest(snippets, qRaw, currentModelKey, strict);
+    const verification = evaluateNumeric(qRaw);
+    let finalAnswer = picked.answer;
+    if(verification !== null && !/\bonly the number\b/i.test(qRaw)) finalAnswer += `\n\n(Computed: ${verification})`;
+    const sentImgs = photos.filter(p=>p.sent).length;
+    if(sentImgs>0) finalAnswer += `\n\n(You provided ${sentImgs} image(s) in this session.)`;
+
+    const speed = Math.max(10, Math.round(MODEL_CONFIG[currentModelKey].speed * 1.6));
+    await typeTextInto(aiNode, finalAnswer, speed);
+    const meta = document.createElement('div'); meta.className='explain'; meta.textContent = `Confidence: ${picked.confidence}%`; aiNode.appendChild(meta);
+    session.push({role:'ai', text: finalAnswer}); updateSessionUI();
+    lastFetchEl.textContent = new Date().toLocaleString(); confidenceEl.textContent = picked.confidence + '%';
+    setProgress(100); setThinkingText('Idle'); setTimeout(()=>{ setProgress(0); setTypingLocked(false); }, 800);
+
+  }catch(err){
+    console.error(err);
+    aiNode.innerHTML = '⚠️ Error: ' + escapeHtml(err.message || 'failed to compute');
+    session.push({role:'ai', text:'Error: ' + (err.message||'failed')});
+    updateSessionUI();
+    setTypingLocked(false); setThinkingText('Idle'); setProgress(0);
+  }
 }
 
-// helper escape HTML
-function escapeHtml(s){
-  return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* ---------- Initialization ---------- */
+async function init(){
+  await tryLoadApiTxt();
+  await loadPremiumCodes();
+  // check session store for premium
+  premiumUnlocked = !!sessionStorage.getItem('gomega_premium');
+  // UI seed
+  renderModels();
+  updateQuotaUI();
+  addBubble('ai', '<strong>Hello — I am Gomega AI.</strong><div class="small" style="margin-top:6px">Try: "Simplify 4a-2(5a-7)" or "Area of circle radius 5" or "What year was Nokia released in North America?"</div>');
+  updateSessionUI();
+  tickLocalTime();
 }
-
-/* Start */
 init();
 
+function tickLocalTime(){ document.getElementById('localTime').textContent = new Date().toLocaleString(); setTimeout(tickLocalTime,1000); }
+
+/* ---------- Photo send on file selection (auto add) ---------- */
+photoInput.addEventListener('change', (e)=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  if(!/^image\//.test(f.type)) { alert('Only image files allowed'); return; }
+  if(!premiumUnlocked && getQuotaUsed() >= DAILY_QUOTA){ alert('Daily photo send limit reached (5).'); return; }
+  const r = new FileReader();
+  r.onload = (ev) => {
+    const id = 'p' + Date.now();
+    photos.push({id, name: f.name, url: ev.target.result, sent:false});
+    renderPhotos();
+  };
+  r.readAsDataURL(f);
+});
+
+/* ---------- Session clear ---------- */
+clearSessionBtn.addEventListener('click', ()=>{ if(confirm('Clear session memory and photos?')){ session=[]; photos=[]; messagesEl.innerHTML=''; renderPhotos(); updateSessionUI(); localStorage.removeItem(quotaKeyForToday()); updateQuotaUI(); } });
+
+/* ---------- Utility: quota key ---------- */
+function quotaKeyForToday(){ const d=new Date(); const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `gomega_photo_quota_${y}${m}${day}`; }
+
+/* ---------- initial render of photos & UI ---------- */
+renderPhotos();
+updateQuotaUI();
+
+/* ---------- End of script ---------- */
 </script>
 </body>
 </html>
