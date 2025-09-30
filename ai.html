@@ -1,209 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gomega AI</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      color: #333;
-    }
-    .chat-container {
-      width: 95%;
-      max-width: 900px;
-      height: 90vh;
-      background: #fff;
-      border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .chat-header {
-      background: #007bff;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      font-size: 1.5em;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .selectors {
-      display: flex;
-      gap: 10px;
-    }
-    select {
-      padding: 5px;
-      border-radius: 6px;
-      border: none;
-      font-size: 0.9em;
-    }
-    .chat-messages {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .message {
-      max-width: 70%;
-      padding: 12px 15px;
-      border-radius: 12px;
-      animation: fadeIn 0.3s ease-in-out;
-      line-height: 1.4;
-      word-wrap: break-word;
-    }
-    .user-message {
-      background: #007bff;
-      color: white;
-      align-self: flex-end;
-    }
-    .ai-message {
-      background: #e5e5ea;
-      align-self: flex-start;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .chat-input {
-      display: flex;
-      padding: 15px;
-      background: #f1f1f1;
-    }
-    .chat-input input {
-      flex: 1;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 1em;
-    }
-    .chat-input button {
-      margin-left: 10px;
-      padding: 12px 18px;
-      border: none;
-      border-radius: 8px;
-      background: #007bff;
-      color: white;
-      cursor: pointer;
-      font-size: 1em;
-      transition: background 0.2s;
-    }
-    .chat-input button:hover {
-      background: #0056b3;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gomega AI</title>
+<style>
+  body {
+    margin:0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#0f172a,#1e293b);
+    color:#f1f5f9;
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+  }
+  header {
+    background:#0ea5e9;
+    padding:12px 18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-weight:bold;
+    font-size:18px;
+  }
+  #chat {
+    flex:1;
+    overflow-y:auto;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .bubble {
+    max-width:75%;
+    padding:10px 14px;
+    border-radius:12px;
+    line-height:1.4;
+    animation:fadeIn .25s ease;
+  }
+  .bubble.user {
+    background:#0ea5e9;
+    align-self:flex-end;
+    color:#fff;
+    border-bottom-right-radius:4px;
+  }
+  .bubble.ai {
+    background:#334155;
+    align-self:flex-start;
+    color:#e2e8f0;
+    border-bottom-left-radius:4px;
+    white-space:pre-wrap;
+  }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:none} }
+
+  #typing {
+    font-style:italic;
+    color:#94a3b8;
+    padding:0 14px;
+    display:none;
+  }
+
+  footer {
+    padding:12px;
+    display:flex;
+    gap:8px;
+    background:#1e293b;
+  }
+  #prompt {
+    flex:1;
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    outline:none;
+    font-size:14px;
+  }
+  button {
+    padding:10px 16px;
+    border:none;
+    border-radius:8px;
+    font-weight:bold;
+    cursor:pointer;
+  }
+  button.send { background:#0ea5e9; color:white; }
+  button.upload { background:#475569; color:white; }
+
+  .photo {
+    max-width:200px;
+    border-radius:8px;
+    margin-top:6px;
+  }
+
+  aside {
+    background:#0f172a;
+    padding:12px;
+    border-top:1px solid #334155;
+    font-size:14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .model {
+    margin:4px 0;
+    cursor:pointer;
+  }
+</style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="chat-header">
-      <span>Gomega AI</span>
-      <div class="selectors">
-        <select id="modelSelect">
-          <option value="gomega-v5-mini">Gomega V5-mini</option>
-          <option value="gomega-v5">Gomega V5.0</option>
-          <option value="gomega-v7-beta">Gomega V7-beta</option>
-          <option value="gomega-v7-logic">Gomega V7-Logic</option>
-        </select>
-        <select id="userType">
-          <option value="free">Free</option>
-          <option value="premium">Premium</option>
-        </select>
-      </div>
-    </div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input">
-      <input type="text" id="userInput" placeholder="Type your message..." />
-      <button onclick="sendMessage()">Send</button>
-    </div>
+<header>Gomega AI <span id="status">Free</span></header>
+
+<div class="container" style="flex:1; display:flex; flex-direction:row;">
+  <div id="chat"></div>
+</div>
+
+<div id="typing">Gomega AI is typing…</div>
+
+<footer>
+  <input id="prompt" placeholder="Ask me anything..." />
+  <button class="send" onclick="sendMessage()">Send</button>
+  <button class="upload" onclick="uploadPhoto()">📷</button>
+  <input type="file" id="photoInput" accept="image/*" style="display:none" />
+</footer>
+
+<aside>
+  <div>
+    <div class="model" onclick="setModel('v5')">Gomega V5.0</div>
+    <div class="model" onclick="setModel('mini')">Gomega 5mini</div>
+    <div class="model" onclick="setModel('v7')">Gomega V7</div>
+    <div class="model" onclick="setModel('premium')">Gomega Premium</div>
   </div>
+  <div>Messages: <span id="msgCount">0</span></div>
+</aside>
 
-  <script>
-    const chatMessages = document.getElementById("chatMessages");
-    const userInput = document.getElementById("userInput");
-    const modelSelect = document.getElementById("modelSelect");
-    const userType = document.getElementById("userType");
-    let isTyping = false;
+<script>
+/* ==== CONFIG ==== */
+const API_KEY = "PASTE-YOUR-OPENAI-KEY-HERE"; // <-- put your key here
+const API_URL = "https://api.openai.com/v1/chat/completions";
 
-    function addMessage(sender, text) {
-      const msg = document.createElement("div");
-      msg.classList.add("message", sender === "user" ? "user-message" : "ai-message");
-      msg.textContent = text;
-      chatMessages.appendChild(msg);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      return msg;
-    }
+/* ==== STATE ==== */
+let currentModel = "v5";
+let isTyping = false;
+let msgCount = 0;
+let photoCount = 0;
+let premium = false;
 
-    async function typeMessage(text, delay) {
-      const msg = document.createElement("div");
-      msg.classList.add("message", "ai-message");
-      chatMessages.appendChild(msg);
+/* ==== UI ==== */
+function addMessage(text, sender="ai", isPhoto=false) {
+  const chat = document.getElementById("chat");
+  const bubble = document.createElement("div");
+  bubble.className = "bubble " + sender;
+  if(isPhoto){
+    const img = document.createElement("img");
+    img.src = text;
+    img.className = "photo";
+    bubble.appendChild(img);
+  } else {
+    bubble.textContent = text;
+  }
+  chat.appendChild(bubble);
+  chat.scrollTop = chat.scrollHeight;
+}
+function setModel(m) {
+  if(m==="premium"){ premium=true; document.getElementById("status").textContent="Premium"; }
+  else { premium=false; document.getElementById("status").textContent="Free"; }
+  currentModel=m;
+}
 
-      for (let i = 0; i < text.length; i++) {
-        msg.textContent += text[i];
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        await new Promise(r => setTimeout(r, delay));
-      }
-    }
+/* ==== AI ==== */
+async function sendMessage() {
+  const input = document.getElementById("prompt");
+  const text = input.value.trim();
+  if(!text || isTyping) return;
 
-    async function sendMessage() {
-      if (isTyping) return;
+  // free limits
+  if(!premium && msgCount>=20){ addMessage("⚠️ Free users limited to 20 messages/day.","ai"); return; }
 
-      const text = userInput.value.trim();
-      if (!text) return;
+  addMessage(text,"user");
+  input.value="";
+  msgCount++;
+  document.getElementById("msgCount").textContent=msgCount;
 
-      addMessage("user", text);
-      userInput.value = "";
-      isTyping = true;
-      userInput.disabled = true;
+  isTyping=true;
+  document.getElementById("typing").style.display="block";
 
-      const thinkingMsg = addMessage("ai", "Thinking...");
-
-      try {
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: modelSelect.value,
-            userType: userType.value,
-            message: text
-          })
-        });
-
-        const data = await response.json();
-        if (thinkingMsg) thinkingMsg.remove();
-
-        let reply = data.reply || "⚠️ No response.";
-
-        if (/who made you/i.test(text)) {
-          reply = "I was made by ScriptNova. Follow @scriptnovaa on Instagram.";
-        }
-
-        await typeMessage(reply, userType.value === "premium" ? 20 : 40);
-      } catch (err) {
-        if (thinkingMsg) thinkingMsg.remove();
-        await typeMessage("⚠️ Error: Could not reach server.", 40);
-      } finally {
-        isTyping = false;
-        userInput.disabled = false;
-        userInput.focus();
-      }
-    }
-
-    userInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") sendMessage();
+  try {
+    const res = await fetch(API_URL,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":`Bearer ${API_KEY}`
+      },
+      body:JSON.stringify({
+        model:"gpt-4o-mini", // keep consistent
+        messages:[{role:"system",content:`You are Gomega AI, built by ScriptNova. If asked who made you: say "I was made by ScriptNova. Follow scriptnovaa on Instagram."`},{role:"user",content:text}],
+        temperature: currentModel==="mini"?0.3:0.7
+      })
     });
-  </script>
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || "❌ Error: No response.";
+    await typeOut(reply);
+  } catch(err){
+    addMessage("❌ Error: "+err.message,"ai");
+  }
+
+  isTyping=false;
+  document.getElementById("typing").style.display="none";
+}
+
+async function typeOut(text){
+  const chat = document.getElementById("chat");
+  const bubble = document.createElement("div");
+  bubble.className="bubble ai";
+  chat.appendChild(bubble);
+  chat.scrollTop=chat.scrollHeight;
+
+  const delay = premium?15:35;
+  for(let i=0;i<text.length;i++){
+    bubble.textContent+=text[i];
+    await new Promise(r=>setTimeout(r,delay));
+    chat.scrollTop=chat.scrollHeight;
+  }
+}
+
+/* ==== PHOTO ==== */
+function uploadPhoto(){
+  if(isTyping) return;
+  if(!premium && photoCount>=5){ addMessage("⚠️ Free users limited to 5 photos/day.","ai"); return; }
+  document.getElementById("photoInput").click();
+}
+document.getElementById("photoInput").addEventListener("change",e=>{
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    addMessage(reader.result,"user",true);
+    photoCount++;
+  };
+  reader.readAsDataURL(file);
+});
+
+/* ==== ENTER KEY ==== */
+document.getElementById("prompt").addEventListener("keydown",e=>{
+  if(e.key==="Enter") sendMessage();
+});
+</script>
 </body>
 </html>
