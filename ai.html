@@ -1,726 +1,212 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Gomega AI — ai.html</title>
-<style>
-  :root{
-    --bg1:#071021; --bg2:#0b1220; --accent:#34d3ff; --accent2:#7c3aed; --muted:#94a3b8;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
-    background: radial-gradient(900px 400px at 10% 10%, rgba(56,189,248,0.03), transparent),
-                linear-gradient(180deg,var(--bg1),var(--bg2));
-    color:#e6eef6; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:18px;
-  }
-  .topbar{ width:100%; max-width:1150px; display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
-  .brand{ display:flex; gap:12px; align-items:center; }
-  .logo{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; transform:rotate(-8deg) }
-  .logo b{ color:#062; font-size:20px }
-  h1{ margin:0; font-size:20px; color:#e6fbff; }
-  .meta{ color:var(--muted); font-size:13px }
-
-  .container{ width:100%; max-width:1150px; display:grid; grid-template-columns: 1fr 380px; gap:18px; align-items:start; }
-  .chat-area{ background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); padding:18px; border-radius:14px; min-height:640px; max-height:80vh; overflow:auto; border:1px solid rgba(255,255,255,0.02); display:flex; flex-direction:column; }
-  .messages{ display:flex; flex-direction:column; gap:12px; padding-right:6px; flex:1; overflow:auto; }
-
-  .bubble{ max-width:82%; padding:12px 14px; border-radius:12px; line-height:1.45; position:relative; animation: slideUp .28s ease; word-break:break-word; }
-  .bubble.user{ background: linear-gradient(90deg,#0b6b4c,#064e3b); color:#d7fff0; align-self:flex-end; border-bottom-right-radius:6px; }
-  .bubble.ai{ background: linear-gradient(90deg,#0b1020,#151827); color:#e6eef6; align-self:flex-start; border-bottom-left-radius:6px; }
-  @keyframes slideUp { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
-
-  .controls{ display:flex; gap:10px; align-items:center; margin-top:10px; }
-  input.prompt{ flex:1; padding:12px; border-radius:10px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.03); outline:none; font-size:15px }
-  select{ padding:10px; border-radius:8px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.03) }
-  button.primary{ padding:12px 18px; border-radius:10px; border:none; background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#062; cursor:pointer; font-weight:700 }
-  button.ghost{ padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.03); background:transparent; color:var(--muted); cursor:pointer }
-  .small{ font-size:13px; color:var(--muted) }
-
-  .sidebar{ padding:18px; border-radius:14px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); border:1px solid rgba(255,255,255,0.02); min-height:640px; display:flex; flex-direction:column; gap:12px; }
-  .card{ padding:12px; border-radius:10px; background:transparent; border:1px solid rgba(255,255,255,0.02) }
-
-  .models{ display:flex; flex-direction:column; gap:8px; }
-  .modelRow{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); }
-  .modelRow.selected{ background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#022; }
-
-  .progress{ height:8px; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; width:100% }
-  .bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 180ms linear }
-
-  .photoGrid{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px }
-  .photoCard{ width:86px; height:66px; border-radius:6px; overflow:hidden; background:#000; display:flex; align-items:center; justify-content:center; position:relative }
-  .photoCard img{ width:100%; height:100%; object-fit:cover }
-  .photoActions{ position:absolute; bottom:6px; left:6px; right:6px; display:flex; gap:6px; justify-content:center }
-
-  .explain{ margin-top:8px; font-size:13px; color:var(--muted); border-top:1px dashed rgba(255,255,255,0.03); padding-top:8px }
-
-  .typingDots{ display:inline-flex; gap:6px; align-items:center; }
-  .dot{ width:8px; height:8px; border-radius:50%; background:#9fb0c8; animation: bounce 1s infinite; }
-  .dot:nth-child(2){ animation-delay:0.08s } .dot:nth-child(3){ animation-delay:0.16s }
-  @keyframes bounce{ 0%{ transform:translateY(0); opacity:0.6 } 50%{ transform:translateY(-6px); opacity:1 } 100%{ transform:translateY(0); opacity:0.6 } }
-
-  .warning{ color:#ffd6d6; background:rgba(255,0,0,0.06); border-radius:8px; padding:8px; font-size:13px; }
-
-  @media (max-width:980px){ .container{ grid-template-columns:1fr } .sidebar{ order:2 } .chat-area{ order:1 } }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gomega AI</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: linear-gradient(135deg, #141e30, #243b55);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #fff;
+    }
+    .chat-container {
+      width: 95%;
+      max-width: 900px;
+      height: 90vh;
+      background: rgba(0,0,0,0.7);
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    }
+    .chat-header {
+      padding: 15px;
+      text-align: center;
+      font-size: 1.5em;
+      font-weight: bold;
+      background: #0f2027;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .message {
+      max-width: 75%;
+      padding: 12px 15px;
+      border-radius: 12px;
+      animation: fadeIn 0.3s ease-in-out;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+    .user-message {
+      background: #007bff;
+      align-self: flex-end;
+    }
+    .ai-message {
+      background: #2a2a72;
+      align-self: flex-start;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .chat-input {
+      display: flex;
+      padding: 15px;
+      background: #0f2027;
+    }
+    .chat-input input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+    }
+    .chat-input button {
+      margin-left: 10px;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background 0.2s;
+    }
+    .chat-input button:hover {
+      background: #0056b3;
+    }
+    .model-select, .user-type {
+      background: #1f4068;
+      border: none;
+      color: white;
+      font-size: 0.9em;
+      padding: 5px 10px;
+      border-radius: 6px;
+      margin-left: 10px;
+    }
+  </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="brand">
-      <div class="logo"><b>G</b></div>
+  <div class="chat-container">
+    <div class="chat-header">
+      Gomega AI
       <div>
-        <h1>Gomega AI</h1>
-        <div class="meta">Client UI — tries browser/api.txt / injected key / session prompt</div>
+        <select id="modelSelect" class="model-select">
+          <option value="gomega-v5-mini">Gomega V5-mini</option>
+          <option value="gomega-v5">Gomega V5.0</option>
+          <option value="gomega-v7-beta">Gomega V7-beta</option>
+          <option value="gomega-v7-logic">Gomega V7-Logic</option>
+        </select>
+        <select id="userType" class="user-type">
+          <option value="free">Free</option>
+          <option value="premium">Premium</option>
+        </select>
       </div>
     </div>
-    <div style="text-align:right">
-      <div class="meta">Local: <span id="localTime">—</span></div>
-      <div class="meta">Last: <span id="lastFetch">—</span></div>
-    </div>
-  </div>
-
-  <div class="container" role="main">
-    <div class="chat-area">
-      <div id="warningBox" class="warning">Important: Pasting your OpenAI key into this page stores it in your browser sessionStorage and exposes it to anyone with access to your browser or developer tools. For production, run a server-side proxy — ask me and I’ll provide one.</div>
-
-      <div class="messages" id="messages" aria-live="polite"></div>
-
-      <div class="controls" style="margin-top:12px">
-        <input id="prompt" class="prompt" placeholder="Ask / simplify (e.g. 'Simplify 4a-2(5a-7)' or 'What year was Nokia released in North America?')"/>
-        <select id="modelSelect" title="Choose model"></select>
-        <button id="askBtn" class="primary">Ask</button>
-        <button id="setKeyBtn" class="ghost">Set Key</button>
-      </div>
-
-      <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-        <label class="small">Thinking</label><input type="checkbox" id="thinkingToggle"/>
-        <label class="small" style="margin-left:8px">Strict</label><input type="checkbox" id="strictToggle"/>
-        <button id="clearBtn" class="ghost" style="margin-left:auto">Clear UI</button>
-      </div>
-    </div>
-
-    <div class="sidebar">
-      <div class="card">
-        <strong>Models</strong>
-        <div class="models" id="modelList"></div>
-        <div class="small" style="margin-top:8px">Premium models marked — unlock via <code>/browser/premiumcodes.txt</code> or a manual premium code.</div>
-      </div>
-
-      <div class="card">
-        <strong>Thinking & progress</strong>
-        <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
-          <div class="small">Status:</div><div id="thinkingBadge" class="small">Idle</div>
-        </div>
-        <div style="margin-top:8px" class="progress"><div id="progressBar" class="bar"></div></div>
-        <div style="margin-top:8px" class="small">Confidence: <span id="confidence">—</span></div>
-        <div class="explain" id="lastAction">No action yet.</div>
-      </div>
-
-      <div class="card">
-        <strong>Photos (BETA)</strong>
-        <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-          <input type="file" id="photoInput" accept="image/*">
-          <button id="addPhotoBtn" class="ghost">Add</button>
-        </div>
-        <div class="small" style="margin-top:8px">Daily sends left: <span id="photoQuota">5</span>/5</div>
-        <div class="photoGrid" id="photoGrid"></div>
-        <div class="small" style="margin-top:8px">Photos stored locally. Free: 5/day. Premium: unlimited.</div>
-      </div>
-
-      <div class="card">
-        <strong>Premium</strong>
-        <div class="small" style="margin-top:8px">Enter a premium code or host a file at <code>/browser/premiumcodes.txt</code> (UI doesn't reveal file contents).</div>
-        <div style="margin-top:8px">
-          <input id="premiumCodeInput" placeholder="Enter premium code" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button id="applyCodeBtn" class="ghost">Apply</button>
-            <button id="clearSession" class="ghost">Clear Memory</button>
-          </div>
-        </div>
-      </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input">
+      <input type="text" id="userInput" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
     </div>
   </div>
 
-<script>
-/*
-  Gomega AI — single-file ai.html
-  Key resolution order:
-    1) window.OpenAPI (build-time injection)
-    2) /browser/api.txt (fetched once)
-    3) sessionStorage (user-pasted key)
-    4) if none -> prompt user to paste key
-  API call: Uses OpenAI Responses endpoint (/v1/responses) when available; falls back to gpt-3.5-turbo chat if needed.
-*/
+  <script>
+    const chatMessages = document.getElementById("chatMessages");
+    const userInput = document.getElementById("userInput");
+    const modelSelect = document.getElementById("modelSelect");
+    const userType = document.getElementById("userType");
+    let isTyping = false;
 
-const UI = {
-  messages: document.getElementById('messages'),
-  prompt: document.getElementById('prompt'),
-  askBtn: document.getElementById('askBtn'),
-  setKeyBtn: document.getElementById('setKeyBtn'),
-  modelSelect: document.getElementById('modelSelect'),
-  modelList: document.getElementById('modelList'),
-  thinkingToggle: document.getElementById('thinkingToggle'),
-  strictToggle: document.getElementById('strictToggle'),
-  thinkingBadge: document.getElementById('thinkingBadge'),
-  progressBar: document.getElementById('progressBar'),
-  lastAction: document.getElementById('lastAction'),
-  confidence: document.getElementById('confidence'),
-  lastFetch: document.getElementById('lastFetch'),
-  photoInput: document.getElementById('photoInput'),
-  addPhotoBtn: document.getElementById('addPhotoBtn'),
-  photoGrid: document.getElementById('photoGrid'),
-  photoQuota: document.getElementById('photoQuota'),
-  premiumInput: document.getElementById('premiumCodeInput'),
-  applyCodeBtn: document.getElementById('applyCodeBtn'),
-  clearSessionBtn: document.getElementById('clearSession'),
-  clearBtn: document.getElementById('clearBtn')
-};
+    async function sendMessage() {
+      if (isTyping) return;
 
-// State
-let sessionMsgs = [];
-let photos = []; // {id,name,url,sent}
-let typingLocked = false;
-let premiumUnlocked = !!sessionStorage.getItem('gomega_premium');
-let premiumCodes = [];
-const STORAGE_KEY = 'gomega_openai_key';
+      const text = userInput.value.trim();
+      if (!text) return;
 
-// Model configuration (user-facing names only)
-const MODELS = {
-  'v8': { label:'Gomega V8', premium:true, prefer:['gpt-5','gpt-5-nano','gpt-4o','gpt-3.5-turbo'], speed:70, verb:1.6 },
-  'v7': { label:'Gomega V7', premium:false, prefer:['gpt-5-nano','gpt-3.5-turbo'], speed:80, verb:1.0 },
-  'v7mini': { label:'Gomega V7-mini', premium:false, prefer:['gpt-5-nano','gpt-3.5-turbo'], speed:28, verb:0.5 },
-  'math': { label:'MathMaster', premium:false, prefer:['gpt-5-nano','gpt-3.5-turbo'], speed:36, verb:0.2 }
-};
-let currentModelKey = 'v7';
+      addMessage("user", text);
+      userInput.value = "";
+      disableInput();
+      isTyping = true;
 
-// Helpers
-function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function addBubble(role, html){
-  const el = document.createElement('div');
-  el.className = 'bubble ' + (role==='user'?'user':'ai');
-  el.innerHTML = html;
-  UI.messages.appendChild(el);
-  UI.messages.scrollTop = UI.messages.scrollHeight;
-  return el;
-}
-function setProgress(p){ UI.progressBar.style.width = Math.max(3, Math.min(100,p)) + '%'; }
-function setThinkingText(t){ UI.thinkingBadge.textContent = t; UI.lastAction.textContent = t; }
-function setTypingLocked(v){
-  typingLocked = v;
-  UI.prompt.disabled = v;
-  UI.askBtn.disabled = v;
-  UI.addPhotoBtn.disabled = v;
-  UI.photoInput.disabled = v;
-  if(v){ UI.prompt.classList.add('disabled'); UI.askBtn.classList.add('disabled'); } else { UI.prompt.classList.remove('disabled'); UI.askBtn.classList.remove('disabled'); }
-}
-async function typeTextInto(node, text, speed){
-  node.innerHTML = '';
-  for(let i=0;i<text.length;i++){
-    const ch = text[i];
-    node.innerHTML = escapeHtml(text.slice(0,i+1)).replace(/\n/g,'<br>');
-    UI.messages.scrollTop = UI.messages.scrollHeight;
-    const variability = 0.75 + Math.random()*0.6;
-    let delay = Math.max(6, Math.round(speed * variability));
-    if(/[,;]/.test(ch)) delay += 90;
-    if(/[.!?]/.test(ch)) delay += 220;
-    await new Promise(r=>setTimeout(r, delay));
-  }
-}
+      const thinkingMsg = addMessage("ai", "Thinking...");
 
-/* ---------------- Algebra / numeric / geometry engine (same robust engine) ---------------- */
-// Tokenizer, parser, simplify, evaluateNumeric, geometryQuery (copied & reliable)
-function tokenize(expr){
-  const s=String(expr); const tokens=[]; const isNum = c=>/[0-9.]/.test(c); const isAlpha = c=>/[a-zA-Z]/.test(c);
-  let i=0;
-  while(i<s.length){
-    const c=s[i];
-    if(/\s/.test(c)){ i++; continue; }
-    if(c==='+'||c==='-'||c==='*'||c==='/'||c==='^'||c==='('||c===')'){ tokens.push({type:c,val:c}); i++; continue; }
-    if(isNum(c)){ let j=i; while(j<s.length && /[0-9.]/.test(s[j])) j++; tokens.push({type:'num', val:s.slice(i,j)}); i=j; continue; }
-    if(isAlpha(c)){ let j=i; while(j<s.length && /[a-zA-Z0-9_]/.test(s[j])) j++; tokens.push({type:'id', val:s.slice(i,j)}); i=j; continue; }
-    i++;
-  }
-  const out=[];
-  for(let k=0;k<tokens.length;k++){
-    out.push(tokens[k]);
-    if(k+1<tokens.length){
-      const a=tokens[k], b=tokens[k+1];
-      const aok=(a.type==='num'||a.type==='id'||a.type===')');
-      const bok=(b.type==='id'||b.type==='num'||b.type==='(');
-      if(aok && bok) out.push({type:'*', val:'*'});
-    }
-  }
-  return out;
-}
-function makeTerm(coeff, vars){ return {coeff:coeff, vars:Object.assign({}, vars)}; }
-function termKey(vars){ const ks=Object.keys(vars).filter(k=>vars[k]!==0).sort(); if(ks.length===0) return ''; return ks.map(k=>`${k}^${vars[k]}`).join('*'); }
-function multiplyVars(a,b){ const res=Object.assign({}, a); for(const k in b) res[k]=(res[k]||0)+b[k]; for(const k in res) if(res[k]===0) delete res[k]; return res; }
-function parseExpression(tokens){
-  let pos=0;
-  function peek(){ return tokens[pos]||null; }
-  function consume(t){ const cur=tokens[pos]; if(!cur) return null; if(t && cur.type!==t) return null; pos++; return cur; }
-  function parsePrimary(){
-    const cur = peek(); if(!cur) return [{coeff:0, vars:{}}];
-    if(cur.type==='num'){ consume('num'); return [makeTerm(Number(cur.val),{})]; }
-    if(cur.type==='id'){ consume('id'); const v={}; v[cur.val]=1; return [makeTerm(1,v)]; }
-    if(cur.type==='('){ consume('('); const e=parseAddSub(); consume(')'); return e; }
-    consume(); return [{coeff:0, vars:{}}];
-  }
-  function parsePow(){
-    let base = parsePrimary();
-    while(peek() && peek().type==='^'){ consume('^'); const right = peek(); if(right && right.type==='num'){ const exp = Number(consume('num').val); let raised=[]; for(const t of base){ let seed=[makeTerm(1,{})]; for(let e=0;e<exp;e++) seed = multiplyTermLists(seed, [t]); for(const s of seed) raised.push(s); } base = raised; } else break; }
-    return base;
-  }
-  function parseMulDiv(){
-    let left = parsePow();
-    while(peek() && (peek().type==='*' || peek().type==='/')){ const op = consume().type; const right = parsePow(); if(op==='*') left = multiplyTermLists(left, right); else { if(right.length===1 && Object.keys(right[0].vars).length===0 && right[0].coeff!==0){ const d = right[0].coeff; left = left.map(t=>makeTerm(t.coeff/d, t.vars)); } } }
-    return left;
-  }
-  function parseAddSub(){
-    let left = parseMulDiv();
-    while(peek() && (peek().type==='+' || peek().type==='-')){ const op = consume().type; const right = parseMulDiv(); if(op==='+') left = addTermLists(left, right); else left = addTermLists(left, right.map(t=>makeTerm(-t.coeff, t.vars))); }
-    return left;
-  }
-  function multiplyTermLists(A,B){ const out=[]; for(const a of A) for(const b of B) out.push(makeTerm(a.coeff*b.coeff, multiplyVars(a.vars,b.vars))); return combineLikeTerms(out); }
-  function addTermLists(A,B){ return combineLikeTerms(A.concat(B)); }
-  const expr = parseAddSub(); return combineLikeTerms(expr);
-}
-function combineLikeTerms(terms){
-  const map = new Map();
-  for(const t of terms){ const v={}; for(const k in t.vars) if(t.vars[k]!==0) v[k]=t.vars[k]; const key = termKey(v); map.set(key, (map.get(key)||0) + (Number(t.coeff)||0)); }
-  const out=[];
-  for(const [k,coeff] of map.entries()){
-    if(Math.abs(coeff) < 1e-12) continue;
-    const vars={};
-    if(k){ k.split('*').forEach(p=>{ const [name,exp]=p.split('^'); vars[name]=Number(exp); }); }
-    out.push(makeTerm(coeff, vars));
-  }
-  out.sort((a,b)=>{ const av=Object.keys(a.vars).length, bv=Object.keys(b.vars).length; if(av!==bv) return bv-av; const ak=termKey(a.vars), bk=termKey(b.vars); return ak<bk?-1:(ak>bk?1:0); });
-  return out;
-}
-function termsToString(terms){
-  if(!terms || terms.length===0) return '0';
-  const parts=[];
-  for(const t of terms){
-    const coeff=t.coeff, vars=t.vars||{}; const varNames=Object.keys(vars).sort(); let varStr = varNames.map(v=> vars[v]===1? v : `${v}^${vars[v]}`).join('*');
-    const absCoeff=Math.abs(coeff);
-    if(varStr){
-      let coeffStr = '';
-      if(Math.abs(absCoeff-1) < 1e-12) coeffStr = (coeff<0)?'-':''; else coeffStr = (coeff<0?'-':'') + (absCoeff%1===0? String(absCoeff) : String(Number(absCoeff.toFixed(8))));
-      parts.push(coeffStr + varStr);
-    } else { const num = (coeff%1===0) ? String(coeff) : String(Number(coeff.toFixed(8))); parts.push(num); }
-  }
-  let out='';
-  for(const p of parts){ if(out==='') out = p; else { if(p[0]==='-') out += ' - ' + p.slice(1); else out += ' + ' + p; } }
-  return out.replace(/\*/g,'');
-}
-function simplifyAlgebra(expr){ try{ const t=tokenize(expr); if(t.length===0) return null; const terms = parseExpression(t); if(!terms || terms.length===0) return '0'; return termsToString(terms);}catch(e){return null;} }
-function evaluateNumeric(expr){ if(!expr || expr.length>500) return null; const allowed = expr.replace(/[^0-9+\-*/().,^\s%]/g,' '); const sanitized = allowed.replace(/\^/g,'**').replace(/%/g,'*0.01'); try{ const fn = Function(`"use strict"; return (${sanitized})`); const v = fn(); if(typeof v==='number' && Number.isFinite(v)) return +Number(v.toFixed(12)); return null; }catch(e){return null;} }
-function geometryQuery(q){
-  if(!q) return null;
-  const s=q.toLowerCase(); let m;
-  m = s.match(/area of (?:a |the )?circle(?:.*?)(?:radius|r)?[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer:(Math.PI*r*r).toFixed(8), explain:`area circle r=${r}`} }
-  m = s.match(/circumference of (?:a |the )?circle(?:.*?)(?:radius|r)?[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer:(2*Math.PI*r).toFixed(8), explain:`circumference r=${r}`} }
-  m = s.match(/area of (?:a |the )?rectangle(?:.*?)(?:width|w)[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const w=Number(m[1]), h=Number(m[2]); if(isFinite(w)&&isFinite(h)) return {answer:(w*h).toFixed(8), explain:`rectangle ${w}x${h}`} }
-  m = s.match(/area of (?:a |the )?triangle(?:.*?)(?:base|b)[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const b=Number(m[1]), h=Number(m[2]); if(isFinite(b)&&isFinite(h)) return {answer:((b*h)/2).toFixed(8), explain:`triangle b=${b} h=${h}`} }
-  return null;
-}
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: modelSelect.value,
+            userType: userType.value,
+            message: text
+          })
+        });
 
-/* ---------- snippet gatherer (client fallback) ---------- */
-async function fetchWikiSummary(q){
-  try{ const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`); if(!r.ok) return null; const j=await r.json(); return j.extract || null; }catch(e){return null;}
-}
-async function fetchDDG(q){
-  try{ const r = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`); if(!r.ok) return null; const j=await r.json(); return j.Abstract || (j.RelatedTopics ? j.RelatedTopics.map(t=>t.Text).join('. ') : null);}catch(e){return null;}
-}
-async function gatherSnippets(query, desired=6, aggressive=false, progressCb){
-  const snippets=[];
-  progressCb && progressCb('Wikipedia summary...');
-  const s1 = await fetchWikiSummary(query); if(s1) snippets.push(s1);
-  progressCb && progressCb('DuckDuckGo...');
-  const d = await fetchDDG(query); if(d) snippets.push(d);
-  if(aggressive){
-    const exps=['history','release date','overview','timeline'];
-    for(const ex of exps){ if(snippets.length>=desired) break; progressCb && progressCb('Expand: '+ex); const t = await fetchWikiSummary(query + ' ' + ex); if(t) snippets.push(t); }
-  }
-  const seen = new Set(), out=[];
-  for(const t of snippets){ const k=t.slice(0,200).replace(/\s+/g,' ').trim(); if(!seen.has(k)){ seen.add(k); out.push(t); } if(out.length>=desired) break; }
-  return out;
-}
+        const data = await response.json();
+        if (thinkingMsg) thinkingMsg.remove();
 
-/* ---------- choose best snippet ---------- */
-function extractYear(text){ if(!text) return null; const m=text.match(/\b(17\d{2}|18\d{2}|19\d{2}|20\d{2}|2100)\b/g); if(!m) return null; const freq={}; for(const y of m) freq[y]=(freq[y]||0)+1; return Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0]; }
-function pickBest(snips, query, modelKey, strictOnly){
-  if(!snips||snips.length===0) return {answer:"I couldn't find an answer.", confidence:8};
-  const wantsYear = /\bwhat\s+year|\bwhen\s+was|\bwhen\s+did\b/i.test(query) || /only the year|just the year/i.test(query);
-  if(wantsYear){
-    const years=[]; for(const s of snips){ const y=extractYear(s); if(y) years.push(y); }
-    if(years.length>0){ const freq={}; for(const y of years) freq[y]=(freq[y]||0)+1; const pick=Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0]; const conf=Math.min(95, 40 + (freq[pick]-1)*20 + Math.min(40, snips.length*3)); return {answer:pick, confidence:conf}; }
-  }
-  const best = snips.slice().sort((a,b)=>b.length-a.length)[0];
-  const sentences = (best||'').split(/(?<=\.)\s+/).filter(Boolean);
-  const verb = MODELS[modelKey] ? MODELS[modelKey].verb : 1;
-  const take = Math.max(1, Math.floor(verb * 1.6));
-  let answer = sentences.slice(0,take).join(' ').trim();
-  if(!answer) answer = (best||'').slice(0,300).trim();
-  if(strictOnly && /\bonly the year\b|\bonly the number\b/i.test(query)){
-    const n = answer.match(/-?\d+(\.\d+)?/);
-    if(n) return {answer:n[0], confidence: Math.min(90, 20 + snips.length*6)};
-  }
-  const filled = snips.filter(s=>s.length>40).length;
-  let conf = Math.min(95, 30 + filled*8 + Math.min(30, (snips.length-1)*3));
-  const yearsFound = {}; snips.forEach(s=>{ const y = extractYear(s); if(y) yearsFound[y] = (yearsFound[y]||0)+1; });
-  if(Object.keys(yearsFound).length>0){ const bestY = Object.keys(yearsFound).sort((a,b)=>yearsFound[b]-yearsFound[a])[0]; conf += Math.min(10, (yearsFound[bestY]-1)*5); }
-  conf = Math.min(99, Math.max(8, Math.round(conf)));
-  return {answer, confidence:conf};
-}
+        let reply = data.reply || "⚠️ No response.";
 
-/* ---------- Photo BETA ---------- */
-const DAILY_PHOTO_LIMIT = 5;
-function photoQuotaKey(){ const d=new Date(); return `gomega_photo_${d.getFullYear()}_${d.getMonth()+1}_${d.getDate()}`; }
-function getPhotoUsed(){ return parseInt(localStorage.getItem(photoQuotaKey())||'0',10); }
-function incrPhoto(){ const k=photoQuotaKey(); const n=getPhotoUsed()+1; localStorage.setItem(k,String(n)); updatePhotoUI(); return n; }
-function updatePhotoUI(){ UI.photoQuota.textContent = premiumUnlocked ? '∞' : Math.max(0, DAILY_PHOTO_LIMIT - getPhotoUsed()); }
-UI.addPhotoBtn.addEventListener('click', ()=>{
-  const f = UI.photoInput.files && UI.photoInput.files[0];
-  if(!f){ alert('Choose an image first'); return; }
-  if(!/^image\//.test(f.type)){ alert('Only image files allowed'); return; }
-  if(!premiumUnlocked && getPhotoUsed() >= DAILY_PHOTO_LIMIT){ alert('Daily free photo limit reached (5). Unlock premium for unlimited.'); return; }
-  const reader = new FileReader();
-  reader.onload = (e)=>{ const id='p'+Date.now(); photos.push({id, name:f.name, url:e.target.result, sent:false}); renderPhotos(); };
-  reader.readAsDataURL(f);
-});
-function renderPhotos(){
-  UI.photoGrid.innerHTML = '';
-  photos.forEach(p=>{
-    const c = document.createElement('div'); c.className='photoCard';
-    const img = document.createElement('img'); img.src = p.url; img.alt = p.name;
-    c.appendChild(img);
-    const actions = document.createElement('div'); actions.className='photoActions';
-    const send = document.createElement('button'); send.className='small ghost'; send.textContent = p.sent ? 'Sent' : 'Send';
-    send.onclick = ()=>{ if(p.sent){ alert('Already sent'); return; } if(!premiumUnlocked && getPhotoUsed()>=DAILY_PHOTO_LIMIT){ alert('Daily free photo limit reached'); return; } addImageAsUser(p); p.sent=true; if(!premiumUnlocked) incrPhoto(); renderPhotos(); };
-    const rem = document.createElement('button'); rem.className='small ghost'; rem.textContent='Remove'; rem.onclick = ()=>{ photos = photos.filter(x=>x.id!==p.id); renderPhotos(); };
-    actions.appendChild(send); actions.appendChild(rem); c.appendChild(actions);
-    UI.photoGrid.appendChild(c);
-  });
-  updatePhotoUI();
-}
-function addImageAsUser(photo){
-  const html = `<div style="font-size:13px;color:var(--muted);margin-bottom:6px">Image: ${escapeHtml(photo.name)}</div><a href="${photo.url}" download="${escapeHtml(photo.name)}"><img src="${photo.url}" style="max-width:320px;width:100%;border-radius:8px"></a>`;
-  addBubble('user', html);
-  sessionMsgs.push({role:'user', text:`[image:${photo.name}]`});
-}
-
-/* ---------- API key resolution ---------- */
-function sessionKey(){ return sessionStorage.getItem(STORAGE_KEY) || null; }
-function setSessionKey(k){ if(!k) sessionStorage.removeItem(STORAGE_KEY); else sessionStorage.setItem(STORAGE_KEY,k); }
-function injectedKey(){ try{ if(window.OpenAPI && typeof window.OpenAPI === 'string' && window.OpenAPI.trim()) return window.OpenAPI.trim(); }catch(e){} return null; }
-async function fetchApiTxt(){
-  try{
-    const r = await fetch('/browser/api.txt', {cache:'no-cache'});
-    if(!r.ok) return null;
-    const t = (await r.text()).trim();
-    if(t){ setSessionKey(t); return t; }
-  }catch(e){}
-  return null;
-}
-async function resolveKey(){
-  // 1. injected
-  const inj = injectedKey(); if(inj) return inj;
-  // 2. file
-  const fileKey = await fetchApiTxt(); if(fileKey) return fileKey;
-  // 3. session
-  const s = sessionKey(); if(s) return s;
-  // else prompt user
-  return null;
-}
-
-/* ---------- Load premium codes (attempt silently) ---------- */
-async function loadPremiumCodes(){
-  try{
-    const r = await fetch('/browser/premiumcodes.txt', {cache:'no-cache'});
-    if(!r.ok) return;
-    const txt = (await r.text()).trim();
-    if(txt) premiumCodes = txt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  }catch(e){}
-}
-UI.applyCodeBtn.addEventListener('click', ()=>{
-  const c = (UI.premiumInput.value||'').trim();
-  if(!c) return alert('Enter a code first');
-  if(c === 'PREMIUM' || (premiumCodes && premiumCodes.includes(c))){ premiumUnlocked = true; sessionStorage.setItem('gomega_premium','1'); alert('Premium unlocked.'); renderModelUI(); updatePhotoUI(); } else alert('Invalid code or premium file not available.');
-});
-
-/* ---------- render models UI ---------- */
-function renderModelUI(){
-  UI.modelSelect.innerHTML = '';
-  UI.modelList.innerHTML = '';
-  Object.keys(MODELS).forEach(k=>{
-    const m = MODELS[k];
-    const opt = document.createElement('option'); opt.value = k; opt.textContent = m.label + (m.premium ? ' (Premium)' : '');
-    if(m.premium && !premiumUnlocked) opt.disabled = true;
-    UI.modelSelect.appendChild(opt);
-
-    const row = document.createElement('div'); row.className = 'modelRow' + (k===currentModelKey ? ' selected' : '');
-    row.innerHTML = `<div><strong>${escapeHtml(m.label)}</strong><div class="small">${m.premium ? 'Premium' : 'Standard'}</div></div><div class="small">${k===currentModelKey ? 'Selected' : 'Select'}</div>`;
-    row.onclick = ()=>{ if(m.premium && !premiumUnlocked){ alert('Premium model - enter a code to unlock.'); return; } currentModelKey = k; renderModelUI(); UI.modelSelect.value = k; setThinkingText(`Model: ${m.label}`); };
-    UI.modelList.appendChild(row);
-  });
-  UI.modelSelect.value = currentModelKey;
-  UI.modelSelect.onchange = ()=>{ const sel = UI.modelSelect.value; if(MODELS[sel].premium && !premiumUnlocked){ alert('Premium model - enter code to unlock'); UI.modelSelect.value = currentModelKey; } else { currentModelKey = sel; renderModelUI(); } };
-}
-
-/* ---------- OpenAI call with fallback model attempts ---------- */
-async function callOpenAIResponsesModel(promptText, modelId, opts = {}){
-  // Uses /v1/responses endpoint (example in your message)
-  const key = await resolveKey();
-  if(!key) throw new Error('No API key available. Click "Set Key" to paste it for this session.');
-  const body = { model: modelId, input: promptText };
-  if(typeof opts.temperature !== 'undefined') body.temperature = opts.temperature;
-  if(typeof opts.max_tokens !== 'undefined') body.max_tokens = opts.max_tokens;
-  const res = await fetch('https://api.openai.com/v1/responses', {
-    method:'POST',
-    headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${key}` },
-    body: JSON.stringify(body)
-  });
-  if(!res.ok){
-    const txt = await res.text();
-    const err = (txt||'').toString();
-    const e = new Error(`OpenAI response error (${res.status}): ${err}`);
-    e.status = res.status; e.text = err;
-    throw e;
-  }
-  const j = await res.json();
-  // New Responses API may include output_text or structured output array.
-  if(j.output_text) return j.output_text;
-  if(j.output && Array.isArray(j.output) && j.output.length){
-    // Many responses have content with type 'output_text' or 'text'
-    // Try common shapes:
-    const outParts = [];
-    for(const o of j.output){
-      if(typeof o === 'string') outParts.push(o);
-      else if(o.content && Array.isArray(o.content)){
-        for(const c of o.content) if(typeof c.text === 'string') outParts.push(c.text);
-      } else if(o.text) outParts.push(o.text);
-    }
-    if(outParts.length) return outParts.join('\n\n');
-  }
-  // fallback: try to find any possible text
-  return JSON.stringify(j);
-}
-
-async function callOpenAIChatModel(promptText, modelId, opts = {}){
-  // fallback to /v1/chat/completions style if needed
-  const key = await resolveKey();
-  if(!key) throw new Error('No API key available. Click "Set Key" to paste it for this session.');
-  const sys = { role:'system', content: 'You are Gomega AI — a helpful assistant. Answer concisely.' };
-  const messages = [sys, {role:'user', content: promptText}];
-  const body = { model: modelId, messages, temperature: opts.temperature ?? 0.2, max_tokens: opts.max_tokens ?? 800 };
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method:'POST',
-    headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${key}` },
-    body: JSON.stringify(body)
-  });
-  if(!res.ok){
-    const txt = await res.text();
-    const e = new Error(`OpenAI chat error (${res.status}): ${txt}`);
-    e.status = res.status; e.text = txt; throw e;
-  }
-  const j = await res.json();
-  const reply = j.choices && j.choices[0] && (j.choices[0].message?.content || j.choices[0].text) ? (j.choices[0].message?.content || j.choices[0].text) : 'No response';
-  return reply;
-}
-
-async function callOpenAIWithFallbacks(promptText, preferList, opts = {}){
-  // Tries Responses API model list in order, then chat fallback to gpt-3.5-turbo if necessary.
-  const key = await resolveKey();
-  if(!key) throw new Error('No API key available. Click "Set Key" to paste it for this session.');
-  for(const modelId of preferList){
-    try{
-      // Try Responses endpoint first
-      try{
-        const r = await callOpenAIResponsesModel(promptText, modelId, opts);
-        return r;
-      } catch(respErr){
-        // If it's a 400 model error or contains "model" invalid, continue to next
-        const txt = (respErr && respErr.text) ? respErr.text.toLowerCase() : (respErr.message || '').toLowerCase();
-        if(respErr.status === 400 && /model/i.test(txt)) { console.warn('Model rejected (responses) ' + modelId + ' -> ' + txt); continue; }
-        // if 401 unauthorized, throw up
-        if(respErr.status === 401 || /unauthorized|invalid api key|permission/i.test(txt)) throw respErr;
-        // otherwise try chat/completions fallback for same model
-        try{
-          const r2 = await callOpenAIChatModel(promptText, modelId, opts);
-          return r2;
-        } catch(chatErr){
-          const t = (chatErr && chatErr.text) ? chatErr.text.toLowerCase() : (chatErr.message || '').toLowerCase();
-          if(chatErr.status === 400 && /model/i.test(t)) { console.warn('Model rejected (chat) ' + modelId + ' -> ' + t); continue; }
-          if(chatErr.status === 401 || /unauthorized|invalid api key|permission/i.test(t)) throw chatErr;
-          // else continue trying next model
-          console.warn('Model attempt failed for', modelId, chatErr.message || chatErr);
-          continue;
+        if (/who made you/i.test(text)) {
+          reply = "I was made by ScriptNova. Follow @scriptnovaa on Instagram.";
         }
-      }
-    } catch(e){
-      // bubble up auth errors
-      if(e.status === 401 || /unauthorized|invalid api key/i.test(e.message||e.text||'')) throw e;
-      // otherwise continue
-      console.warn('Attempt error', e);
-    }
-  }
-  // final fallback to gpt-3.5-turbo chat completions
-  try{
-    return await callOpenAIChatModel(promptText, 'gpt-3.5-turbo', opts);
-  } catch(e){
-    throw e;
-  }
-}
 
-/* ---------- who-made override ---------- */
-function whoMade(text){
-  if(!text) return null;
-  if(/\bwho (made|created) you\b/i.test(text) || /\byou made by\b/i.test(text)) return 'I was made by ScriptNova. Follow @scriptnovaa on Instagram.';
-  return null;
-}
-
-/* ---------- Main flow ---------- */
-UI.askBtn.addEventListener('click', onAsk);
-UI.prompt.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); onAsk(); }});
-UI.clearBtn.addEventListener('click', ()=>{ UI.messages.innerHTML=''; sessionMsgs=[]; photos=[]; renderPhotos(); setProgress(0); UI.confidence.textContent = '—'; });
-UI.setKeyBtn.addEventListener('click', ()=>{ const prev = sessionKey() || ''; const k = prompt('Paste your OpenAI API key (sessionStorage) — do NOT use long-lived keys on shared/public machines.', prev); if(k){ setSessionKey(k.trim()); alert('Key saved to this browser session.'); } });
-
-async function onAsk(){
-  if(typingLocked) return;
-  let q = (UI.prompt.value || '').trim();
-  if(!q) return;
-  UI.prompt.value = '';
-  addBubble('user', escapeHtml(q));
-  sessionMsgs.push({role:'user', text:q});
-  setTypingLocked(true);
-  const aiNode = addBubble('ai', `<span class="small">Gomega is thinking… <span class="typingDots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span></span>`);
-  setThinkingText('Deciding strategy...');
-  setProgress(6);
-
-  try{
-    // quick who-made
-    const wh = whoMade(q);
-    if(wh){ await typeTextInto(aiNode, wh, 24); sessionMsgs.push({role:'assistant', text:wh}); setTypingLocked(false); setProgress(100); setThinkingText('Idle'); UI.lastFetch.textContent = new Date().toLocaleString(); return; }
-
-    // algebra simplification local
-    const needSimplify = /\bsimplify\b/i.test(q) || /[a-zA-Z]/.test(q) && /[+\-*/^()]/.test(q);
-    if(needSimplify){
-      setThinkingText('Simplifying locally...');
-      setProgress(26);
-      const s = simplifyAlgebra(q) || simplifyAlgebra(q.replace(/simplify/i,'').trim());
-      if(s){
-        await typeTextInto(aiNode, s, premiumUnlocked ? 18 : 40);
-        sessionMsgs.push({role:'assistant', text:s});
-        UI.confidence.textContent = '99%';
-        UI.lastFetch.textContent = new Date().toLocaleString();
-        setProgress(100); setThinkingText('Idle'); setTypingLocked(false); return;
+        await typeMessage(reply, userType.value === "premium" ? 20 : 40);
+      } catch (err) {
+        if (thinkingMsg) thinkingMsg.remove();
+        await typeMessage("⚠️ Error: Could not reach server.");
+      } finally {
+        isTyping = false;
+        enableInput();
       }
     }
 
-    // geometry/numeric local
-    const geom = geometryQuery(q);
-    if(geom && (currentModelKey==='math' || /area|circumference|volume|pythagor|triangle|radius/i.test(q))){
-      setThinkingText('Computing geometry locally...');
-      setProgress(30);
-      await typeTextInto(aiNode, String(geom.answer), 28);
-      const meta = document.createElement('div'); meta.className='explain'; meta.textContent = `Reason: ${geom.explain}`; aiNode.appendChild(meta);
-      sessionMsgs.push({role:'assistant', text:String(geom.answer)}); UI.confidence.textContent='99%'; UI.lastFetch.textContent = new Date().toLocaleString();
-      setTypingLocked(false); setProgress(100); setThinkingText('Idle'); return;
+    function addMessage(sender, text) {
+      const msg = document.createElement("div");
+      msg.classList.add("message", sender === "user" ? "user-message" : "ai-message");
+      msg.textContent = text;
+      chatMessages.appendChild(msg);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return msg;
     }
 
-    // Try API if key is available (resolveKey first)
-    const key = await resolveKey();
-    if(key){
-      setThinkingText('Calling OpenAI API...');
-      setProgress(18);
-      const modelPref = MODELS[currentModelKey].prefer.slice();
-      // premium unlock - boost higher model
-      if(premiumUnlocked && !MODELS[currentModelKey].premium){ if(!modelPref.includes('gpt-5')) modelPref.unshift('gpt-5'); }
-      try{
-        const reply = await callOpenAIWithFallbacks(q, modelPref, { temperature: premiumUnlocked ? 0.12 : 0.2, max_tokens: premiumUnlocked ? 1200 : 800 });
-        setProgress(70);
-        await typeTextInto(aiNode, reply, premiumUnlocked ? (MODELS[currentModelKey].speed * 0.7) : MODELS[currentModelKey].speed);
-        sessionMsgs.push({role:'assistant', text:reply});
-        UI.lastFetch.textContent = new Date().toLocaleString();
-        UI.confidence.textContent = '—';
-        setProgress(100); setThinkingText('Idle'); setTypingLocked(false); return;
-      } catch(apiErr){
-        console.warn('API failed:', apiErr);
-        // if unauthorized -> inform user
-        if(apiErr.status === 401 || /unauthorized|invalid api key/i.test(apiErr.message || apiErr.text || '')) {
-          // clear stored key to force prompt
-          setSessionKey(null);
-          await typeTextInto(aiNode, '⚠️ API key rejected or unauthorized. Please provide a valid key.', 36);
-          setTypingLocked(false);
-          setThinkingText('Idle');
-          setProgress(0);
-          return;
-        }
-        // else continue to fallback
+    async function typeMessage(text, delay) {
+      const msg = document.createElement("div");
+      msg.classList.add("message", "ai-message");
+      chatMessages.appendChild(msg);
+
+      for (let i = 0; i < text.length; i++) {
+        msg.textContent += text[i];
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        await new Promise(r => setTimeout(r, delay));
       }
     }
 
-    // Fallback: gather snippets client-side
-    setThinkingText('Searching multiple sources (client-side)...');
-    setProgress(14);
-    const aggressive = UI.thinkingToggle.checked || premiumUnlocked;
-    const snippets = await gatherSnippets(q, 8, aggressive, (msg)=>{ UI.lastAction.textContent = msg; const cur = parseInt(UI.progressBar.style.width)||10; setProgress(Math.min(90, cur + 8)); });
-
-    if(!snippets || snippets.length===0){
-      await typeTextInto(aiNode, "I couldn't find an answer — I tried looking it up.", 60);
-      sessionMsgs.push({role:'assistant', text:"I couldn't find an answer — I tried looking it up."});
-      UI.confidence.textContent = '10%';
-      setTypingLocked(false); setThinkingText('Idle'); setProgress(0); return;
+    function disableInput() {
+      userInput.disabled = true;
+    }
+    function enableInput() {
+      userInput.disabled = false;
+      userInput.focus();
     }
 
-    setProgress(86);
-    const strict = UI.strictToggle.checked;
-    const picked = pickBest(snippets, q, currentModelKey, strict);
-    const verification = evaluateNumeric(q);
-    let finalAnswer = picked.answer;
-    if(verification !== null && !/\bonly the number\b/i.test(q)) finalAnswer += `\n\n(Computed: ${verification})`;
-    const sentImgs = photos.filter(p=>p.sent).length; if(sentImgs>0) finalAnswer += `\n\n(You provided ${sentImgs} image(s) in this session.)`;
-    await typeTextInto(aiNode, finalAnswer, premiumUnlocked ? 30 : 60);
-    const meta = document.createElement('div'); meta.className='explain'; meta.textContent = `Confidence: ${picked.confidence}%`; aiNode.appendChild(meta);
-    sessionMsgs.push({role:'assistant', text:finalAnswer});
-    UI.lastFetch.textContent = new Date().toLocaleString();
-    UI.confidence.textContent = picked.confidence + '%';
-    setTypingLocked(false); setThinkingText('Idle'); setProgress(100);
-  } catch(err){
-    console.error(err);
-    aiNode.innerHTML = '⚠️ Error: ' + escapeHtml(err.message || 'failed to compute');
-    sessionMsgs.push({role:'assistant', text:'Error: ' + (err.message||'failed')});
-    setTypingLocked(false); setThinkingText('Idle'); setProgress(0);
-  }
-}
-
-/* ---------- boot / init ---------- */
-async function init(){
-  await fetchApiTxt(); // attempt to load /browser/api.txt into sessionStorage
-  await loadPremiumCodes();
-  renderModelUI();
-  renderPhotos();
-  updatePhotoUI();
-  addBubble('ai', '<strong>Hello — I am Gomega AI.</strong><div class="small" style="margin-top:6px">I can simplify algebra, compute geometry, accept images (BETA) and call the OpenAI Responses API if you provide a key. Try: "Simplify 4a-2(5a-7)".</div>');
-  setInterval(()=>{ document.getElementById('localTime').textContent = new Date().toLocaleString(); },1000);
-
-  // wire apply/clear actions
-  UI.clearSessionBtn.addEventListener('click', ()=>{ if(confirm('Clear memory and photos?')){ sessionMsgs=[]; photos=[]; UI.messages.innerHTML=''; renderPhotos(); setProgress(0); localStorage.removeItem(photoQuotaKey()); updatePhotoUI(); }});
-}
-init();
-function photoQuotaKey(){ const d=new Date(); return `gomega_photo_${d.getFullYear()}_${d.getMonth()+1}_${d.getDate()}`; }
-
-/* ---------- small helpers used above but declared late (lint) ---------- */
-function renderPhotos(){ UI.photoGrid.innerHTML=''; photos.forEach(p=>{ const card=document.createElement('div'); card.className='photoCard'; const img=document.createElement('img'); img.src=p.url; img.alt=p.name; card.appendChild(img); const actions=document.createElement('div'); actions.className='photoActions'; const send=document.createElement('button'); send.className='small ghost'; send.textContent=p.sent?'Sent':'Send'; send.onclick=()=>{ if(p.sent){ alert('Already sent'); return; } if(!premiumUnlocked && getPhotoUsed()>=DAILY_PHOTO_LIMIT){ alert('Daily photo limit reached (free).'); return; } addImageAsUser(p); p.sent=true; if(!premiumUnlocked) incrPhoto(); renderPhotos(); }; const rem=document.createElement('button'); rem.className='small ghost'; rem.textContent='Remove'; rem.onclick=()=>{ photos = photos.filter(x=>x.id!==p.id); renderPhotos(); }; actions.appendChild(send); actions.appendChild(rem); card.appendChild(actions); UI.photoGrid.appendChild(card); }); updatePhotoUI(); }
-
-</script>
+    userInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
 </body>
 </html>
