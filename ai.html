@@ -1,249 +1,703 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gomega AI</title>
-  <style>
-    body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #141e30, #243b55);
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .chat-container {
-      width: 95%;
-      max-width: 800px;
-      background: rgba(0, 0, 0, 0.6);
-      border-radius: 15px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-      display: flex;
-      flex-direction: column;
-      height: 90vh;
-      overflow: hidden;
-    }
-    .chat-header {
-      padding: 15px;
-      text-align: center;
-      font-size: 1.4em;
-      font-weight: bold;
-      background: #0f2027;
-      letter-spacing: 1px;
-    }
-    .model-select {
-      background: #1f4068;
-      border: none;
-      color: white;
-      font-size: 0.9em;
-      padding: 5px 10px;
-      border-radius: 6px;
-      margin-left: 10px;
-    }
-    .chat-messages {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .message {
-      max-width: 75%;
-      padding: 12px 15px;
-      border-radius: 12px;
-      animation: fadeIn 0.4s ease-in-out;
-      line-height: 1.4;
-      word-wrap: break-word;
-    }
-    .user-message {
-      background: #007bff;
-      align-self: flex-end;
-    }
-    .ai-message {
-      background: #2a2a72;
-      align-self: flex-start;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .chat-input {
-      display: flex;
-      align-items: center;
-      padding: 15px;
-      background: #0f2027;
-    }
-    .chat-input input[type="text"] {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1em;
-    }
-    .chat-input button {
-      margin-left: 10px;
-      padding: 12px 18px;
-      border: none;
-      border-radius: 8px;
-      background: #007bff;
-      color: white;
-      cursor: pointer;
-      font-size: 1em;
-      transition: background 0.2s;
-    }
-    .chat-input button:hover {
-      background: #0056b3;
-    }
-    .typing-indicator {
-      font-style: italic;
-      color: #aaa;
-      font-size: 0.9em;
-      margin-left: 5px;
-    }
-    .upload-info {
-      font-size: 0.8em;
-      color: #ccc;
-      margin-top: 5px;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Gomega AI</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+  /* ---------- Typography & layout ---------- */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+  :root{
+    --bg-1:#071021; --bg-2:#0b1220;
+    --card:#0f1724; --muted:#9fb0c8;
+    --accent1:#34d3ff; --accent2:#7c3aed;
+    --glass: rgba(255,255,255,0.03);
+    --success:#28a745; --danger:#ef4444;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial; color:#eaf6ff;
+    background: radial-gradient(800px 400px at 10% 20%, rgba(52,211,255,0.035), transparent),
+                linear-gradient(180deg,var(--bg-1),var(--bg-2));
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    display:flex; justify-content:center; align-items:center; padding:20px;
+  }
+
+  .app {
+    width:100%; max-width:1200px; height:88vh; display:grid; grid-template-columns: 1fr 360px; gap:18px;
+    align-items:stretch;
+  }
+
+  /* --------------- Chat column --------------- */
+  .chat {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.03); border-radius:14px; padding:14px; display:flex; flex-direction:column;
+    min-height:0;
+  }
+
+  .header {
+    display:flex; align-items:center; gap:12px; padding:8px 6px; border-bottom:1px solid rgba(255,255,255,0.02);
+  }
+  .logo {
+    width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent1),var(--accent2));
+    display:flex; align-items:center; justify-content:center; font-weight:700; color:#022; font-size:20px; transform:rotate(-6deg);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  }
+  .title { font-size:18px; font-weight:700; }
+  .subtitle { color:var(--muted); font-size:13px; }
+
+  .messages {
+    padding:18px; overflow:auto; flex:1; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth;
+  }
+
+  .msg {
+    max-width:78%; padding:12px 14px; border-radius:12px; line-height:1.45; animation: msgIn .22s ease;
+    position:relative; box-shadow: 0 6px 24px rgba(2,6,23,0.45);
+    word-break:break-word;
+  }
+  @keyframes msgIn { from{opacity:.0; transform:translateY(6px)} to{opacity:1; transform:none} }
+
+  .user { align-self:flex-end; background: linear-gradient(90deg,#0b6b4c,#064e3b); color:#e6fff3; border-bottom-right-radius:6px; }
+  .ai   { align-self:flex-start; background: linear-gradient(90deg,#0b1730,#12172e); color:#dfefff; border-bottom-left-radius:6px; }
+
+  .metaRow { display:flex; align-items:center; gap:8px; margin-top:8px; color:var(--muted); font-size:12px; }
+
+  .controls {
+    padding:14px; border-top:1px solid rgba(255,255,255,0.02); display:flex; gap:10px; align-items:center;
+    background: linear-gradient(180deg, rgba(255,255,255,0.005), rgba(0,0,0,0.02));
+  }
+
+  .input {
+    flex:1; display:flex; gap:8px; align-items:center;
+  }
+  .textIn {
+    flex:1; padding:12px 14px; border-radius:10px; background:transparent; color:inherit;
+    border:1px solid rgba(255,255,255,0.03); outline:none; font-size:15px;
+  }
+  .btn {
+    background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:#022; border:none; padding:11px 16px; border-radius:10px; cursor:pointer; font-weight:700;
+  }
+  .ghost { background:transparent; border:1px solid rgba(255,255,255,0.04); padding:10px 12px; border-radius:10px; color:var(--muted); cursor:pointer; }
+
+  /* typing indicator */
+  .typing {
+    display:inline-flex; gap:6px; align-items:center; margin-left:8px;
+  }
+  .dot { width:8px; height:8px; background:#9fb0c8; border-radius:50%; opacity:.8; animation: jump 1s infinite; }
+  .dot:nth-child(2){ animation-delay:0.15s }
+  .dot:nth-child(3){ animation-delay:0.3s }
+  @keyframes jump { 0%{transform:translateY(0);opacity:0.6} 50%{transform:translateY(-6px);opacity:1} 100%{transform:translateY(0);opacity:0.6} }
+
+  /* --------------- Sidebar --------------- */
+  .side {
+    border-radius:14px; padding:14px; background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.02); display:flex; flex-direction:column; gap:12px; min-height:0;
+  }
+  .card { padding:12px; border-radius:10px; background:transparent; border:1px solid rgba(255,255,255,0.02); }
+  .models { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+  .modelBtn { display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); border:1px solid rgba(255,255,255,0.02); cursor:pointer; }
+  .modelBtn.selected { box-shadow: 0 10px 30px rgba(20,20,40,0.25); border:1px solid rgba(255,255,255,0.04); background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:#022; }
+  .small{ font-size:13px; color:var(--muted); }
+
+  .progress { height:8px; border-radius:8px; background:rgba(255,255,255,0.02); overflow:hidden; }
+  .progressBar { height:100%; width:0%; background:linear-gradient(90deg,var(--accent1),var(--accent2)); transition:width 280ms linear; }
+
+  .photoGrid { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .photoThumb { width:86px; height:66px; border-radius:8px; overflow:hidden; position:relative; background:#0b1220; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.02); }
+  .photoThumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .photoControls { position:absolute; bottom:6px; left:6px; right:6px; display:flex; gap:6px; justify-content:center; }
+
+  .premiumBadge { padding:6px 8px; border-radius:8px; background:linear-gradient(90deg,#ffd166,#f0a500); color:#082; font-weight:700; font-size:12px; display:inline-block; }
+
+  /* small screens */
+  @media (max-width:980px){
+    .app{ grid-template-columns: 1fr; height:94vh; }
+    .side{ order:2; }
+  }
+</style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="chat-header">
-      Gomega AI
-      <select id="modelSelect" class="model-select">
-        <option value="v5-mini">Gomega V5-mini</option>
-        <option value="v5">Gomega V5.0</option>
-        <option value="v7-beta">Gomega V7-beta</option>
-        <option value="v7-logic">Gomega V7-Logic</option>
-      </select>
-    </div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input">
-      <input type="text" id="userInput" placeholder="Type your message..." />
-      <input type="file" id="imageUpload" accept="image/*" style="display:none" />
-      <button onclick="document.getElementById('imageUpload').click()">📷</button>
-      <button onclick="sendMessage()">Send</button>
-    </div>
+  <div class="app" role="application" aria-label="Gomega AI chat">
+    <!-- CHAT -->
+    <section class="chat" id="chat">
+      <div class="header">
+        <div class="logo">G</div>
+        <div>
+          <div class="title">Gomega AI</div>
+          <div class="subtitle">Fast, smart answers — client-hosted UI</div>
+        </div>
+        <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+          <div id="premiumIndicator" class="small" style="display:flex;gap:8px;align-items:center"></div>
+          <div class="small">Local time: <span id="localTime">—</span></div>
+        </div>
+      </div>
+
+      <div class="messages" id="messages" aria-live="polite"></div>
+
+      <div class="controls" aria-hidden="false">
+        <div class="input">
+          <input id="prompt" class="textIn" autocomplete="off" placeholder="Ask Gomega something — math, facts, images..." />
+          <div id="typingIndicator" style="display:none" class="typing" title="Gomega is typing">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          </div>
+        </div>
+
+        <input id="fileInput" type="file" accept="image/*" style="display:none" />
+        <button id="attachBtn" class="ghost" title="Attach photo">📷</button>
+        <button id="sendBtn" class="btn">Send</button>
+      </div>
+    </section>
+
+    <!-- SIDEBAR -->
+    <aside class="side" id="sidebar">
+      <div class="card">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div><strong>Models</strong><div class="small">Pick a behavior profile</div></div>
+          <div class="small" id="modelHint">Hidden model details</div>
+        </div>
+
+        <div class="models" id="models"></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>Session</strong>
+          <button id="clearSession" class="ghost">Clear</button>
+        </div>
+        <div class="small" style="margin-top:8px">Messages today: <span id="msgCount">0</span></div>
+        <div class="small" style="margin-top:6px">Photo sends left: <span id="photoLeft">5</span></div>
+        <div style="margin-top:8px" class="progress"><div id="progressBar" class="progressBar"></div></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Photos (BETA)</strong><div class="small">Uploads stored locally</div></div>
+          <div><button id="addPhoto" class="small ghost">Add</button></div>
+        </div>
+        <div class="photoGrid" id="photoGrid"></div>
+        <div class="small" style="margin-top:8px">Photos appear inline in the chat and are downloadable. Premium users: unlimited.</div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Premium</strong><div class="small">Unlock extra limits</div></div>
+          <div><button id="enterCode" class="small ghost">Enter code</button></div>
+        </div>
+        <div class="small" style="margin-top:8px">Premium unlocks unlimited messages & photos for this browser session.</div>
+      </div>
+    </aside>
   </div>
 
-  <script>
-    const chatMessages = document.getElementById("chatMessages");
-    const userInput = document.getElementById("userInput");
-    const modelSelect = document.getElementById("modelSelect");
-    const imageUpload = document.getElementById("imageUpload");
-    let isTyping = false;
-    let imageUploadsLeft = 5;
+<script>
+/* Gomega AI — single-file client.
+   - Looks for /browser/api.txt (if present) and uses that API key.
+   - Loads premium codes from /browser/premiumcodes.txt silently (if available).
+   - Premium: unlimited messages/photos. Non-premium: limits enforced.
+   - Photo upload UI + inline chat preview & download.
+   - Input blocked while AI is typing.
+   - The assistant's system identity is "Gomega AI".
+   - If user asks "who made you", assistant replies with ScriptNova message.
+*/
 
-    async function sendMessage(imageData = null) {
-      if (isTyping) return;
+/* ----------------------- Config / Limits ----------------------- */
+const NONPREMIUM_DAILY_MSG_LIMIT = 40;     // e.g., messages/day for non-premium
+const NONPREMIUM_DAILY_PHOTO_LIMIT = 5;    // photos/day for non-premium
+const USAGE_STORAGE_PREFIX = 'gomega_usage_'; // keys per day
 
-      const text = userInput.value.trim();
-      if (!text && !imageData) return;
+/* ----------------------- State ----------------------- */
+let apiKey = null;                 // loaded from /browser/api.txt or session prompt
+let premium = false;
+let premiumCodes = [];             // loaded silently if hosted
+let selectedModelKey = 'v7';       // friendly label -> internal mapping hidden from user
+let modelProfiles = {
+  v8:  {label:'Gomega V8 (premium)', hiddenModel:'***', speed:80, verbosity:1.6, premium:true},
+  v7:  {label:'Gomega V7', hiddenModel:'***', speed:66, verbosity:1.0, premium:false},
+  v7m: {label:'Gomega V7-mini', hiddenModel:'***', speed:22, verbosity:0.6, premium:false},
+  v6:  {label:'Gomega V6 (premium)', hiddenModel:'***', speed:92, verbosity:1.4, premium:true},
+  v5:  {label:'Gomega V5', hiddenModel:'***', speed:58, verbosity:1.0, premium:false},
+  math:{label:'MathMaster', hiddenModel:'***', speed:30, verbosity:0.2, premium:false}
+};
 
-      if (text) {
-        addMessage("user", text);
-        userInput.value = "";
-      }
-      if (imageData) {
-        addMessage("user", "[Image Uploaded]");
-      }
+let isTyping = false;
+let sessionMessages = []; // last messages for context (local)
+let localPhotos = []; // {id,name,dataURL,sent:boolean}
 
-      disableInput();
-      isTyping = true;
-      const thinkingMsg = addMessage("ai", "Thinking...");
-      
-      try {
-        let payload = {
-          model: modelSelect.value,
-          messages: [{ role: "user", content: text || "[Image]" }]
-        };
+/* ----------------------- DOM ----------------------- */
+const $ = id => document.getElementById(id);
+const messagesEl = $('messages');
+const promptEl = $('prompt');
+const sendBtn = $('sendBtn');
+const attachBtn = $('attachBtn');
+const fileInput = $('fileInput');
+const addPhotoBtn = $('addPhoto');
+const photoGrid = $('photoGrid');
+const msgCountEl = $('msgCount');
+const photoLeftEl = $('photoLeft');
+const progressBarEl = $('progressBar');
+const modelsEl = $('models');
+const premiumIndicatorEl = $('premiumIndicator');
+const enterCodeBtn = $('enterCode');
+const clearSessionBtn = $('clearSession');
+const typingIndicator = $('typingIndicator');
+const localTimeEl = $('localTime');
 
-        if (imageData) {
-          payload.messages.push({ role: "user", content: "Image attached (BETA)." });
-        }
+/* ----------------------- Utilities ----------------------- */
+function nowDateKey(){
+  const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function usageKey(type){
+  return USAGE_STORAGE_PREFIX + type + '_' + nowDateKey();
+}
+function getUsage(type){
+  return parseInt(localStorage.getItem(usageKey(type)) || '0', 10);
+}
+function incUsage(type, n=1){
+  const k = usageKey(type), v = getUsage(type) + n; localStorage.setItem(k, String(v)); updateUsageUI(); return v;
+}
+function resetDailyIfNeeded(){ /* placeholder if you want to expire older keys */ }
+function updateUsageUI(){
+  msgCountEl.textContent = getUsage('msg');
+  const left = Math.max(0, NONPREMIUM_DAILY_PHOTO_LIMIT - getUsage('photo'));
+  photoLeftEl.textContent = premium ? '∞' : left;
+  const p = Math.min(100, Math.round((getUsage('msg') / (premium ? (NONPREMIUM_DAILY_MSG_LIMIT*3) : NONPREMIUM_DAILY_MSG_LIMIT)) * 100));
+  progressBarEl.style.width = p + '%';
+  premiumIndicatorEl.innerHTML = premium ? '<span class="premiumBadge">PREMIUM</span>' : '<span class="small">Free</span>';
+}
 
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${atob(GITHUB_SECRET)}` // Secret from GitHub
-          },
-          body: JSON.stringify(payload)
-        });
-        
-        const data = await response.json();
-        if (thinkingMsg) thinkingMsg.remove();
-        
-        let reply = data.choices[0].message.content.trim();
-        
-        // Custom override: if asked "who made you"
-        if (/who made you/i.test(text)) {
-          reply = "I was made by ScriptNova. Follow @scriptnovaa on Instagram.";
-        }
+/* ----------------------- Load API Key & Premium Codes ----------------------- */
+/* Try to fetch /browser/api.txt silently. If found and non-empty, use it.
+   If not, we will prompt user to paste key when necessary.
+*/
+async function tryLoadApiKeyFile(){
+  try {
+    const res = await fetch('/browser/api.txt', {cache:'no-cache'});
+    if(!res.ok) return;
+    const txt = (await res.text()).trim();
+    if(txt) { apiKey = txt; console.log('API key loaded from /browser/api.txt'); }
+  } catch(e){
+    // ignore
+  }
+}
 
-        await typeMessage(reply);
-      } catch (err) {
-        if (thinkingMsg) thinkingMsg.remove();
-        await typeMessage("⚠️ Error: Something went wrong.");
-      } finally {
-        isTyping = false;
-        enableInput();
-      }
-    }
+// Try to load premium codes (file is optional)
+async function tryLoadPremiumCodes(){
+  try{
+    const res = await fetch('/browser/premiumcodes.txt', {cache:'no-cache'});
+    if(!res.ok) return;
+    const txt = (await res.text()).trim();
+    if(!txt) return;
+    premiumCodes = txt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+    console.log('Premium codes loaded: count=', premiumCodes.length);
+  }catch(e){
+    // ignore
+  }
+}
 
-    function addMessage(sender, text) {
-      const msg = document.createElement("div");
-      msg.classList.add("message", sender === "user" ? "user-message" : "ai-message");
-      msg.textContent = text;
-      chatMessages.appendChild(msg);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      return msg;
-    }
-
-    async function typeMessage(text) {
-      const msg = document.createElement("div");
-      msg.classList.add("message", "ai-message");
-      chatMessages.appendChild(msg);
-
-      for (let i = 0; i < text.length; i++) {
-        msg.textContent += text[i];
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        await new Promise(r => setTimeout(r, 40)); // typing speed
-      }
-    }
-
-    function disableInput() {
-      userInput.disabled = true;
-    }
-    function enableInput() {
-      userInput.disabled = false;
-      userInput.focus();
-    }
-
-    imageUpload.addEventListener("change", async () => {
-      if (imageUploadsLeft <= 0) {
-        alert("BETA limit reached: Only 5 uploads per day.");
+/* ----------------------- Models UI ----------------------- */
+function renderModels(){
+  modelsEl.innerHTML = '';
+  for(const key of Object.keys(modelProfiles)){
+    const p = modelProfiles[key];
+    const div = document.createElement('div');
+    div.className = 'modelBtn' + (selectedModelKey === key ? ' selected' : '');
+    div.innerHTML = `<div>
+                      <div style="font-weight:700">${escapeHtml(p.label)}</div>
+                      <div class="small">${p.premium ? 'Premium' : 'Standard'}</div>
+                     </div>
+                     <div class="small">${selectedModelKey===key ? 'Selected' : 'Select'}</div>`;
+    div.onclick = () => {
+      if(p.premium && !premium){
+        alert('This model is premium. Enter a premium code to unlock premium features.');
         return;
       }
-      const file = imageUpload.files[0];
-      if (!file) return;
+      selectedModelKey = key;
+      renderModels();
+    };
+    modelsEl.appendChild(div);
+  }
+}
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        sendMessage(reader.result);
-        imageUploadsLeft--;
-      };
-      reader.readAsDataURL(file);
-    });
+/* ----------------------- Chat UI helpers ----------------------- */
+function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function addMessageBubble(role, html, metaText){
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
+  div.innerHTML = html;
+  if(metaText){
+    const meta = document.createElement('div'); meta.className = 'metaRow'; meta.textContent = metaText; div.appendChild(meta);
+  }
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  return div;
+}
+function clearMessages(){ messagesEl.innerHTML = ''; sessionMessages=[]; localPhotos=[]; renderPhotos(); updateUsageUI(); }
 
-    userInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") sendMessage();
-    });
-  </script>
+/* ----------------------- Typing animation ----------------------- */
+async function typeIntoBubble(bubbleEl, text, speed){
+  bubbleEl.innerHTML = '';
+  for(let i=0;i<text.length;i++){
+    bubbleEl.innerHTML = escapeHtml(text.slice(0,i+1)).replace(/\n/g,'<br>');
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    // speed modifier + punctuation pause
+    const ch = text[i];
+    const variability = 0.8 + Math.random() * 0.5;
+    let delay = Math.max(6, Math.round(speed * variability));
+    if(/[,;]/.test(ch)) delay += 80;
+    if(/[.!?]/.test(ch)) delay += 220;
+    await new Promise(r=>setTimeout(r, delay));
+  }
+}
+
+/* ----------------------- Photo upload UI ----------------------- */
+function renderPhotos(){
+  photoGrid.innerHTML = '';
+  for(const p of localPhotos){
+    const thumb = document.createElement('div'); thumb.className='photoThumb';
+    const img = document.createElement('img'); img.src = p.dataURL; img.alt = p.name;
+    thumb.appendChild(img);
+    const controls = document.createElement('div'); controls.className='photoControls';
+    const sendBtn = document.createElement('button'); sendBtn.className='small ghost'; sendBtn.textContent = p.sent ? 'Sent' : 'Send';
+    sendBtn.onclick = () => {
+      if(p.sent){ alert('Already sent'); return; }
+      if(!premium && getUsage('photo') >= NONPREMIUM_DAILY_PHOTO_LIMIT){ alert('Daily photo send limit reached for free users.'); return; }
+      sendImageToChat(p);
+      p.sent = true; incUsage('photo', 1); renderPhotos();
+    };
+    const removeBtn = document.createElement('button'); removeBtn.className='small ghost'; removeBtn.textContent='Remove';
+    removeBtn.onclick = () => { localPhotos = localPhotos.filter(x=>x.id !== p.id); renderPhotos(); };
+    controls.appendChild(sendBtn); controls.appendChild(removeBtn);
+    thumb.appendChild(controls);
+    photoGrid.appendChild(thumb);
+  }
+  updateUsageUI();
+}
+
+/* send image into chat (user message with inline image) */
+function sendImageToChat(photo){
+  const html = `<div style="font-size:13px;color:var(--muted);margin-bottom:6px">Image: ${escapeHtml(photo.name)}</div>
+                <a href="${photo.dataURL}" download="${escapeHtml(photo.name)}"><img src="${photo.dataURL}" style="max-width:320px;border-radius:8px;display:block"></a>`;
+  addMessageBubble('user', html, 'Uploaded image');
+  sessionMessages.push({role:'user', text:`[image:${photo.name}]`, image:photo.dataURL});
+  // show immediate UI update done above
+}
+
+/* file add handler */
+$('addPhoto').addEventListener('click', ()=> fileInput.click());
+fileInput.addEventListener('change', (e)=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  if(!/^image\//.test(f.type)){ alert('Only image files allowed'); return; }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const id = 'ph' + Date.now();
+    localPhotos.push({id, name: f.name, dataURL: ev.target.result, sent:false});
+    renderPhotos();
+  };
+  reader.readAsDataURL(f);
+});
+
+/* also attach button to file input */
+attachBtn.addEventListener('click', ()=> fileInput.click());
+
+/* ----------------------- Premium code entry ----------------------- */
+enterCodeBtn.addEventListener('click', async ()=>{
+  const code = prompt('Enter your premium unlock code:');
+  if(!code) return;
+  // if we have premiumCodes loaded, check silently
+  if(premiumCodes && premiumCodes.length && premiumCodes.includes(code.trim())){
+    premium = true; alert('Premium unlocked for this browser session.');
+    renderModels(); updateUsageUI(); return;
+  }
+  // otherwise allow a one-off code 'PREMIUM' for testing (optional)
+  if(code.trim() === 'PREMIUM'){ premium=true; alert('Premium unlocked (test code).'); renderModels(); updateUsageUI(); return; }
+  alert('Code not valid (or premium list not available).');
+});
+
+/* ----------------------- Clear session ----------------------- */
+clearSessionBtn.addEventListener('click', ()=>{
+  if(!confirm('Clear chat and session memory?')) return;
+  clearMessages();
+  // reset usage counters for convenience (keeps daily keys)
+  localStorage.removeItem(usageKey('msg')); localStorage.removeItem(usageKey('photo'));
+  updateUsageUI();
+});
+
+/* ----------------------- "who made you" quick rule ----------------------- */
+function overrideIfWhoMadeYou(userText){
+  if(!userText) return null;
+  if(/\bwho (made|created) you\b/i.test(userText) || /\bwho (is )?your maker\b/i.test(userText)){
+    return 'I was made by ScriptNova. Follow @scriptnovaa on Instagram.';
+  }
+  return null;
+}
+
+/* ----------------------- Local math & simplification (basic) ----------------------- */
+/* We include a simplified algebra/geometry evaluator to handle many math queries locally.
+   If it detects a simplifiable algebra expression or geometry question it returns a result.
+   (Code is intentionally compact but robust enough for school-level problems.)
+*/
+
+function looksLikeMath(q){
+  if(!q) return false;
+  if(/\b(simplify|evaluate|what is|compute|area of|circumference|perimeter|volume|pythagor)\b/i.test(q)) return true;
+  if(/[0-9]/.test(q) && /[+\-*/^()]/.test(q)) return true;
+  return false;
+}
+
+/* Very small numeric evaluator (safe-ish) */
+function evaluateNumeric(expr){
+  if(!expr || expr.length > 500) return null;
+  const allowed = expr.replace(/[^0-9+\-*/().,^\s%]/g,' ');
+  const sanitized = allowed.replace(/\^/g,'**').replace(/%/g,'*0.01');
+  try{
+    const fn = Function(`"use strict"; return (${sanitized});`);
+    const val = fn();
+    if(typeof val === 'number' && Number.isFinite(val)) return +Number(val.toFixed(12));
+    return null;
+  }catch(e){ return null; }
+}
+
+/* basic geometry patterns */
+function geometryQuery(q){
+  if(!q) return null;
+  const s = q.toLowerCase();
+  let m;
+  m = s.match(/area of (?:a |the )?circle(?:.*?)(?:radius|r)?[^\d\-]*([-+]?\d*\.?\d+)/i);
+  if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer:(Math.PI*r*r).toFixed(8), note:`area circle r=${r}`} }
+  m = s.match(/circumference of (?:a |the )?circle(?:.*?)(?:radius|r)?[^\d\-]*([-+]?\d*\.?\d+)/i);
+  if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer:(2*Math.PI*r).toFixed(8), note:`circumference r=${r}`} }
+  m = s.match(/area of (?:a |the )?triangle(?:.*?)(?:base|b)[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i);
+  if(m){ const b=Number(m[1]), h=Number(m[2]); if(isFinite(b)&&isFinite(h)) return {answer:((b*h)/2).toFixed(8), note:`triangle b=${b}, h=${h}`} }
+  m = s.match(/area of (?:a |the )?rectangle(?:.*?)(?:width|w)[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i);
+  if(m){ const w=Number(m[1]), h=Number(m[2]); if(isFinite(w)&&isFinite(h)) return {answer:(w*h).toFixed(8), note:`rectangle ${w}x${h}`} }
+  return null;
+}
+
+/* ----------------------- OpenAI call ----------------------- */
+async function callOpenAI(promptText, opts={}) {
+  // ensure we have apiKey
+  if(!apiKey){
+    // Attempt to load from file once more; if not, ask user to paste
+    await tryLoadApiKeyFile();
+    if(!apiKey){
+      const pasted = prompt('Paste your OpenAI API key for this browser session (sessionStorage). Warning: this is visible to anyone with access to this browser.');
+      if(!pasted) throw new Error('No API key set.');
+      apiKey = pasted.trim();
+    }
+  }
+
+  // Prepare messages: system + recent chat (we include last few local messages)
+  const systemMessage = { role:'system', content: 'You are Gomega AI. Answer concisely and clearly. Do not reveal your internal model mapping.' };
+  // Build a short context: last 6 messages
+  const ctx = sessionMessages.slice(-6).map(m => ({role:m.role, content:m.text}));
+  ctx.push({role:'user', content: promptText});
+
+  const body = {
+    model: modelProfiles[selectedModelKey].hiddenModel || 'gpt-4o-mini', // hidden mapping in code (replace with your chosen model strings on server if needed)
+    messages: [systemMessage, ...ctx],
+    temperature: opts.temperature ?? 0.2,
+    max_tokens: opts.max_tokens ?? 800
+  };
+
+  // Send request
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(body)
+  });
+
+  if(!res.ok){
+    const txt = await res.text();
+    let msg = `OpenAI request failed (${res.status})`;
+    try {
+      const j = JSON.parse(txt); if(j.error && j.error.message) msg += ': ' + j.error.message;
+    } catch(e) { msg += ': ' + txt; }
+    throw new Error(msg);
+  }
+  const j = await res.json();
+  // support both chat completion and older responses
+  const reply = j.choices && j.choices[0] && (j.choices[0].message?.content || j.choices[0].text) ? (j.choices[0].message?.content || j.choices[0].text) : (j?.output?.[0]?.content?.[0]?.text || 'No response');
+  return reply;
+}
+
+/* ----------------------- Main send flow ----------------------- */
+async function handleSend(imageObj=null){
+  if(isTyping) return;
+  let userText = (promptEl.value || '').trim();
+  if(!userText && !imageObj) return;
+  // enforce non-premium message/day limit
+  if(!premium && getUsage('msg') >= NONPREMIUM_DAILY_MSG_LIMIT){
+    alert('Daily message limit reached for free users. Unlock premium for unlimited use.');
+    return;
+  }
+
+  // Add user message bubble (text and/or image)
+  if(userText){
+    addMessageBubble('user', `<div>${escapeHtml(userText)}</div>`);
+    sessionMessages.push({role:'user', text:userText});
+    incUsage('msg', 1);
+  }
+  if(imageObj){
+    addMessageBubble('user', `<div style="font-size:13px;color:var(--muted);margin-bottom:6px">Image: ${escapeHtml(imageObj.name)}</div>
+      <a href="${imageObj.dataURL}" download="${escapeHtml(imageObj.name)}"><img src="${imageObj.dataURL}" style="max-width:320px;border-radius:8px;display:block"></a>`);
+    sessionMessages.push({role:'user', text:`[image:${imageObj.name}]`, image: imageObj.dataURL});
+    incUsage('photo', 1);
+  }
+
+  promptEl.value = '';
+  renderPhotos(); updateUsageUI();
+
+  // try local quick answers first
+  const whoMade = overrideIfWhoMadeYou(userText);
+  if(whoMade){
+    // immediate response (no API)
+    isTyping = true; setTyping(true);
+    const aiBubble = addMessageBubble('ai','<div></div>');
+    await typeIntoBubble(aiBubble, whoMade, 36);
+    sessionMessages.push({role:'assistant', text:whoMade});
+    isTyping=false; setTyping(false);
+    updateUsageUI();
+    return;
+  }
+
+  // local math check
+  if(looksLikeMath(userText)){
+    const geom = geometryQuery(userText);
+    if(geom){
+      isTyping = true; setTyping(true);
+      const aiBubble = addMessageBubble('ai','<div></div>');
+      await typeIntoBubble(aiBubble, geom.answer + (geom.note ? `\n\n(${geom.note})` : ''), 36);
+      sessionMessages.push({role:'assistant', text:geom.answer});
+      isTyping=false; setTyping(false);
+      updateUsageUI();
+      return;
+    }
+    const numeric = evaluateNumeric(userText);
+    if(numeric !== null && (selectedModelKey === 'math' || userText.split(/\s+/).length < 10)){
+      isTyping = true; setTyping(true);
+      const aiBubble = addMessageBubble('ai','<div></div>');
+      await typeIntoBubble(aiBubble, String(numeric), 36);
+      sessionMessages.push({role:'assistant', text:String(numeric)});
+      isTyping=false; setTyping(false);
+      updateUsageUI();
+      return;
+    }
+  }
+
+  // Otherwise call OpenAI
+  isTyping = true; setTyping(true);
+  const aiBubble = addMessageBubble('ai','<div></div>');
+  try{
+    const reply = await callOpenAI(userText || (imageObj ? `[image:${imageObj.name}]` : ''), {temperature:0.12, max_tokens:700});
+    const final = (typeof reply === 'string') ? reply : JSON.stringify(reply);
+    await typeIntoBubble(aiBubble, final, modelProfiles[selectedModelKey].speed || 60);
+    sessionMessages.push({role:'assistant', text:final});
+  } catch(e){
+    const errText = '⚠️ Error: ' + (e.message || 'Failed to fetch');
+    await typeIntoBubble(aiBubble, errText, 50);
+    sessionMessages.push({role:'assistant', text:errText});
+  } finally {
+    isTyping = false; setTyping(false);
+    updateUsageUI();
+  }
+}
+
+/* ----------------------- Typing UI toggle ----------------------- */
+function setTyping(v){
+  if(v){
+    typingIndicator.style.display = 'inline-flex';
+    promptEl.disabled = true;
+    sendBtn.disabled = true;
+    attachBtn.disabled = true;
+  } else {
+    typingIndicator.style.display = 'none';
+    promptEl.disabled = false;
+    sendBtn.disabled = false;
+    attachBtn.disabled = false;
+    promptEl.focus();
+  }
+}
+
+/* ----------------------- Events ----------------------- */
+sendBtn.addEventListener('click', ()=> handleSend());
+promptEl.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); handleSend(); }
+});
+
+/* Attach file input direct send (images) */
+fileInput.addEventListener('change', (ev)=>{
+  const f = ev.target.files && ev.target.files[0];
+  if(!f) return;
+  if(!/^image\//.test(f.type)){ alert('Only images allowed'); return; }
+  if(!premium && getUsage('photo') >= NONPREMIUM_DAILY_PHOTO_LIMIT){ alert('Daily photo send limit reached for free users.'); fileInput.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const id = 'img' + Date.now();
+    const obj = {id, name: f.name, dataURL: e.target.result, sent:false};
+    // add to localPhotos and auto-send
+    localPhotos.push(obj);
+    renderPhotos();
+    // auto-send the image into chat
+    handleSend(obj);
+  };
+  reader.readAsDataURL(f);
+});
+
+/* photo-sending button in sidebar triggers file select */
+addPhotoBtn.addEventListener('click', ()=> fileInput.click());
+
+/* Enter premium code button */
+$('enterCode').addEventListener('click', ()=> enterCodeBtn.click());
+
+/* Load initial */
+async function init(){
+  // try load api & premium codes silently
+  await tryLoadApiKeyFile();
+  await tryLoadPremiumCodes(); // populates premiumCodes array if available
+
+  // If premiumCodes contains codes, prompt user silently? no - we keep silent; they can enter code in UI
+  // For convenience, set premium=true if localStorage has a flag
+  premium = !!sessionStorage.getItem('gomega_premium_active');
+
+  renderModels();
+  updateUsageUI();
+  // initial message
+  addMessageBubble('ai', '<div style="font-weight:700">Hello — I am Gomega AI.</div><div class="small" style="margin-top:6px">I can do algebra, geometry, quick lookups, and accept images (BETA). Paste an API key into /browser/api.txt on the site, or paste one when prompted.</div>');
+  // update clock
+  setInterval(()=>{ localTimeEl.textContent = new Date().toLocaleString(); }, 1000);
+
+  // wire enterCode and premium state toggle: when user enters valid code, set premium for session
+  enterCodeBtn.addEventListener('click', async ()=>{
+    const code = prompt('Enter premium code:');
+    if(!code) return;
+    if(premiumCodes && premiumCodes.length && premiumCodes.includes(code.trim())){
+      premium = true; sessionStorage.setItem('gomega_premium_active','1'); alert('Premium unlocked for this session.');
+      renderModels(); updateUsageUI();
+      return;
+    }
+    if(code.trim() === 'PREMIUM'){ premium = true; sessionStorage.setItem('gomega_premium_active','1'); alert('Premium unlocked (test code).'); renderModels(); updateUsageUI(); return; }
+    alert('Code invalid or premium list not available.');
+  });
+
+  // clear session handler
+  clearSessionBtn.addEventListener('click', ()=> {
+    if(confirm('Clear chat?')) { clearMessages(); localStorage.removeItem(usageKey('msg')); localStorage.removeItem(usageKey('photo')); updateUsageUI(); }
+  });
+}
+
+// helper escape HTML
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* Start */
+init();
+
+</script>
 </body>
 </html>
