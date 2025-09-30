@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FollowerBoost — Demo (SCAM EXPOSE)</title>
+<style>
+  :root{--bg:#0f1724;--card:#0b1220;--accent:#ff6b6b;--muted:#9aa6b2;--glass:rgba(255,255,255,0.03)}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(30,41,59,0.6), transparent),
+    linear-gradient(180deg,var(--bg),#071024);color:#e6eef6}
+  .wrap{max-width:980px;margin:36px auto;padding:28px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:14px;box-shadow:0 8px 30px rgba(2,6,23,0.7)}
+  header{display:flex;gap:16px;align-items:center}
+  .logo{width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,#ff6b6b,#ffb86b);display:flex;align-items:center;justify-content:center;font-weight:700;color:#04121a}
+  h1{margin:0;font-size:20px}
+  p.lead{margin:6px 0 18px;color:var(--muted)}
+  .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+  .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
+  .tier{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:var(--glass);margin-bottom:10px}
+  .price{font-weight:700;font-size:18px}
+  .btn{background:linear-gradient(90deg,var(--accent),#ff9f6b);border:none;padding:10px 14px;border-radius:10px;color:#04121a;font-weight:700;cursor:pointer}
+  .ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;color:var(--muted)}
+  .small{font-size:13px;color:var(--muted)}
+  .center{text-align:center}
+  .deliverBox{display:flex;gap:12px;align-items:center}
+  .avatarPreview{width:88px;height:88px;border-radius:14px;background:linear-gradient(180deg,#0b2233,#08202b);display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--muted);flex-shrink:0}
+  .progressBar{height:12px;border-radius:999px;background:linear-gradient(90deg,#031018,#061421);overflow:hidden}
+  .progressFill{height:100%;width:0;background:linear-gradient(90deg,#34d399,#10b981)}
+  .mutedBox{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;color:var(--muted);font-size:13px}
+  .reveal{margin-top:12px;padding:12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.015),transparent);border-left:4px solid rgba(255,107,107,0.16)}
+  footer{margin-top:18px;color:var(--muted);font-size:13px}
+  /* modal */
+  .modalBg{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:none;align-items:center;justify-content:center;z-index:60}
+  .modal{background:#081223;padding:18px;border-radius:12px;width:420px;box-shadow:0 18px 60px rgba(2,6,23,0.7)}
+  label{display:block;margin-top:10px;font-size:13px;color:var(--muted)}
+  input[type="text"], input[type="email"], select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);color:#e6eef6}
+  .row{display:flex;gap:8px}
+  .badge{display:inline-block;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.03);color:var(--muted);font-size:13px}
+  .danger{color:#ffb0b0}
+  .scriptBtn{margin-top:8px;background:transparent;border:1px dashed rgba(255,255,255,0.04);padding:10px;border-radius:8px;color:var(--muted);cursor:pointer}
+  @media (max-width:880px){ .grid{grid-template-columns:1fr} .wrap{margin:12px;padding:18px} .modal{width:92%} }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">FB</div>
+      <div>
+        <h1>FollowerBoost — Demo storefront (EXPOSE)</h1>
+        <p class="lead">This is a <strong>simulation</strong>. It does <em>not</em> create real followers or connect to Instagram. Use this in videos to demonstrate how follower-selling scams look.</p>
+      </div>
+    </header>
+
+    <div class="grid" style="margin-top:16px">
+      <!-- left: main -->
+      <div>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div class="badge">New</div>
+              <h2 style="margin:8px 0 4px">Buy Instagram Followers</h2>
+              <div class="small">Instant delivery — 100% guaranteed followers | Pay with card</div>
+            </div>
+            <div class="small" style="text-align:right">
+              Demo mode<br><span style="font-weight:700">No real accounts</span>
+            </div>
+          </div>
+
+          <div style="margin-top:14px">
+            <div class="tier">
+              <div>
+                <div style="font-weight:700">Starter — 1,000 followers</div>
+                <div class="small">Low speed delivery (recommended)</div>
+              </div>
+              <div style="text-align:right">
+                <div class="price">$6.99</div>
+                <button class="btn" onclick="openModal('1000')">Buy</button>
+              </div>
+            </div>
+
+            <div class="tier">
+              <div>
+                <div style="font-weight:700">Pro — 5,000 followers</div>
+                <div class="small">Faster delivery</div>
+              </div>
+              <div style="text-align:right">
+                <div class="price">$24.99</div>
+                <button class="btn" onclick="openModal('5000')">Buy</button>
+              </div>
+            </div>
+
+            <div class="tier">
+              <div>
+                <div style="font-weight:700">Boost — 20,000 followers</div>
+                <div class="small">Priority queue</div>
+              </div>
+              <div style="text-align:right">
+                <div class="price">$79.99</div>
+                <button class="btn" onclick="openModal('20000')">Buy</button>
+              </div>
+            </div>
+
+            <div style="margin-top:12px" class="mutedBox">
+              <strong>Important (Demo):</strong> This demo simulates the storefront experience so you can show viewers: how scammers advertise speed and guarantees, how delivery interfaces look, and what to watch for. It never interacts with Instagram or payments.
+            </div>
+          </div>
+        </div>
+
+        <!-- live demo / delivery simulation -->
+        <div class="card" style="margin-top:14px" id="deliveryCard" aria-hidden="true">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="avatarPreview" id="demoAvatar">@you</div>
+            <div style="flex:1">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-weight:700" id="deliverTitle">No order yet</div>
+                  <div class="small" id="deliverSub">Make a demo purchase to start the simulated delivery</div>
+                </div>
+                <div style="text-align:right">
+                  <div class="small">Delivered</div>
+                  <div style="font-weight:700;font-size:20px" id="deliverCount">0</div>
+                </div>
+              </div>
+
+              <div style="margin-top:12px">
+                <div class="progressBar"><div class="progressFill" id="progressFill"></div></div>
+                <div style="display:flex;justify-content:space-between;margin-top:8px">
+                  <div class="small">Processing...</div>
+                  <div class="small" id="etaLabel">ETA: —</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="reveal" id="revealBox" style="display:none">
+            <strong>Reveal: This is a simulated delivery.</strong>
+            <p class="small" style="margin-top:8px">
+              In real scams, those "followers" are usually fake/bot accounts or accounts obtained through follow-exchange networks. Real Instagram engagement will not increase, and Instagram periodically purges fake accounts.
+            </p>
+            <ul class="small" style="margin:8px 0 0;padding-left:18px">
+              <li><strong>Red flags:</strong> guaranteed followers, instant delivery, cheap mass packages, no refunds or lots of fine-print.</li>
+              <li><strong>Risks:</strong> chargebacks, account flags, wasted money, damaged credibility.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- explanation / script area -->
+        <div class="card" style="margin-top:14px">
+          <h3 style="margin:0 0 8px">How scammers typically operate (explain in your video)</h3>
+          <div class="small">
+            <ol>
+              <li><strong>Bots & fake accounts:</strong> Sellers control many disposable accounts that follow or like posts. These accounts don’t bring real engagement.</li>
+              <li><strong>Follow/unfollow networks:</strong> Real people or low-paid workers use follow-for-follow systems; they often unfollow shortly after.</li>
+              <li><strong>Resellers & recycled accounts:</strong> Accounts may be sold multiple times or rented — unstable and risky.</li>
+              <li><strong>Chargebacks & refunds:</strong> Buyers often dispute payments; sellers disappear or provide smoke-and-mirror excuses.</li>
+            </ol>
+          </div>
+
+          <button class="scriptBtn" onclick="copyScript()">Copy short video script</button>
+          <div id="copiedMsg" style="display:none;margin-top:8px;color:#9ff3d0;font-size:13px">Script copied to clipboard ✓</div>
+        </div>
+      </div>
+
+      <!-- right column -->
+      <aside>
+        <div class="card">
+          <h4 style="margin-top:0">Order / Simulation</h4>
+          <div class="small">This area shows a simulated receipt and safety tips for your video audience.</div>
+
+          <div style="margin-top:12px">
+            <div class="mutedBox">
+              <strong>Sim receipt</strong>
+              <div style="margin-top:8px" id="simReceipt">No orders yet</div>
+            </div>
+
+            <div style="margin-top:10px" class="mutedBox">
+              <strong>Video tips</strong>
+              <ul style="margin:8px 0 0;padding-left:18px" class="small">
+                <li>Record yourself buying and then reveal the simulation.</li>
+                <li>Show the refund attempts, if any, and highlight chargeback language.</li>
+                <li>Explain how to spot fake followers (low likes, repetitive comments).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h4 style="margin-top:0">Report & Protect</h4>
+          <div class="small">
+            <ol>
+              <li>Report seller to Instagram via profile → report.</li>
+              <li>Keep transaction screenshots and receipts.</li>
+              <li>Warn viewers to use official ads or organic growth instead.</li>
+            </ol>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>Demo site — for educational purposes only.</div>
+        <div class="small">Last updated: <strong id="updatedDate"></strong></div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- modal (simulated checkout) -->
+  <div class="modalBg" id="modalBg" role="dialog" aria-modal="true">
+    <div class="modal" role="document">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong id="modalTitle">Simulated Checkout</strong>
+        <button class="ghost" onclick="closeModal()">Close</button>
+      </div>
+
+      <label>Instagram username (demo only)</label>
+      <input id="inpUser" type="text" placeholder="@yourhandle" value="@yourhandle" />
+
+      <label>Email (optional)</label>
+      <input id="inpEmail" type="email" placeholder="you@mail.com" />
+
+      <label>Package</label>
+      <select id="selPackage">
+        <option value="1000">Starter — 1,000 followers — $6.99</option>
+        <option value="5000">Pro — 5,000 followers — $24.99</option>
+        <option value="20000">Boost — 20,000 followers — $79.99</option>
+      </select>
+
+      <label style="margin-top:12px">Payment (simulation)</label>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button class="btn" onclick="simulatePayment()">Simulate card pay</button>
+        <button class="ghost" onclick="simulatePayment('manual')">Simulate manual transfer</button>
+      </div>
+
+      <div class="small" style="margin-top:12px">
+        <strong>Note:</strong> No real payment is processed. This is a demo to reproduce the user experience scammers show.
+      </div>
+    </div>
+  </div>
+
+<script>
+  // utility
+  function $(id){return document.getElementById(id)}
+  $('updatedDate').textContent = new Date().toLocaleDateString();
+
+  let activeOrder = null;
+
+  function openModal(packageCount){
+    // pick the correct option if called with param
+    if(packageCount) $('selPackage').value = packageCount;
+    $('modalBg').style.display = 'flex';
+    $('inpUser').focus();
+  }
+  function closeModal(){ $('modalBg').style.display = 'none'; }
+
+  function simulatePayment(mode){
+    // gather fields
+    const user = $('inpUser').value.trim() || '@yourhandle';
+    const pkg = $('selPackage').value;
+    // close modal and start simulated delivery
+    closeModal();
+    startSimulatedDelivery(user, Number(pkg), mode || 'card');
+  }
+
+  function startSimulatedDelivery(username, count, mode){
+    activeOrder = { user, count, mode, startedAt: Date.now() };
+    // show delivery card
+    const card = $('deliveryCard');
+    card.setAttribute('aria-hidden','false');
+    card.style.display = 'block';
+    $('demoAvatar').textContent = username.replace(/^@/,'').slice(0,8) || '@you';
+    $('deliverTitle').textContent = `Order: ${count.toLocaleString()} followers`;
+    $('deliverSub').textContent = `Mode: ${mode} — simulated delivery started`;
+    $('deliverCount').textContent = '0';
+    $('progressFill').style.width = '0%';
+    $('etaLabel').textContent = 'ETA: calculating...';
+    $('revealBox').style.display = 'none';
+
+    // simulate a receipt on the right column
+    $('simReceipt').innerHTML = `<div style="font-weight:700">${username}</div>
+      <div class="small">Package: ${count.toLocaleString()} followers</div>
+      <div class="small">Price: ${priceFor(count)}</div>
+      <div class="small">Status: processing (demo)</div>`;
+
+    // animate incremental delivery — the pace is intentionally convincing but fake
+    let delivered = 0;
+    const steps = Math.max(6, Math.min(40, Math.floor(count/500))); // number of increments
+    let progress = 0;
+    const intervalMilliseconds = 900; // step interval (can vary)
+    const incrementAmounts = generateIncrements(count, steps);
+
+    // update ETA (simple)
+    $('etaLabel').textContent = `ETA: ~${Math.round((steps*intervalMilliseconds)/1000)}s`;
+
+    let i = 0;
+    const t = setInterval(()=>{
+      // slightly random progress
+      const inc = incrementAmounts[i] || (count - delivered);
+      delivered += inc;
+      progress = Math.min(100, Math.round((delivered/count)*100));
+      $('deliverCount').textContent = delivered.toLocaleString();
+      $('progressFill').style.width = progress + '%';
+      i++;
+      if(delivered >= count || i > steps+4){
+        clearInterval(t);
+        setTimeout(()=>{ finishDelivery(count) }, 700);
+      }
+    }, intervalMilliseconds);
+  }
+
+  function finishDelivery(count){
+    $('deliverCount').textContent = count.toLocaleString();
+    $('progressFill').style.width = '100%';
+    $('deliverSub').textContent = 'Simulated delivery complete';
+    $('etaLabel').textContent = 'ETA: 0s';
+    $('revealBox').style.display = 'block';
+    // show a simulated 'gotcha' message
+    showGotcha();
+  }
+
+  function showGotcha(){
+    // append a short overlay message you can screenshot for your video
+    const got = document.createElement('div');
+    got.style.marginTop = '10px';
+    got.className = 'mutedBox';
+    got.innerHTML = `<strong>Gotcha (demo):</strong> This site only simulates followers. Real sellers who claim "guaranteed" followers usually deliver accounts that provide no real engagement. Use this demo to show the audience a safe example.`;
+    document.getElementById('revealBox').appendChild(got);
+  }
+
+  function generateIncrements(total, steps){
+    // generate an array of pseudo-random increments that sum to total
+    const arr = [];
+    let remaining = total;
+    for(let i=0;i<steps;i++){
+      if(i === steps-1){ arr.push(remaining); break; }
+      // generate a chunk — favor larger chunks earlier to mimic 'burst' delivery
+      const maxChunk = Math.max(1, Math.floor(remaining / (steps - i) * (0.6 + Math.random()*0.8)));
+      const chunk = Math.max(1, Math.min(remaining - (steps-i-1), Math.floor(Math.random()*maxChunk)));
+      arr.push(chunk);
+      remaining -= chunk;
+    }
+    // small shuffle
+    return arr;
+  }
+
+  function priceFor(count){
+    if(count<=1500) return '$6.99';
+    if(count<=6000) return '$24.99';
+    return '$79.99';
+  }
+
+  // copy script helper
+  function copyScript(){
+    const script = `Video script (short):
+1) Intro: "I'm exposing follower-selling scams — watch."
+2) Show this page, pick the 5,000 package and click Buy (simulated).
+3) Wait for 'delivery' animation, highlight the receipt and ETA.
+4) Reveal: explain fake/bot accounts, engagement mismatch, and platform risks.
+5) Call to action: report scammers and use legit growth strategies.`;
+    navigator.clipboard?.writeText(script).then(()=>{
+      $('copiedMsg').style.display = 'block';
+      setTimeout(()=>$('copiedMsg').style.display='none',2200);
+    });
+  }
+
+  // expose the modal open for manual dev use
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+
+  // ensure deliveryCard hidden initially
+  document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById('deliveryCard').style.display = 'none';
+  });
+
+</script>
+</body>
+</html>
