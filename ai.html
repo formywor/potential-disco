@@ -6,35 +6,47 @@
   <title>Gomega AI</title>
   <style>
     body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
       margin: 0;
-      font-family: "Segoe UI", Tahoma, sans-serif;
-      background: linear-gradient(135deg, #141e30, #243b55);
+      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      color: #fff;
+      color: #333;
     }
     .chat-container {
       width: 95%;
       max-width: 900px;
       height: 90vh;
-      background: rgba(0,0,0,0.7);
+      background: #fff;
       border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
     }
     .chat-header {
+      background: #007bff;
+      color: white;
       padding: 15px;
       text-align: center;
       font-size: 1.5em;
       font-weight: bold;
-      background: #0f2027;
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+    .selectors {
+      display: flex;
+      gap: 10px;
+    }
+    select {
+      padding: 5px;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.9em;
     }
     .chat-messages {
       flex: 1;
@@ -45,7 +57,7 @@
       gap: 12px;
     }
     .message {
-      max-width: 75%;
+      max-width: 70%;
       padding: 12px 15px;
       border-radius: 12px;
       animation: fadeIn 0.3s ease-in-out;
@@ -54,10 +66,11 @@
     }
     .user-message {
       background: #007bff;
+      color: white;
       align-self: flex-end;
     }
     .ai-message {
-      background: #2a2a72;
+      background: #e5e5ea;
       align-self: flex-start;
     }
     @keyframes fadeIn {
@@ -67,12 +80,12 @@
     .chat-input {
       display: flex;
       padding: 15px;
-      background: #0f2027;
+      background: #f1f1f1;
     }
-    .chat-input input[type="text"] {
+    .chat-input input {
       flex: 1;
       padding: 12px;
-      border: none;
+      border: 1px solid #ccc;
       border-radius: 8px;
       font-size: 1em;
     }
@@ -90,29 +103,20 @@
     .chat-input button:hover {
       background: #0056b3;
     }
-    .model-select, .user-type {
-      background: #1f4068;
-      border: none;
-      color: white;
-      font-size: 0.9em;
-      padding: 5px 10px;
-      border-radius: 6px;
-      margin-left: 10px;
-    }
   </style>
 </head>
 <body>
   <div class="chat-container">
     <div class="chat-header">
-      Gomega AI
-      <div>
-        <select id="modelSelect" class="model-select">
+      <span>Gomega AI</span>
+      <div class="selectors">
+        <select id="modelSelect">
           <option value="gomega-v5-mini">Gomega V5-mini</option>
           <option value="gomega-v5">Gomega V5.0</option>
           <option value="gomega-v7-beta">Gomega V7-beta</option>
           <option value="gomega-v7-logic">Gomega V7-Logic</option>
         </select>
-        <select id="userType" class="user-type">
+        <select id="userType">
           <option value="free">Free</option>
           <option value="premium">Premium</option>
         </select>
@@ -132,6 +136,27 @@
     const userType = document.getElementById("userType");
     let isTyping = false;
 
+    function addMessage(sender, text) {
+      const msg = document.createElement("div");
+      msg.classList.add("message", sender === "user" ? "user-message" : "ai-message");
+      msg.textContent = text;
+      chatMessages.appendChild(msg);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return msg;
+    }
+
+    async function typeMessage(text, delay) {
+      const msg = document.createElement("div");
+      msg.classList.add("message", "ai-message");
+      chatMessages.appendChild(msg);
+
+      for (let i = 0; i < text.length; i++) {
+        msg.textContent += text[i];
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+
     async function sendMessage() {
       if (isTyping) return;
 
@@ -140,8 +165,8 @@
 
       addMessage("user", text);
       userInput.value = "";
-      disableInput();
       isTyping = true;
+      userInput.disabled = true;
 
       const thinkingMsg = addMessage("ai", "Thinking...");
 
@@ -168,40 +193,12 @@
         await typeMessage(reply, userType.value === "premium" ? 20 : 40);
       } catch (err) {
         if (thinkingMsg) thinkingMsg.remove();
-        await typeMessage("⚠️ Error: Could not reach server.");
+        await typeMessage("⚠️ Error: Could not reach server.", 40);
       } finally {
         isTyping = false;
-        enableInput();
+        userInput.disabled = false;
+        userInput.focus();
       }
-    }
-
-    function addMessage(sender, text) {
-      const msg = document.createElement("div");
-      msg.classList.add("message", sender === "user" ? "user-message" : "ai-message");
-      msg.textContent = text;
-      chatMessages.appendChild(msg);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      return msg;
-    }
-
-    async function typeMessage(text, delay) {
-      const msg = document.createElement("div");
-      msg.classList.add("message", "ai-message");
-      chatMessages.appendChild(msg);
-
-      for (let i = 0; i < text.length; i++) {
-        msg.textContent += text[i];
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        await new Promise(r => setTimeout(r, delay));
-      }
-    }
-
-    function disableInput() {
-      userInput.disabled = true;
-    }
-    function enableInput() {
-      userInput.disabled = false;
-      userInput.focus();
     }
 
     userInput.addEventListener("keypress", (e) => {
