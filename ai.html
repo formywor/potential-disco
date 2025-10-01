@@ -203,15 +203,15 @@ if(OWNER_API_KEY){
 
 // ---------- Models: typing speeds adjusted (slower overall) ----------
 const MODEL_CONFIG = {
-  'gomega-v10': { label: 'Gomega V10 (premium)', openai: 'GPT-5-nano', speed:6, smart:true, verb:2.0, premium: true },
+  'gomega-v10': { label: 'Gomega V10 (premium)', openai: 'gpt-4o', speed:6, smart:true, verb:2.0, premium: true },
   'gomega-v9':  { label: 'Gomega V9 (premium)',  openai: 'gpt-4o', speed:8, smart:true, verb:1.9, premium: true },
   'gomega-v8':  { label: 'Gomega V8 (premium)',  openai: 'gpt-4o', speed:10, smart:true, verb:1.6, premium: true },
   'gomega-v6':  { label: 'Gomega V6 (premium)',  openai: 'gpt-4o', speed:12, smart:true, verb:1.5, premium: true },
   // non-premium: make typing slower, but keep v7-mini faster than v7
-  'gomega-v7':  { label: 'Gomega V7',            openai: 'gpt-4o-mini', speed:120, smart:true, verb:1.0, premium: false },
+  'gomega-v7':  { label: 'Gomega V7',            openai: 'gpt-4o-mini', speed:51, smart:true, verb:1.0, premium: false },
   'gomega-v7mini':{ label: 'Gomega V7-mini',      openai: 'gpt-3.5-turbo', speed:50, smart:false, verb:0.5, premium: false },
-  'gomega-v5':  { label: 'Gomega V5',            openai: 'gpt-3.5-turbo', speed:160, smart:false, verb:1.0, premium:false },
-  'mathmaster': { label: 'MathMaster',           openai: 'gpt-3.5-turbo', speed:110, smart:true, verb:0.2, premium:false }
+  'gomega-v5':  { label: 'Gomega V5',            openai: 'gpt-3.5-turbo', speed:50, smart:false, verb:1.0, premium:false },
+  'mathmaster': { label: 'MathMaster',           openai: 'gpt-3.5-turbo', speed:50, smart:true, verb:0.2, premium:false }
 };
 
 let currentModelKey = 'gomega-v7';
