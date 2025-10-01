@@ -90,6 +90,7 @@
         <input id="prompt" class="prompt" placeholder="Ask / type math (e.g. 'Simplify 4a-2(5a-7)')"/>
         <select id="modelSelect" title="Choose model"></select>
         <button id="askBtn" class="primary">Ask</button>
+        <!-- Set Key button exists but will be hidden when OWNER_API_KEY is set -->
         <button id="setKeyBtn" class="ghost">Set Key</button>
       </div>
 
@@ -125,7 +126,7 @@
         </div>
         <div class="small" style="margin-top:8px">Daily sends left: <span id="photoQuota">5</span></div>
         <div class="photoGrid" id="photoGrid"></div>
-        <div class="small" style="margin-top:8px">Photos stored locally; premium gets infinite sends. The UI will try to upload images to OpenAI (if you pasted an API key and CORS allows it) or fall back to embedding images.</div>
+        <div class="small" style="margin-top:8px">Photos stored locally; premium gets infinite sends. The UI will try to upload images to OpenAI (if you set an API key and CORS allows it) or fall back to embedding images.</div>
       </div>
 
       <div class="card">
@@ -137,17 +138,20 @@
   </div>
 
 <script>
-/* Gomega AI (enhanced)
-   - Adds proper image send attempts (direct OpenAI upload with graceful fallback)
-   - Adds more premium models and premium features
-   - Per-model typing speeds: v7-mini quick, v7 slower & smart, premium fastest & smart
-   - Provides commented example proxy + GitHub Actions snippet for safe API usage
-   - Keeps all previous behavior; does not remove anything
-*/
+/*
+  === OWNER API KEY CONFIGURATION (EDIT HERE) ===
 
-/* ========================
-   Basic UI element refs
-   ======================== */
+  Paste your owner API key here (the one that starts with "sk-").
+  The code will strip out any commas automatically.
+
+  Example:
+    const OWNER_API_KEY = 'sk-ABC123...';
+
+  Leave as '' to allow the fallback Set Key UI for temporary keys.
+*/
+const OWNER_API_KEY_RAW = ''; // <-- paste your key here (sk-...), or leave empty to allow temporary fallback
+
+// ---------- Basic UI refs ----------
 const messagesEl = document.getElementById('messages');
 const promptEl = document.getElementById('prompt');
 const askBtn = document.getElementById('askBtn');
@@ -177,27 +181,42 @@ let session = [];
 let photos = [];
 let typingLocked = false;
 let premiumUnlocked = false;
-let premiumCodes = []; // loaded from /browser/premiumcodes.txt if available
+let premiumCodes = [];
 
-/* ========================
-   Models config (added more premium models)
-   - speed = base ms per char (lower = faster)
-   - smart = whether it should run extra local heuristics
-   ======================== */
+// ---------- sanitize/strip commas helper ----------
+function normalizeKey(raw){
+  if(!raw) return '';
+  // Remove whitespace and commas; preserve rest
+  return raw.replace(/,/g, '').trim();
+}
+
+// ---------- read OWNER key (normalized) ----------
+const OWNER_API_KEY = normalizeKey(OWNER_API_KEY_RAW);
+
+// If an owner key exists, hide the Set Key option so users cannot edit the key.
+if(OWNER_API_KEY){
+  try{ setKeyBtn.style.display = 'none'; }catch(e){}
+} else {
+  // leave the setKeyBtn visible for fallback temporary key input
+  try{ setKeyBtn.style.display = ''; }catch(e){}
+}
+
+// ---------- Models: typing speeds adjusted (slower overall) ----------
 const MODEL_CONFIG = {
-  'gomega-v10': { label: 'Gomega V10 (premium)', openai: 'gpt-4o', speed:5, smart:true, verb:2.0, premium: true },
-  'gomega-v9':  { label: 'Gomega V9 (premium)',  openai: 'gpt-4o', speed:6, smart:true, verb:1.9, premium: true },
-  'gomega-v8':  { label: 'Gomega V8 (premium)',  openai: 'gpt-4o', speed:8, smart:true, verb:1.6, premium: true },
-  'gomega-v6':  { label: 'Gomega V6 (premium)',  openai: 'gpt-4o', speed:9, smart:true, verb:1.5, premium: true },
-  'gomega-v7':  { label: 'Gomega V7',            openai: 'gpt-4o-mini', speed:20, smart:true, verb:1.0, premium: false },
-  'gomega-v7mini':{ label: 'Gomega V7-mini',      openai: 'gpt-3.5-turbo', speed:9, smart:false, verb:0.5, premium: false },
-  'gomega-v5':  { label: 'Gomega V5',            openai: 'gpt-3.5-turbo', speed:26, smart:false, verb:1.0, premium:false },
-  'mathmaster': { label: 'MathMaster',           openai: 'gpt-3.5-turbo', speed:18, smart:true, verb:0.2, premium:false }
+  'gomega-v10': { label: 'Gomega V10 (premium)', openai: 'gpt-4o', speed:6, smart:true, verb:2.0, premium: true },
+  'gomega-v9':  { label: 'Gomega V9 (premium)',  openai: 'gpt-4o', speed:8, smart:true, verb:1.9, premium: true },
+  'gomega-v8':  { label: 'Gomega V8 (premium)',  openai: 'gpt-4o', speed:10, smart:true, verb:1.6, premium: true },
+  'gomega-v6':  { label: 'Gomega V6 (premium)',  openai: 'gpt-4o', speed:12, smart:true, verb:1.5, premium: true },
+  // non-premium: make typing slower, but keep v7-mini faster than v7
+  'gomega-v7':  { label: 'Gomega V7',            openai: 'gpt-4o-mini', speed:120, smart:true, verb:1.0, premium: false },
+  'gomega-v7mini':{ label: 'Gomega V7-mini',      openai: 'gpt-3.5-turbo', speed:50, smart:false, verb:0.5, premium: false },
+  'gomega-v5':  { label: 'Gomega V5',            openai: 'gpt-3.5-turbo', speed:160, smart:false, verb:1.0, premium:false },
+  'mathmaster': { label: 'MathMaster',           openai: 'gpt-3.5-turbo', speed:110, smart:true, verb:0.2, premium:false }
 };
 
 let currentModelKey = 'gomega-v7';
 
-/* populate UI functions */
+// populate model UI
 function renderModels(){
   modelSelect.innerHTML = '';
   modelListEl.innerHTML = '';
@@ -205,7 +224,6 @@ function renderModels(){
     const cfg = MODEL_CONFIG[key];
     const opt = document.createElement('option');
     opt.value = key;
-    // hide raw openai name from user interface
     opt.textContent = cfg.label + (cfg.premium ? ' • premium' : '');
     if(cfg.premium && !premiumUnlocked && key !== 'gomega-v6') opt.disabled = true;
     modelSelect.appendChild(opt);
@@ -228,9 +246,7 @@ function renderModels(){
 }
 renderModels();
 
-/* ========================
-   helpers
-   ======================== */
+// ---------- helpers ----------
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function addBubble(role, html){ const el = document.createElement('div'); el.className = 'bubble ' + (role==='user' ? 'user' : 'ai'); el.innerHTML = html; messagesEl.appendChild(el); messagesEl.scrollTop = messagesEl.scrollHeight; return el; }
 function updateSessionUI(){ sessionListEl.innerHTML = session.slice(-6).map(m=>`<div class="small"><strong>${escapeHtml(m.role)}</strong>: ${escapeHtml(m.text).slice(0,140)}</div>`).join('') || 'No messages yet.'; }
@@ -238,7 +254,7 @@ function setProgress(p){ progressBar.style.width = Math.max(3, Math.min(100,p)) 
 function setThinkingText(t){ thinkingBadge.textContent = t; lastAction.textContent = t; }
 function setTypingLocked(v){ typingLocked = v; promptEl.disabled = v; askBtn.disabled = v; setKeyBtn.disabled = v; if(v){ promptEl.classList.add('disabled'); askBtn.classList.add('disabled'); setKeyBtn.classList.add('disabled'); } else { promptEl.classList.remove('disabled'); askBtn.classList.remove('disabled'); setKeyBtn.classList.remove('disabled'); } }
 
-/* typing indicator */
+// typing indicator
 function addTypingIndicator(container){
   const dots = document.createElement('span'); dots.className = 'typingDots';
   dots.innerHTML = '<span></span><span></span><span></span>';
@@ -247,7 +263,7 @@ function addTypingIndicator(container){
 }
 function removeTypingIndicator(dotsEl){ if(dotsEl && dotsEl.parentNode) dotsEl.parentNode.removeChild(dotsEl); }
 
-/* typing engine (per-model speeds) */
+// typing engine uses the new slower speeds
 async function typeTextInto(node, text, speed){
   const dots = node.querySelector('.typingDots');
   if(dots) removeTypingIndicator(dots);
@@ -264,17 +280,7 @@ async function typeTextInto(node, text, speed){
   }
 }
 
-/* ========================
-   algebra / geometry / numeric engine (unchanged)
-   (same algebra/geometry functions included here)
-   ======================== */
-
-/* --- tokenizer + algebra parsing (kept identical to previous working engine) --- */
-/* ... (for brevity in this comment we say we include the same robust math/geometry code) ... */
-
-/* We'll paste them verbatim so math works locally (see next chunk) */
-
-/* Tokenize / parse / simplify / numeric eval / geometryQuery functions: */
+// ---------- Algebra/numeric/geometry engine (unchanged) ----------
 function tokenize(expr){
   const s = String(expr);
   const tokens = [];
@@ -483,34 +489,43 @@ function geometryQuery(q){
   return null;
 }
 
-/* ========================
-   OpenAI key handling
-   ======================== */
-const STORAGE_KEY = 'gomega_openai_key';
-function setOpenAIKey(key){
-  if(!key) { sessionStorage.removeItem(STORAGE_KEY); return; }
-  sessionStorage.setItem(STORAGE_KEY, key);
+// ---------- OpenAI key handling (owner-first, fallback-second) ----------
+const STORAGE_KEY = 'gomega_openai_key_temp';
+function setOpenAIKeyTemp(key){
+  if(!key) {
+    sessionStorage.removeItem(STORAGE_KEY);
+    return;
+  }
+  sessionStorage.setItem(STORAGE_KEY, normalizeKey(key));
 }
-function getOpenAIKey(){ return sessionStorage.getItem(STORAGE_KEY) || null; }
+function getOpenAIKey(){
+  // Priority: OWNER_API_KEY (if set) -> sanitized sessionStorage temporary key -> ''
+  if(OWNER_API_KEY) return OWNER_API_KEY;
+  const temp = sessionStorage.getItem(STORAGE_KEY) || '';
+  return normalizeKey(temp);
+}
 
+// Set Key UI: only allow if OWNER_API_KEY is not present.
 setKeyBtn.addEventListener('click', async ()=>{
-  const prev = getOpenAIKey() || '';
-  const k = prompt('Paste your OpenAI API key (this will be stored in sessionStorage for this browser session).\\n\\nFor safety on shared machines, run a server proxy and DO NOT paste a long-lived key here.', prev);
-  if(k) { setOpenAIKey(k.trim()); alert('Key set for this session.'); }
+  if(OWNER_API_KEY){
+    alert('Owner API key is set in the file; you cannot change it from the UI.');
+    return;
+  }
+  const prev = sessionStorage.getItem(STORAGE_KEY) || '';
+  const k = prompt('Paste a temporary OpenAI API key (this will be stored in sessionStorage for this browser session).\\nCommas in the key will be removed automatically.', prev);
+  if(k) { setOpenAIKeyTemp(k.trim()); alert('Temporary key set for this session.'); }
 });
+
+// On load: hide Set Key if owner key is present (defense in depth)
 window.addEventListener('load', ()=>{
-  if(!getOpenAIKey()){
-    setTimeout(()=> {
-      if(confirm('Would you like to paste your OpenAI API key now? (If not, the page will still use local math/search features.)')) {
-        setKeyBtn.click();
-      }
-    }, 600);
+  if(OWNER_API_KEY){
+    try{ setKeyBtn.style.display = 'none'; }catch(e){}
+  } else {
+    try{ setKeyBtn.style.display = ''; }catch(e){}
   }
 });
 
-/* ========================
-   Premium codes loader (comma/newline splitting)
-   ======================== */
+// ---------- Premium codes loader (unchanged) ----------
 async function tryLoadPremiumCodes(){
   try {
     const res = await fetch('/browser/premiumcodes.txt', {cache:'no-cache'});
@@ -539,14 +554,10 @@ applyCodeBtn.addEventListener('click', ()=>{
 });
 tryLoadPremiumCodes();
 
-/* ========================
-   OpenAI call (chat + fallback)
-   - max_tokens adjusted when premium
-   ======================== */
+// ---------- OpenAI call ----------
 async function callOpenAI(promptText, modelKey, options = {}){
   const apiKey = getOpenAIKey();
-  if(!apiKey) throw new Error('No OpenAI key set. Click "Set Key" and paste your OpenAI API key for this session.');
-
+  if(!apiKey) throw new Error('No OpenAI key set. Owner key is absent and no temporary key provided.');
   const cfg = MODEL_CONFIG[modelKey] || MODEL_CONFIG['gomega-v7'];
   const systemMsg = { role: 'system', content:
     `You are Gomega AI — a helpful assistant. Answer clearly and concisely.
@@ -582,15 +593,7 @@ async function callOpenAI(promptText, modelKey, options = {}){
   return reply;
 }
 
-/* ========================
-   Image sending — best-effort to upload to OpenAI
-   Behavior:
-     1) If user pasted API key and CORS allows, attempt to upload file to OpenAI 'files' endpoint (purpose: 'answers')
-     2) If upload succeeds, we include the uploaded file id/url in the conversation message wrapper (server-side usage may differ)
-     3) If CORS blocks or upload fails, we include base64 embedded image in the chat message and attempt to instruct user on better approach
-   Note: Browser -> OpenAI direct file upload may be blocked by CORS. Using a small proxy (example below) avoids this and is recommended in production.
-   ======================== */
-
+// ---------- Photo upload (same best-effort behavior) ----------
 const DAILY_QUOTA = 5;
 function quotaKeyForToday(){
   const d = new Date(); const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
@@ -624,15 +627,12 @@ function renderPhotos(){
     sendBtn.onclick = async () => {
       if(p.sent){ alert('Already sent'); return; }
       if(!premiumUnlocked && getQuotaUsed() >= DAILY_QUOTA){ alert('Daily photo send limit reached (5). Try again tomorrow or unlock premium.'); return; }
-      // Attempt to upload to OpenAI (best-effort)
       const startMsg = addBubble('ai', `<span class="small">Uploading image "${escapeHtml(p.name)}" to OpenAI (if allowed)...</span>`);
       setThinkingText('Uploading image...');
       setProgress(12);
       try{
         const uploadResult = await tryUploadImageToOpenAI(p.file);
-        // uploadResult may be {ok:true, fileId, details, fallback: false} or {ok:false, reason:'CORS'/'error', fallbackData: base64}
         if(uploadResult.ok && uploadResult.fileId){
-          // We assume the assistant can reference fileId if using a server-side flow. We'll reference file id in the message.
           addBubble('user', `<div style="font-size:13px;color:var(--muted);margin-bottom:6px">Image uploaded to OpenAI: <strong>${escapeHtml(p.name)}</strong></div><div class="small">File ID: ${escapeHtml(uploadResult.fileId)}</div>`);
           session.push({role:'user', text:`[image:uploaded:${p.name}]`, img:p, fileId:uploadResult.fileId});
           p.sent = true; incrementQuota(); renderPhotos(); updateSessionUI();
@@ -640,11 +640,9 @@ function renderPhotos(){
           setThinkingText('Idle');
           lastFetchEl.textContent = new Date().toLocaleString();
         } else {
-          // fallback: send base64 embed
           addBubble('user', `<div style="font-size:13px;color:var(--muted);margin-bottom:6px">Image embedded (fallback): <strong>${escapeHtml(p.name)}</strong></div><img src="${p.url}" style="max-width:320px;width:100%;border-radius:8px">`);
           session.push({role:'user', text:`[image:embedded:${p.name}]`, img:p});
           p.sent = true; incrementQuota(); renderPhotos(); updateSessionUI();
-          // inform user that direct upload may have been blocked
           if(uploadResult && uploadResult.reason){
             addBubble('ai', `<div class="small">Note: direct upload was blocked (${escapeHtml(uploadResult.reason)}). The image is embedded locally so the assistant can reference it in the conversation but OpenAI's direct file upload may not have worked due to CORS. For reliable uploads, run the optional proxy server (see code comments at bottom).</div>`);
           }
@@ -670,40 +668,28 @@ function renderPhotos(){
   updateQuotaUI();
 }
 
-/* tryUploadImageToOpenAI attempts direct upload:
-   - If a browser CORS error occurs, it returns {ok:false, reason:'CORS', fallbackData: base64}
-   - If upload fails for other reasons, returns ok:false with reason
-   - If successful, returns {ok:true, fileId: 'file-XXX'}
-   Important: browsers often cannot POST multipart/form-data to OpenAI due to CORS; a proxy is more reliable.
-*/
 async function tryUploadImageToOpenAI(file){
   const apiKey = getOpenAIKey();
   if(!apiKey) return {ok:false, reason:'no-api-key'};
-  // Prepare form data like: file=@<file>, purpose=answers
   try{
     const form = new FormData();
     form.append('file', file, file.name);
-    form.append('purpose', 'answers'); // 'answers' purpose used historically; server-side flows available
+    form.append('purpose', 'answers');
     const res = await fetch('https://api.openai.com/v1/files', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`
-        // do NOT set Content-Type manually; browser will set boundary
       },
       body: form
     });
     if(!res.ok){
       const text = await res.text();
-      // If a CORS error happened, fetch would throw earlier, but some servers return 4xx. Return failure detail.
       return {ok:false, reason: `upload-failed-status-${res.status}`, details: text};
     }
     const data = await res.json();
-    // response contains id field
     if(data && data.id) return {ok:true, fileId: data.id, details: data};
     return {ok:false, reason:'no-id-in-response', details:data};
   } catch(err){
-    // Could be CORS or network error; fall back to embedding
-    // Provide base64 fallback
     try{
       const base64 = await fileToBase64(file);
       return {ok:false, reason: String(err.message || 'network/cors'), fallbackData: base64};
@@ -721,9 +707,7 @@ function fileToBase64(file){
   });
 }
 
-/* ========================
-   Snippet gathering (client-side)
-   ======================== */
+// ---------- Snippet gathering (unchanged) ----------
 async function fetchWikiSummary(q){
   try{ const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`); if(!r.ok) return null; const j = await r.json(); return j.extract || null; }catch(e){ return null; }
 }
@@ -797,16 +781,12 @@ function pickBest(snips, query, modelKey, strictOnly){
   return {answer, confidence:conf};
 }
 
-/* ========================
-   V6 free-use tracking
-   ======================== */
+// V6 uses tracking (unchanged)
 const V6_USES_KEY = 'gomega_v6_free_uses';
 function getV6Uses(){ return parseInt(localStorage.getItem(V6_USES_KEY) || '0', 10); }
 function incrementV6Uses(){ const u = getV6Uses() + 1; localStorage.setItem(V6_USES_KEY, String(u)); return u; }
 
-/* ========================
-   Main ask flow
-   ======================== */
+// Main ask flow (unchanged behavior except getOpenAIKey uses owner-first)
 askBtn.addEventListener('click', onAsk);
 promptEl.addEventListener('keydown', (e) => { if(e.key==='Enter' && !e.shiftKey){ onAsk(); e.preventDefault(); } });
 document.getElementById('clearBtn').addEventListener('click', ()=>{ messagesEl.innerHTML=''; session=[]; updateSessionUI(); });
@@ -832,7 +812,7 @@ async function onAsk(){
 
   try{
     const qLow = qRaw.trim().toLowerCase();
-    // intercepts
+    // intercepts (unchanged)
     if(/\bwho (?:made|created) (?:you|this)\b/i.test(qRaw) || /^who(?:'s| is)? the creator\b/i.test(qRaw)){
       removeTypingIndicator(typingDots);
       const reply = 'ScriptNova made me — follow scriptnovaa (two a\'s) on Instagram.';
@@ -857,7 +837,7 @@ async function onAsk(){
       return;
     }
 
-    // V6 limit
+    // V6 limit logic (unchanged)
     const selectedModelKey = modelSelect.value || currentModelKey;
     if(selectedModelKey === 'gomega-v6' && !premiumUnlocked){
       const uses = getV6Uses();
@@ -876,7 +856,7 @@ async function onAsk(){
       }
     }
 
-    // algebra simplification locally
+    // algebra simplification
     const needSimplify = /\bsimplify\b/i.test(qRaw) || (/[a-zA-Z]/.test(qRaw) && /[+\-*/^()]/.test(qRaw));
     if(needSimplify){
       setThinkingText('Simplifying algebra locally...');
@@ -925,7 +905,7 @@ async function onAsk(){
       return;
     }
 
-    // OpenAI call if key available
+    // if OpenAI key available, call OpenAI
     const key = getOpenAIKey();
     if(key){
       setThinkingText('Calling OpenAI...');
@@ -955,7 +935,7 @@ async function onAsk(){
       }
     }
 
-    // fallback multi-source gather
+    // fallback gather
     setThinkingText('Searching multiple sources (client-side)...');
     setProgress(14);
     const aggressive = thinkingToggle.checked || selectedModelKey.startsWith('gomega-v6') || selectedModelKey.startsWith('gomega-v8') || premiumUnlocked;
@@ -1010,103 +990,23 @@ async function onAsk(){
   }
 }
 
-/* ========================
-   Init & helpers
-   ======================== */
+// ---------- init ----------
 (function init(){
   renderModels();
   updateQuotaUI();
-  addBubble('ai', 'Welcome to Gomega AI. Click "Set Key" to paste your OpenAI key for this session (or run a secure proxy instead).');
+  addBubble('ai', 'Welcome to Gomega AI. The owner API key is set in the file if provided; otherwise you may paste a temporary key using Set Key.');
   addBubble('ai', 'Try: "Simplify 4a-2(5a-7)" or "Area of circle radius 5" or "What year was Nokia released in North America?"');
   updateSessionUI();
   tickLocalTime();
 })();
 function tickLocalTime(){ document.getElementById('localTime').textContent = new Date().toLocaleString(); setTimeout(tickLocalTime,1000); }
 
-/* clear session & photos */
+// clear session & photos
 document.getElementById('clearSession').addEventListener('click', ()=>{ session=[]; photos=[]; messagesEl.innerHTML=''; renderPhotos(); updateSessionUI(); localStorage.removeItem(quotaKeyForToday()); updateQuotaUI(); });
 
-/* initial render photos */
+// initial render photos & quota
 renderPhotos();
 updateQuotaUI();
-
-/* ========================
-   END of main client code
-   ======================== */
-
-/*
-  OPTIONAL SERVER PROXY (recommended for reliable uploads & to avoid pasting keys in browser):
-
-  1) Node/Express proxy (save as server.js). Put your OpenAI key in environment variable OPENAI_API_KEY (set via GitHub Secrets -> Actions or host ENV).
-
-  // server.js (example)
-  const express = require('express');
-  const fetch = require('node-fetch'); // or native fetch in newer Node
-  const multer = require('multer');
-  const upload = multer();
-  const app = express();
-  app.use(express.json());
-
-  // must set process.env.OPENAI_API_KEY in your hosting env (do NOT commit it)
-  const OPENAI_KEY = process.env.OPENAI_API_KEY;
-  if(!OPENAI_KEY) { console.error('Set OPENAI_API_KEY'); process.exit(1); }
-
-  // proxy for chat completion
-  app.post('/proxy/chat', async (req, res) => {
-    try {
-      const r = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${OPENAI_KEY}`, 'Content-Type':'application/json' },
-        body: JSON.stringify(req.body)
-      });
-      const data = await r.text();
-      res.status(r.status).send(data);
-    } catch(e){ res.status(500).send(String(e)); }
-  });
-
-  // proxy for file upload
-  app.post('/proxy/upload', upload.single('file'), async (req,res) => {
-    try {
-      const form = new FormData();
-      form.append('file', req.file.buffer, { filename: req.file.originalname });
-      form.append('purpose', 'answers');
-      const r = await fetch('https://api.openai.com/v1/files', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${OPENAI_KEY}` },
-        body: form
-      });
-      const json = await r.json();
-      res.status(r.status).json(json);
-    } catch(e){ res.status(500).send(String(e)); }
-  });
-
-  app.listen(3000, ()=>console.log('proxy listening on 3000'));
-
-  2) GitHub Actions snippet to deploy to your host (example only — set secrets in repo):
-  - Add a repo secret named OPENAI_API_KEY via Settings -> Secrets -> New repository secret.
-  - Use that secret in your action to build/deploy.
-
-  Example (conceptual):
-  name: Deploy Proxy
-  on: push
-  jobs:
-    deploy:
-      runs-on: ubuntu-latest
-      steps:
-      - uses: actions/checkout@v4
-      - name: Deploy to Host (example)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          echo "Your deployment steps that use OPENAI_API_KEY in the environment..."
-
-  IMPORTANT: Never hard-code secrets in code. Use GitHub Secrets or your host's environment variable feature.
-
-  -----------------------
-  Security & notes:
-   - Browser direct uploads work sometimes but often CORS blocks them; the proxy avoids that.
-   - Do NOT paste a long-lived private key into a shared machine. Use the proxy & GitHub Secrets workflow for production.
-*/
 </script>
 </body>
 </html>
