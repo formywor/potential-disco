@@ -12,49 +12,67 @@
   html,body{height:100%}
   body{
     margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
-    background: radial-gradient(900px 400px at 10% 10%, rgba(56,189,248,0.04), transparent),
-                linear-gradient(180deg,var(--bg1),var(--bg2));
-    color:#e6eef6; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:18px;
+    background:
+      radial-gradient(900px 400px at 10% 10%, rgba(56,189,248,0.04), transparent),
+      linear-gradient(180deg,var(--bg1),var(--bg2));
+    color:#e6eef6; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:18px; overflow-x:hidden;
   }
+  /* ✨ subtle animated aurora */
+  .bg-aurora{
+    position:fixed; inset:-20% -10%; pointer-events:none; z-index:-1;
+    background: conic-gradient(from 0deg at 50% 50%, rgba(124,58,237,.18), rgba(52,211,255,.16), rgba(124,58,237,.18));
+    filter: blur(120px) saturate(1.1);
+    animation: aurora 18s linear infinite;
+    opacity:.65;
+  }
+  @keyframes aurora{ 0%{transform:rotate(0deg) scale(1)} 50%{transform:rotate(180deg) scale(1.08)} 100%{transform:rotate(360deg) scale(1)} }
+
   .topbar{ width:100%; max-width:1150px; display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
   .brand{ display:flex; gap:12px; align-items:center; }
-  .logo{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; transform:rotate(-8deg) }
+  .logo{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; transform:rotate(-8deg); box-shadow:0 10px 30px rgba(124,58,237,.25) }
   .logo b{ color:#062; font-size:20px }
   h1{ margin:0; font-size:20px; color:#e6fbff; }
   .meta{ color:var(--muted); font-size:13px }
 
   .container{ width:100%; max-width:1150px; display:grid; grid-template-columns: 1fr 380px; gap:18px; align-items:start; }
-  .chat-area{ background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); padding:18px; border-radius:14px; min-height:640px; max-height:80vh; overflow:auto; border:1px solid rgba(255,255,255,0.02) }
+  .chat-area{ background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); padding:18px; border-radius:14px; min-height:640px; max-height:80vh; overflow:auto; border:1px solid rgba(255,255,255,0.02); position:relative }
   .messages{ display:flex; flex-direction:column; gap:12px; padding-right:6px }
 
-  .bubble{ max-width:82%; padding:12px 14px; border-radius:12px; line-height:1.45; position:relative; animation: slideUp .28s ease }
-  .bubble.user{ background: linear-gradient(90deg,#0b6b4c,#064e3b); color:#d7fff0; align-self:flex-end; border-bottom-right-radius:6px; }
-  .bubble.ai{ background: linear-gradient(90deg,#0b1020,#151827); color:#e6eef6; align-self:flex-start; border-bottom-left-radius:6px; }
+  .bubble{ max-width:82%; padding:12px 14px; border-radius:12px; line-height:1.45; position:relative; animation: slideUp .28s ease; will-change:transform,opacity }
+  .bubble.user{ background: linear-gradient(90deg,#0b6b4c,#064e3b); color:#d7fff0; align-self:flex-end; border-bottom-right-radius:6px; box-shadow:0 8px 20px rgba(6,78,59,.35) }
+  .bubble.ai{ background: linear-gradient(90deg,#0b1020,#151827); color:#e6eef6; align-self:flex-start; border-bottom-left-radius:6px; box-shadow:0 8px 20px rgba(20,22,39,.35) }
+  .bubble:hover{ transform:translateY(-1px) scale(1.005) }
   @keyframes slideUp { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
 
-  .controls{ display:flex; gap:10px; align-items:center; margin-top:10px; }
-  input.prompt{ flex:1; padding:12px; border-radius:10px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.03); outline:none; font-size:15px }
-  select{ padding:10px; border-radius:8px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.03) }
-  button.primary{ padding:12px 18px; border-radius:10px; border:none; background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#062; cursor:pointer; font-weight:700 }
-  button.ghost{ padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.03); background:transparent; color:var(--muted); cursor:pointer }
-  button.small{ padding:6px 8px; border-radius:8px; border:1px solid rgba(255,255,255,0.03); background:transparent; color:var(--muted); cursor:pointer }
+  .controls{ display:flex; gap:10px; align-items:center; margin-top:10px; position:sticky; bottom:0; background:linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.15)); padding-top:8px }
+  input.prompt{ flex:1; padding:12px; border-radius:10px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.06); outline:none; font-size:15px; transition:border-color .2s, box-shadow .2s }
+  input.prompt:focus{ border-color: rgba(52,211,255,0.45); box-shadow:0 0 0 4px rgba(52,211,255,0.12) }
+  select{ padding:10px; border-radius:8px; background:transparent; color:#e6eef6; border:1px solid rgba(255,255,255,0.06) }
+  button.primary{ padding:12px 18px; border-radius:10px; border:none; background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#062; cursor:pointer; font-weight:700; transform:translateZ(0); transition:transform .1s ease; box-shadow:0 8px 24px rgba(124,58,237,.35) }
+  button.primary:active{ transform:scale(.98) }
+  button.ghost{ padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:var(--muted); cursor:pointer }
+  button.small{ padding:6px 8px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:var(--muted); cursor:pointer }
 
   .sidebar{ padding:18px; border-radius:14px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); border:1px solid rgba(255,255,255,0.02); min-height:640px; display:flex; flex-direction:column; gap:12px; }
-  .card{ padding:12px; border-radius:10px; background:transparent; border:1px solid rgba(255,255,255,0.02) }
+  .card{ padding:12px; border-radius:10px; background:transparent; border:1px solid rgba(255,255,255,0.02); position:relative; overflow:hidden }
+  .card:before{content:""; position:absolute; inset:-2px; pointer-events:none; background: radial-gradient(600px 200px at 0% 0%, rgba(52,211,255,0.06), transparent 40%); animation: cardGlow 12s linear infinite}
+  @keyframes cardGlow{ 0%{transform:translateX(-10%)} 50%{transform:translateX(110%)} 100%{transform:translateX(-10%)} }
 
   .models{ display:flex; flex-direction:column; gap:8px; }
   .modelRow{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); }
   .small{ font-size:13px; color:var(--muted) }
 
-  .progress{ height:8px; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; width:100% }
+  .progress{ height:8px; background:rgba(255,255,255,0.06); border-radius:8px; overflow:hidden; width:100%; position:relative }
   .bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 180ms linear }
+  .progress:after{ content:""; position:absolute; inset:0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent); transform:translateX(-100%); animation: shimmer 2.2s infinite }
+  @keyframes shimmer{ 0%{transform:translateX(-100%)} 60%{transform:translateX(100%)} 100%{transform:translateX(100%)} }
 
   .photoGrid{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px }
   .photoCard{ width:86px; height:66px; border-radius:6px; overflow:hidden; background:#000; display:flex; align-items:center; justify-content:center; position:relative }
   .photoCard img{ width:100%; height:100%; object-fit:cover }
   .photoActions{ position:absolute; bottom:6px; left:6px; right:6px; display:flex; gap:6px; justify-content:center }
 
-  .explain{ margin-top:8px; font-size:13px; color:var(--muted); border-top:1px dashed rgba(255,255,255,0.03); padding-top:8px }
+  .explain{ margin-top:8px; font-size:13px; color:var(--muted); border-top:1px dashed rgba(255,255,255,0.06); padding-top:8px }
 
   .typingDots{ display:inline-block; margin-left:6px; }
   .typingDots span{ display:inline-block; width:6px; height:6px; margin:0 2px; border-radius:50%; background:rgba(255,255,255,0.35); opacity:0.6; animation: blink 1s infinite; transform:translateY(0); }
@@ -62,12 +80,13 @@
   .typingDots span:nth-child(3){ animation-delay:0.3s }
   @keyframes blink { 0%{ opacity:0.2; transform:translateY(0)} 50%{ opacity:1; transform:translateY(-4px)} 100%{ opacity:0.2; transform:translateY(0)} }
 
-  .badgePremium{ display:inline-block; padding:4px 8px; border-radius:10px; background:linear-gradient(90deg,#ffd166,#ff6b6b); color:#081024; font-weight:700; font-size:12px; margin-left:8px }
+  .badgePlus{ display:inline-block; padding:4px 8px; border-radius:10px; background:linear-gradient(90deg,#ffd166,#ff6b6b); color:#081024; font-weight:700; font-size:12px; margin-left:8px }
 
   @media (max-width:980px){ .container{ grid-template-columns:1fr } .sidebar{ order:2 } .chat-area{ order:1 } }
 </style>
 </head>
 <body>
+  <div class="bg-aurora"></div>
   <div class="topbar">
     <div class="brand">
       <div class="logo"><b>G</b></div>
@@ -87,15 +106,17 @@
       <div class="messages" id="messages"></div>
 
       <div class="controls" style="margin-top:12px">
-        <input id="prompt" class="prompt" placeholder="Ask / type math (e.g. 'Simplify 4a-2(5a-7)')"/>
+        <input id="prompt" class="prompt" placeholder="Ask anything (toggle Thinking for deeper answers)"/>
         <select id="modelSelect" title="Choose model"></select>
         <button id="askBtn" class="primary">Ask</button>
         <!-- Set Key button exists but will be hidden when OWNER_API_KEY is set -->
         <button id="setKeyBtn" class="ghost">Set Key</button>
       </div>
 
-      <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+      <div style="margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
         <label class="small">Thinking</label><input type="checkbox" id="thinkingToggle"/>
+        <button id="thinkHarderBtn" class="small" title="Use one of your daily deep-think boosts">Think harder</button>
+        <span class="small">Left today: <span id="thinkHarderLeft">3</span></span>
         <label class="small" style="margin-left:8px">Strict</label><input type="checkbox" id="strictToggle"/>
         <button id="clearBtn" class="ghost" style="margin-left:auto">Clear UI</button>
       </div>
@@ -105,7 +126,11 @@
       <div class="card">
         <strong>Models</strong>
         <div class="models" id="modelList"></div>
-        <div style="margin-top:8px"><input id="premiumCodeInput" placeholder="Enter premium code(s) — separate with commas" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)"><button id="applyCodeBtn" class="small" style="margin-top:6px">Apply</button></div>
+        <div style="margin-top:8px">
+          <input id="premiumCodeInput" placeholder="Enter plus code(s) — separate with commas" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
+          <button id="applyCodeBtn" class="small" style="margin-top:6px">Apply</button>
+        </div>
+        <div class="small" style="margin-top:6px">Become a <strong>Plus</strong> member?</div>
       </div>
 
       <div class="card">
@@ -126,7 +151,7 @@
         </div>
         <div class="small" style="margin-top:8px">Daily sends left: <span id="photoQuota">5</span></div>
         <div class="photoGrid" id="photoGrid"></div>
-        <div class="small" style="margin-top:8px">Photos stored locally; premium gets infinite sends. The UI will try to upload images to OpenAI (if you set an API key and CORS allows it) or fall back to embedding images.</div>
+        <div class="small" style="margin-top:8px">Photos stored locally; Plus gets infinite sends.</div>
       </div>
 
       <div class="card">
@@ -149,7 +174,7 @@
 
   Leave as '' to allow the fallback Set Key UI for temporary keys.
 */
-const OWNER_API_KEY_RAW = 'sk-proj-esQZvuHfktHXvSoEtfPRy-IZuDRXYWSTrtphEqUXFlTds,1tOHtjZzg3daCpD_VzKs7yT0I8p_HT3BlbkFJFlcclxKg8g_R6gscPp1gekMQXtDmVkwzkKY6Y4LJtSGfDxC7EMVWj16dzS9sM-dz3TaRb52zkA'; // <-- paste your key here (sk-...), or leave empty to allow temporary fallback
+const OWNER_API_KEY_RAW = '';
 
 // ---------- Basic UI refs ----------
 const messagesEl = document.getElementById('messages');
@@ -165,6 +190,8 @@ const progressBar = document.getElementById('progressBar');
 const lastAction = document.getElementById('lastAction');
 const confidenceEl = document.getElementById('confidence');
 const lastFetchEl = document.getElementById('lastFetch');
+const thinkHarderBtn = document.getElementById('thinkHarderBtn');
+const thinkHarderLeftEl = document.getElementById('thinkHarderLeft');
 
 const photoInput = document.getElementById('photoInput');
 const addPhotoBtn = document.getElementById('addPhotoBtn');
@@ -180,13 +207,12 @@ const applyCodeBtn = document.getElementById('applyCodeBtn');
 let session = [];
 let photos = [];
 let typingLocked = false;
-let premiumUnlocked = false;
+let premiumUnlocked = false; // visible name is "Plus"
 let premiumCodes = [];
 
 // ---------- sanitize/strip commas helper ----------
 function normalizeKey(raw){
   if(!raw) return '';
-  // Remove whitespace and commas; preserve rest
   return raw.replace(/,/g, '').trim();
 }
 
@@ -194,29 +220,22 @@ function normalizeKey(raw){
 const OWNER_API_KEY = normalizeKey(OWNER_API_KEY_RAW);
 
 // If an owner key exists, hide the Set Key option so users cannot edit the key.
-if(OWNER_API_KEY){
-  try{ setKeyBtn.style.display = 'none'; }catch(e){}
-} else {
-  // leave the setKeyBtn visible for fallback temporary key input
-  try{ setKeyBtn.style.display = ''; }catch(e){}
-}
+if(OWNER_API_KEY){ try{ setKeyBtn.style.display = 'none'; }catch(e){} } else { try{ setKeyBtn.style.display = ''; }catch(e){} }
 
-// ---------- Models: typing speeds adjusted (slower overall) ----------
+// ---------- Models ----------
 const MODEL_CONFIG = {
-  'gomega-v10': { label: 'Gomega V10 (premium)', openai: 'gpt-4o', speed:6, smart:true, verb:2.0, premium: true },
-  'gomega-v9':  { label: 'Gomega V9 (premium)',  openai: 'gpt-4o', speed:8, smart:true, verb:1.9, premium: true },
-  'gomega-v8':  { label: 'Gomega V8 (premium)',  openai: 'gpt-4o', speed:10, smart:true, verb:1.6, premium: true },
-  'gomega-v6':  { label: 'Gomega V6 (premium)',  openai: 'gpt-4o', speed:12, smart:true, verb:1.5, premium: true },
-  // non-premium: make typing slower, but keep v7-mini faster than v7
-  'gomega-v7':  { label: 'Gomega V7',            openai: 'gpt-4o-mini', speed:51, smart:true, verb:1.0, premium: false },
-  'gomega-v7mini':{ label: 'Gomega V7-mini',      openai: 'gpt-3.5-turbo', speed:50, smart:false, verb:0.5, premium: false },
-  'gomega-v5':  { label: 'Gomega V5',            openai: 'gpt-3.5-turbo', speed:50, smart:false, verb:1.0, premium:false },
-  'mathmaster': { label: 'MathMaster',           openai: 'gpt-3.5-turbo', speed:50, smart:true, verb:0.2, premium:false }
+  'gomega-v10': { label: 'Gomega V10 (Plus)', openai: 'gpt-4o', speed:6, smart:true, verb:2.0, premium: true },
+  'gomega-v9':  { label: 'Gomega V9 (Plus)',  openai: 'gpt-4o', speed:8, smart:true, verb:1.9, premium: true },
+  'gomega-v8':  { label: 'Gomega V8 (Plus)',  openai: 'gpt-4o', speed:10, smart:true, verb:1.6, premium: true },
+  'gomega-v6':  { label: 'Gomega V6 (Plus)',  openai: 'gpt-4o', speed:12, smart:true, verb:1.5, premium: true },
+  'gomega-v7':  { label: 'Gomega V7',         openai: 'gpt-4o-mini', speed:51, smart:true, verb:1.0, premium: false },
+  'gomega-v7mini':{ label: 'Gomega V7-mini',  openai: 'gpt-3.5-turbo', speed:50, smart:false, verb:0.5, premium: false },
+  'gomega-v5':  { label: 'Gomega V5',         openai: 'gpt-3.5-turbo', speed:50, smart:false, verb:1.0, premium:false },
+  'mathmaster': { label: 'MathMaster',        openai: 'gpt-3.5-turbo', speed:50, smart:true, verb:0.2, premium:false }
 };
 
 let currentModelKey = 'gomega-v7';
 
-// populate model UI
 function renderModels(){
   modelSelect.innerHTML = '';
   modelListEl.innerHTML = '';
@@ -224,15 +243,15 @@ function renderModels(){
     const cfg = MODEL_CONFIG[key];
     const opt = document.createElement('option');
     opt.value = key;
-    opt.textContent = cfg.label + (cfg.premium ? ' • premium' : '');
+    opt.textContent = cfg.label + (cfg.premium ? ' • plus' : '');
     if(cfg.premium && !premiumUnlocked && key !== 'gomega-v6') opt.disabled = true;
     modelSelect.appendChild(opt);
 
     const row = document.createElement('div'); row.className = 'modelRow';
-    row.innerHTML = `<div><strong>${cfg.label}</strong>${cfg.premium ? '<span class="badgePremium">Premium</span>' : ''}</div>`;
+    row.innerHTML = `<div><strong>${cfg.label}</strong>${cfg.premium ? '<span class="badgePlus">Plus</span>' : ''}</div>`;
     const btn = document.createElement('button'); btn.className='small'; btn.textContent = (key===currentModelKey ? 'Selected' : 'Select');
     btn.onclick = () => {
-      if(cfg.premium && !premiumUnlocked && key !== 'gomega-v6'){ alert('This model is premium. Enter a premium code to unlock it.'); return; }
+      if(cfg.premium && !premiumUnlocked && key !== 'gomega-v6'){ alert('This model is Plus only. Enter a Plus code to unlock it.'); return; }
       currentModelKey = key;
       Array.from(modelListEl.querySelectorAll('button')).forEach(b=>b.textContent='Select');
       btn.textContent='Selected';
@@ -247,7 +266,7 @@ function renderModels(){
 renderModels();
 
 // ---------- helpers ----------
-function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
 function addBubble(role, html){ const el = document.createElement('div'); el.className = 'bubble ' + (role==='user' ? 'user' : 'ai'); el.innerHTML = html; messagesEl.appendChild(el); messagesEl.scrollTop = messagesEl.scrollHeight; return el; }
 function updateSessionUI(){ sessionListEl.innerHTML = session.slice(-6).map(m=>`<div class="small"><strong>${escapeHtml(m.role)}</strong>: ${escapeHtml(m.text).slice(0,140)}</div>`).join('') || 'No messages yet.'; }
 function setProgress(p){ progressBar.style.width = Math.max(3, Math.min(100,p)) + '%'; }
@@ -255,32 +274,36 @@ function setThinkingText(t){ thinkingBadge.textContent = t; lastAction.textConte
 function setTypingLocked(v){ typingLocked = v; promptEl.disabled = v; askBtn.disabled = v; setKeyBtn.disabled = v; if(v){ promptEl.classList.add('disabled'); askBtn.classList.add('disabled'); setKeyBtn.classList.add('disabled'); } else { promptEl.classList.remove('disabled'); askBtn.classList.remove('disabled'); setKeyBtn.classList.remove('disabled'); } }
 
 // typing indicator
-function addTypingIndicator(container){
-  const dots = document.createElement('span'); dots.className = 'typingDots';
-  dots.innerHTML = '<span></span><span></span><span></span>';
-  container.appendChild(dots);
-  return dots;
-}
+function addTypingIndicator(container){ const dots = document.createElement('span'); dots.className = 'typingDots'; dots.innerHTML = '<span></span><span></span><span></span>'; container.appendChild(dots); return dots; }
 function removeTypingIndicator(dotsEl){ if(dotsEl && dotsEl.parentNode) dotsEl.parentNode.removeChild(dotsEl); }
 
-// typing engine uses the new slower speeds
+// typing engine (polished)
 async function typeTextInto(node, text, speed){
-  const dots = node.querySelector('.typingDots');
-  if(dots) removeTypingIndicator(dots);
+  const dots = node.querySelector('.typingDots'); if(dots) removeTypingIndicator(dots);
   node.innerHTML = '';
   for(let i=0;i<text.length;i++){
-    const ch = text[i];
-    node.innerHTML = escapeHtml(text.slice(0,i+1)).replace(/\n/g,'<br>');
+    const chunk = escapeHtml(text.slice(0,i+1)).replace(/\n/g,'<br>');
+    node.innerHTML = chunk;
     messagesEl.scrollTop = messagesEl.scrollHeight;
     const variability = 0.75 + Math.random()*0.6;
-    let delay = Math.max(3, Math.round(speed * variability));
-    if(/[,;]/.test(ch)) delay += 80;
-    if(/[.!?]/.test(ch)) delay += 160;
+    let delay = Math.max(2, Math.round(speed * variability));
+    if(/[,:;]/.test(text[i])) delay += 60; if(/[.!?]/.test(text[i])) delay += 120;
     await new Promise(r=>setTimeout(r, delay));
   }
 }
 
-// ---------- Algebra/numeric/geometry engine (unchanged) ----------
+// ---------- Math engine (gated; safer detection) ----------
+// NEW: detect math only when the input looks like a math *expression*, not just numbers or parentheses in normal sentences.
+function isLikelyMathExpression(q){
+  const s = q.trim();
+  const hasOps = /[+\-*/^%]/.test(s);
+  const onlyMathChars = /^[-+*/^%().,\d\s]*$/.test(s); // pure expression like (2+3)*4
+  const mentionsSimplify = /\b(simplify|expand|factor)\b/i.test(s);
+  const shortAndSymbolic = s.length <= 64 && onlyMathChars && (/(\d[\s()]*[+\-*/^%][\s()]*\d)/.test(s) || /\([^()]*\)/.test(s));
+  const mathKeywords = /(pythagor|area of|circumference|perimeter|radius|diameter|triangle|rectangle|volume|solve for|roots? of)/i.test(s);
+  return mentionsSimplify || shortAndSymbolic || (hasOps && !/\w{4,}\s+\w{3,}/.test(s)) || mathKeywords;
+}
+
 function tokenize(expr){
   const s = String(expr);
   const tokens = [];
@@ -316,289 +339,95 @@ function tokenize(expr){
   return out;
 }
 function makeTerm(coeff, vars){ return {coeff: coeff, vars: Object.assign({}, vars)}; }
-function termKey(vars){
-  const keys = Object.keys(vars).filter(k=>vars[k]!==0).sort();
-  if(keys.length===0) return '';
-  return keys.map(k=>`${k}^${vars[k]}`).join('*');
-}
-function multiplyVars(a,b){
-  const res = Object.assign({}, a);
-  for(const k in b) res[k] = (res[k]||0) + b[k];
-  for(const k in res) if(res[k]===0) delete res[k];
-  return res;
-}
+function termKey(vars){ const keys = Object.keys(vars).filter(k=>vars[k]!==0).sort(); if(keys.length===0) return ''; return keys.map(k=>`${k}^${vars[k]}`).join('*'); }
+function multiplyVars(a,b){ const res = Object.assign({}, a); for(const k in b) res[k] = (res[k]||0) + b[k]; for(const k in res) if(res[k]===0) delete res[k]; return res; }
 function parseExpression(tokens){
-  let pos=0;
-  function peek(){ return tokens[pos] || null; }
-  function consume(t){ const cur = tokens[pos]; if(!cur) return null; if(t && cur.type!==t) return null; pos++; return cur; }
-  function parsePrimary(){
-    const cur=peek();
-    if(!cur) return [{coeff:0, vars:{}}];
-    if(cur.type==='num'){ consume('num'); return [makeTerm(Number(cur.val), {})]; }
-    if(cur.type==='id'){ consume('id'); const vars={}; vars[cur.val]=1; return [makeTerm(1, vars)]; }
-    if(cur.type==='('){ consume('('); const expr = parseAddSub(); consume(')'); return expr; }
-    consume(); return [{coeff:0, vars:{}}];
-  }
-  function parsePow(){
-    let base = parsePrimary();
-    while(peek() && peek().type==='^'){
-      consume('^');
-      const right = peek();
-      if(right && right.type==='num'){
-        const exp = Number(consume('num').val);
-        let raised = [];
-        for(const t of base){
-          let seed = [makeTerm(1, {})];
-          for(let e=0;e<exp;e++) seed = multiplyTermLists(seed, [t]);
-          for(const s of seed) raised.push(s);
-        }
-        base = raised;
-      } else break;
-    }
-    return base;
-  }
-  function parseMulDiv(){
-    let left = parsePow();
-    while(peek() && (peek().type==='*' || peek().type==='/')){
-      const op = consume().type;
-      const right = parsePow();
-      if(op==='*') left = multiplyTermLists(left, right);
-      else {
-        if(right.length===1 && Object.keys(right[0].vars).length===0 && right[0].coeff !== 0){
-          const divisor = right[0].coeff;
-          left = left.map(t => makeTerm(t.coeff / divisor, t.vars));
-        } else {
-          // skip complex division
-        }
-      }
-    }
-    return left;
-  }
-  function parseAddSub(){
-    let left = parseMulDiv();
-    while(peek() && (peek().type==='+' || peek().type==='-')){
-      const op = consume().type;
-      const right = parseMulDiv();
-      if(op==='+') left = addTermLists(left, right);
-      else left = addTermLists(left, right.map(t=>makeTerm(-t.coeff, t.vars)));
-    }
-    return left;
-  }
+  let pos=0; function peek(){ return tokens[pos] || null; } function consume(t){ const cur = tokens[pos]; if(!cur) return null; if(t && cur.type!==t) return null; pos++; return cur; }
+  function parsePrimary(){ const cur=peek(); if(!cur) return [{coeff:0, vars:{}}]; if(cur.type==='num'){ consume('num'); return [makeTerm(Number(cur.val), {})]; } if(cur.type==='id'){ consume('id'); const vars={}; vars[cur.val]=1; return [makeTerm(1, vars)]; } if(cur.type==='('){ consume('('); const expr = parseAddSub(); consume(')'); return expr; } consume(); return [{coeff:0, vars:{}}]; }
+  function parsePow(){ let base = parsePrimary(); while(peek() && peek().type==='^'){ consume('^'); const right = peek(); if(right && right.type==='num'){ const exp = Number(consume('num').val); let raised = []; for(const t of base){ let seed = [makeTerm(1, {})]; for(let e=0;e<exp;e++) seed = multiplyTermLists(seed, [t]); for(const s of seed) raised.push(s);} base = raised; } else break; } return base; }
+  function parseMulDiv(){ let left = parsePow(); while(peek() && (peek().type==='*' || peek().type==='/' )){ const op = consume().type; const right = parsePow(); if(op==='*') left = multiplyTermLists(left, right); else { if(right.length===1 && Object.keys(right[0].vars).length===0 && right[0].coeff !== 0){ const divisor = right[0].coeff; left = left.map(t => makeTerm(t.coeff / divisor, t.vars)); } } } return left; }
+  function parseAddSub(){ let left = parseMulDiv(); while(peek() && (peek().type==='+' || peek().type==='-')){ const op = consume().type; const right = parseMulDiv(); if(op==='+') left = addTermLists(left, right); else left = addTermLists(left, right.map(t=>makeTerm(-t.coeff, t.vars))); } return left; }
   function multiplyTermLists(A,B){ const out=[]; for(const a of A) for(const b of B) out.push(makeTerm(a.coeff*b.coeff, multiplyVars(a.vars,b.vars))); return combineLikeTerms(out); }
   function addTermLists(A,B){ return combineLikeTerms(A.concat(B)); }
   const expr = parseAddSub(); return combineLikeTerms(expr);
 }
-function combineLikeTerms(terms){
-  const map = new Map();
-  for(const t of terms){
-    const vars = {};
-    for(const k in t.vars) if(t.vars[k] !== 0) vars[k] = t.vars[k];
-    const key = termKey(vars);
-    const prev = map.get(key) || 0;
-    map.set(key, prev + (Number(t.coeff) || 0));
-  }
-  const out=[];
-  for(const [k,coeff] of map.entries()){
-    if(Math.abs(coeff) < 1e-12) continue;
-    const vars={};
-    if(k){
-      k.split('*').forEach(part => {
-        const [name,exp] = part.split('^');
-        vars[name]=Number(exp);
-      });
-    }
-    out.push(makeTerm(coeff, vars));
-  }
-  out.sort((a,b)=>{
-    const av = Object.keys(a.vars).length, bv = Object.keys(b.vars).length;
-    if(av !== bv) return bv - av;
-    const ak = termKey(a.vars), bk = termKey(b.vars);
-    return ak < bk ? -1 : (ak>bk?1:0);
-  });
-  return out;
-}
-function termsToString(terms){
-  if(!terms || terms.length===0) return '0';
-  const parts=[];
-  for(const t of terms){
-    const coeff = t.coeff; const vars = t.vars || {};
-    const varNames = Object.keys(vars).sort();
-    let varStr = varNames.map(v => vars[v]===1 ? v : `${v}^${vars[v]}`).join('*');
-    const absCoeff = Math.abs(coeff);
-    if(varStr){
-      let coeffStr = '';
-      if(Math.abs(absCoeff - 1) < 1e-12) coeffStr = (coeff < 0) ? '-' : '';
-      else coeffStr = (coeff<0?'-':'') + (absCoeff % 1 === 0 ? String(absCoeff) : String(Number(absCoeff.toFixed(8))));
-      parts.push(coeffStr + varStr);
-    } else {
-      const num = (coeff % 1 === 0) ? String(coeff) : String(Number(coeff.toFixed(8)));
-      parts.push(num);
-    }
-  }
-  let out='';
-  for(const p of parts){
-    if(out==='') out = p;
-    else {
-      if(p[0]==='-') out += ' - ' + p.slice(1);
-      else out += ' + ' + p;
-    }
-  }
-  out = out.replace(/\*/g,'');
-  return out;
-}
-function simplifyAlgebra(expr){
-  try{
-    const tokens = tokenize(expr);
-    if(tokens.length===0) return null;
-    const terms = parseExpression(tokens);
-    if(!terms || terms.length===0) return '0';
-    return termsToString(terms);
-  } catch(e){
-    return null;
-  }
-}
-function evaluateNumeric(expr){
-  if(!expr || expr.length > 2500) return null;
-  const allowed = expr.replace(/[^0-9+\-*/().,^\s%]/g,' ');
-  const sanitized = allowed.replace(/\^/g,'**').replace(/%/g,'*0.01');
-  try{
-    const fn = Function(`"use strict"; return (${sanitized});`);
-    const val = fn();
-    if(typeof val === 'number' && Number.isFinite(val)) return +Number(val.toFixed(12));
-    return null;
-  }catch(e){ return null; }
-}
-function geometryQuery(q){
-  if(!q) return null;
-  const s = q.toLowerCase();
-  let m;
-  m = s.match(/area of (?:a |the )?circle(?: with)?(?: radius| r)?[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer: +(Math.PI*r*r).toFixed(8), explain:`area of circle radius ${r}`} }
-  m = s.match(/circumference of (?:a |the )?circle(?: with)?(?: radius| r)?[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer: +(2*Math.PI*r).toFixed(8), explain:`circumference radius ${r}`} }
-  m = s.match(/area of (?:a |the )?rectangle(?: with)?(?: width)?[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const w=Number(m[1]), h=Number(m[2]); if(isFinite(w)&&isFinite(h)) return {answer: +(w*h).toFixed(8), explain:`rectangle area ${w}×${h}`} }
-  m = s.match(/area of (?:a |the )?triangle(?: with)?(?: base)?[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const b=Number(m[1]), h=Number(m[2]); if(isFinite(b)&&isFinite(h)) return {answer: +((b*h)/2).toFixed(8), explain:`triangle area base ${b} height ${h}`} }
-  m = s.match(/pythagor(?:ean|e).*a[^\d\-]*([-+]?\d*\.?\d+).*b[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const a=Number(m[1]), b=Number(m[2]); if(isFinite(a)&&isFinite(b)) return {answer: +(Math.sqrt(a*a + b*b)).toFixed(8), explain:`hypotenuse from ${a},${b}`} }
-  m = s.match(/volume of (?:a |the )?sphere(?: with)?(?: radius)?[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer: +((4/3)*Math.PI*r*r*r).toFixed(8), explain:`sphere volume radius ${r}`} }
-  m = s.match(/volume of (?:a |the )?cylind(?:er|rical).*radius[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+height[^\d\-]*([-+]?\d*\.?\d+)/i);
-  if(m){ const r=Number(m[1]), h=Number(m[2]); if(isFinite(r)&&isFinite(h)) return {answer: +(Math.PI * r*r * h).toFixed(8), explain:`cylinder r=${r} h=${h}`} }
-  return null;
-}
+function combineLikeTerms(terms){ const map = new Map(); for(const t of terms){ const vars = {}; for(const k in t.vars) if(t.vars[k] !== 0) vars[k] = t.vars[k]; const key = termKey(vars); const prev = map.get(key) || 0; map.set(key, prev + (Number(t.coeff) || 0)); } const out=[]; for(const [k,coeff] of map.entries()){ if(Math.abs(coeff) < 1e-12) continue; const vars={}; if(k){ k.split('*').forEach(part => { const [name,exp] = part.split('^'); vars[name]=Number(exp); }); } out.push(makeTerm(coeff, vars)); } out.sort((a,b)=>{ const av = Object.keys(a.vars).length, bv = Object.keys(b.vars).length; if(av !== bv) return bv - av; const ak = termKey(a.vars), bk = termKey(b.vars); return ak < bk ? -1 : (ak>bk?1:0); }); return out; }
+function termsToString(terms){ if(!terms || terms.length===0) return '0'; const parts=[]; for(const t of terms){ const coeff = t.coeff; const vars = t.vars || {}; const varNames = Object.keys(vars).sort(); let varStr = varNames.map(v => vars[v]===1 ? v : `${v}^${vars[v]}`).join('*'); const absCoeff = Math.abs(coeff); if(varStr){ let coeffStr = ''; if(Math.abs(absCoeff - 1) < 1e-12) coeffStr = (coeff < 0) ? '-' : ''; else coeffStr = (coeff<0?'-':'') + (absCoeff % 1 === 0 ? String(absCoeff) : String(Number(absCoeff.toFixed(8)))); parts.push(coeffStr + varStr); } else { const num = (coeff % 1 === 0) ? String(coeff) : String(Number(coeff.toFixed(8))); parts.push(num); } } let out=''; for(const p of parts){ if(out==='') out = p; else { if(p[0]==='-') out += ' - ' + p.slice(1); else out += ' + ' + p; } } out = out.replace(/\*/g,''); return out; }
+function simplifyAlgebra(expr){ try{ const tokens = tokenize(expr); if(tokens.length===0) return null; const terms = parseExpression(tokens); if(!terms || terms.length===0) return '0'; return termsToString(terms); } catch(e){ return null; } }
+function evaluateNumeric(expr){ if(!expr || expr.length > 2500) return null; const allowed = expr.replace(/[^0-9+\-*/().,^\s%]/g,' '); const sanitized = allowed.replace(/\^/g,'**').replace(/%/g,'*0.01'); try{ const fn = Function(`"use strict"; return (${sanitized});`); const val = fn(); if(typeof val === 'number' && Number.isFinite(val)) return +Number(val.toFixed(12)); return null; }catch(e){ return null; } }
+function geometryQuery(q){ if(!q) return null; const s = q.toLowerCase(); let m; m = s.match(/area of (?:a |the )?circle(?: with)?(?: radius| r)?[^\d\-]*([-+]?\d*\.?\d+)/i); if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer: +(Math.PI*r*r).toFixed(8), explain:`area of circle radius ${r}`} } m = s.match(/circumference of (?:a |the )?circle(?: with)?(?: radius| r)?[^\d\-]*([-+]?\d*\.?\d+)/i); if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer: +(2*Math.PI*r).toFixed(8), explain:`circumference radius ${r}`} } m = s.match(/area of (?:a |the )?rectangle(?: with)?(?: width)?[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i); if(m){ const w=Number(m[1]), h=Number(m[2]); if(isFinite(w)&&isFinite(h)) return {answer: +(w*h).toFixed(8), explain:`rectangle area ${w}×${h}`} } m = s.match(/area of (?:a |the )?triangle(?: with)?(?: base)?[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+(?:height|h)[^\d\-]*([-+]?\d*\.?\d+)/i); if(m){ const b=Number(m[1]), h=Number(m[2]); if(isFinite(b)&&isFinite(h)) return {answer: +((b*h)/2).toFixed(8), explain:`triangle area base ${b} height ${h}`} } m = s.match(/pythagor(?:ean|e).*a[^\d\-]*([-+]?\d*\.?\d+).*b[^\d\-]*([-+]?\d*\.?\d+)/i); if(m){ const a=Number(m[1]), b=Number(m[2]); if(isFinite(a)&&isFinite(b)) return {answer: +(Math.sqrt(a*a + b*b)).toFixed(8), explain:`hypotenuse from ${a},${b}`} } m = s.match(/volume of (?:a |the )?sphere(?: with)?(?: radius)?[^\d\-]*([-+]?\d*\.?\d+)/i); if(m){ const r=Number(m[1]); if(isFinite(r)) return {answer: +((4/3)*Math.PI*r*r*r).toFixed(8), explain:`sphere volume radius ${r}`} } m = s.match(/volume of (?:a |the )?cylind(?:er|rical).*radius[^\d\-]*([-+]?\d*\.?\d+)[^\d\-]+height[^\d\-]*([-+]?\d*\.?\d+)/i); if(m){ const r=Number(m[1]), h=Number(m[2]); if(isFinite(r)&&isFinite(h)) return {answer: +(Math.PI * r*r * h).toFixed(8), explain:`cylinder r=${r} h=${h}`} } return null; }
 
-// ---------- OpenAI key handling (owner-first, fallback-second) ----------
+// ---------- OpenAI key handling ----------
 const STORAGE_KEY = 'gomega_openai_key_temp';
-function setOpenAIKeyTemp(key){
-  if(!key) {
-    sessionStorage.removeItem(STORAGE_KEY);
-    return;
+function setOpenAIKeyTemp(key){ if(!key) { sessionStorage.removeItem(STORAGE_KEY); return; } sessionStorage.setItem(STORAGE_KEY, normalizeKey(key)); }
+function getOpenAIKey(){ if(OWNER_API_KEY) return OWNER_API_KEY; const temp = sessionStorage.getItem(STORAGE_KEY) || ''; return normalizeKey(temp); }
+setKeyBtn.addEventListener('click', async ()=>{ if(OWNER_API_KEY){ alert('Owner API key is set in the file; you cannot change it from the UI.'); return; } const prev = sessionStorage.getItem(STORAGE_KEY) || ''; const k = prompt('Paste a temporary OpenAI API key (stored in this tab).\nCommas in the key will be removed automatically.', prev); if(k) { setOpenAIKeyTemp(k.trim()); alert('Temporary key set for this session.'); }});
+window.addEventListener('load', ()=>{ if(OWNER_API_KEY){ try{ setKeyBtn.style.display = 'none'; }catch(e){} } else { try{ setKeyBtn.style.display = ''; }catch(e){} });
+
+// ---------- Plus codes loader (remote list + persistent) ----------
+const PLUS_CODES_URLS = [
+  'https://gomega.watch/browser/premiumcodes.txt',
+  '/browser/premiumcodes.txt' // fallback if hosted same origin
+];
+const SAVED_PLUS_CODE_KEY = 'gomega_plus_code_saved';
+
+async function fetchCodesFromAny(){
+  for(const url of PLUS_CODES_URLS){
+    try{ const res = await fetch(url, {cache:'no-cache'}); if(!res.ok) continue; const txt = await res.text(); const list = txt.split(/[\,\r\n]+/).map(s=>s.trim()).filter(Boolean); if(list.length) return list; }catch(e){}
   }
-  sessionStorage.setItem(STORAGE_KEY, normalizeKey(key));
+  return [];
 }
-function getOpenAIKey(){
-  // Priority: OWNER_API_KEY (if set) -> sanitized sessionStorage temporary key -> ''
-  if(OWNER_API_KEY) return OWNER_API_KEY;
-  const temp = sessionStorage.getItem(STORAGE_KEY) || '';
-  return normalizeKey(temp);
+async function loadPlusCodes(){ premiumCodes = await fetchCodesFromAny(); verifySavedCodeStillValid(); }
+
+function saveUserCodeLocally(code){ if(!code) return; localStorage.setItem(SAVED_PLUS_CODE_KEY, code); }
+function getSavedUserCode(){ return localStorage.getItem(SAVED_PLUS_CODE_KEY) || ''; }
+
+function setPlusUnlocked(v){ premiumUnlocked = !!v; renderModels(); updateQuotaUI(); document.body.classList.toggle('plus-on', premiumUnlocked); }
+
+function verifySavedCodeStillValid(){
+  const saved = getSavedUserCode();
+  if(!saved){ setPlusUnlocked(false); return; }
+  const entered = saved.split(/[\,\r\n]+/).map(s=>s.trim()).filter(Boolean);
+  let ok = false; for(const code of entered){ if(premiumCodes.includes(code)) { ok = true; break; } }
+  setPlusUnlocked(ok);
+  if(!ok){
+    // Saved code no longer in remote list — user must update
+    console.warn('Saved Plus code no longer valid; please update your code.');
+  }
 }
 
-// Set Key UI: only allow if OWNER_API_KEY is not present.
-setKeyBtn.addEventListener('click', async ()=>{
-  if(OWNER_API_KEY){
-    alert('Owner API key is set in the file; you cannot change it from the UI.');
-    return;
-  }
-  const prev = sessionStorage.getItem(STORAGE_KEY) || '';
-  const k = prompt('Paste a temporary OpenAI API key (this will be stored in sessionStorage for this browser session).\\nCommas in the key will be removed automatically.', prev);
-  if(k) { setOpenAIKeyTemp(k.trim()); alert('Temporary key set for this session.'); }
-});
-
-// On load: hide Set Key if owner key is present (defense in depth)
-window.addEventListener('load', ()=>{
-  if(OWNER_API_KEY){
-    try{ setKeyBtn.style.display = 'none'; }catch(e){}
-  } else {
-    try{ setKeyBtn.style.display = ''; }catch(e){}
-  }
-});
-
-// ---------- Premium codes loader (unchanged) ----------
-async function tryLoadPremiumCodes(){
-  try {
-    const res = await fetch('/browser/premiumcodes.txt', {cache:'no-cache'});
-    if(!res.ok) return;
-    const txt = await res.text();
-    premiumCodes = txt.split(/[,\\r\\n]+/).map(s=>s.trim()).filter(Boolean);
-    console.log('Loaded premium codes', premiumCodes.length);
-  } catch(e){}
-}
 applyCodeBtn.addEventListener('click', ()=>{
   const raw = premiumCodeInput.value.trim();
   if(!raw) return alert('Enter at least one code (separate multiple with commas).');
-  const entered = raw.split(/[,\r\n]+/).map(s=>s.trim()).filter(Boolean);
-  let ok = false;
-  for(const code of entered){
-    if(premiumCodes.includes(code) || code === 'PREMIUM'){ ok = true; break; }
-  }
-  if(ok){
-    premiumUnlocked = true;
-    alert('Premium unlocked! Models and limits updated.');
-    renderModels();
-    updateQuotaUI();
-  } else {
-    alert('No matching premium code found. (Test code:___)');
-  }
+  const entered = raw.split(/[\,\r\n]+/).map(s=>s.trim()).filter(Boolean);
+  let ok = false; for(const code of entered){ if(premiumCodes.includes(code)) { ok = true; break; } }
+  if(ok){ setPlusUnlocked(true); saveUserCodeLocally(raw); alert('Plus unlocked! Models and limits updated.'); }
+  else { alert('No matching Plus code found. Make sure your code exists at gomega.watch/browser/premiumcodes.txt'); }
 });
-tryLoadPremiumCodes();
 
-// ---------- OpenAI call ----------
-async function callOpenAI(promptText, modelKey, options = {}){
-  const apiKey = getOpenAIKey();
-  if(!apiKey) throw new Error('No OpenAI key set. Owner key is absent and no temporary key provided.');
-  const cfg = MODEL_CONFIG[modelKey] || MODEL_CONFIG['gomega-v7'];
-  const systemMsg = { role: 'system', content:
-    `You are Gomega AI — a helpful assistant. Answer clearly and concisely.
-     If asked "Who made you?" reply exactly: "ScriptNova made me — follow scriptnovaa (two a's) on Instagram."`};
+loadPlusCodes();
 
-  const messages = [ systemMsg, { role: 'user', content: promptText } ];
-  const maxTokens = premiumUnlocked ? (options.max_tokens ?? 2000) : (options.max_tokens ?? 800);
+// ---------- Think Harder (3/day) ----------
+const THINK_LIMIT_PER_DAY = 3;
+function thinkKey(){ const d = new Date(); const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0'); return `gomega_thinkhard_${y}${m}${day}`; }
+function getThinkUsed(){ return parseInt(localStorage.getItem(thinkKey()) || '0', 10); }
+function setThinkUsed(n){ localStorage.setItem(thinkKey(), String(n)); updateThinkLeftUI(); }
+function updateThinkLeftUI(){ const left = Math.max(0, THINK_LIMIT_PER_DAY - getThinkUsed()); thinkHarderLeftEl.textContent = String(left); thinkHarderBtn.disabled = left<=0; }
+updateThinkLeftUI();
 
-  const body = {
-    model: cfg.openai,
-    messages,
-    temperature: options.temperature ?? 0.2,
-    max_tokens: maxTokens
-  };
+let forceThinkHarder = false;
+thinkHarderBtn.addEventListener('click', ()=>{
+  const used = getThinkUsed();
+  if(used >= THINK_LIMIT_PER_DAY){ alert('No Think Harder boosts left today.'); return; }
+  forceThinkHarder = true; setThinkUsed(used+1); setThinkingText('Think Harder engaged');
+  // little flash animation
+  progressBar.style.transition = 'none'; progressBar.style.width = '100%';
+  setTimeout(()=>{ progressBar.style.transition='width 180ms linear'; setProgress(12); }, 160);
+});
 
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type':'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify(body)
-  });
-
-  if(!res.ok){
-    const text = await res.text();
-    let errMsg = `OpenAI request failed (${res.status})`;
-    try { const json = JSON.parse(text); if(json.error && json.error.message) errMsg += `: ${json.error.message}`; } catch(e){ errMsg += ': ' + text; }
-    throw new Error(errMsg);
-  }
-  const data = await res.json();
-  const reply = data.choices && data.choices[0] && (data.choices[0].message?.content || data.choices[0].text) ? (data.choices[0].message?.content || data.choices[0].text) : 'No response';
-  return reply;
-}
-
-// ---------- Photo upload (same best-effort behavior) ----------
+// ---------- Photo upload ----------
 const DAILY_QUOTA = 5;
-function quotaKeyForToday(){
-  const d = new Date(); const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
-  return `gomega_photo_quota_${y}${m}${day}`;
-}
+function quotaKeyForToday(){ const d = new Date(); const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0'); return `gomega_photo_quota_${y}${m}${day}`; }
 function getQuotaUsed(){ if(premiumUnlocked) return 0; return parseInt(localStorage.getItem(quotaKeyForToday()) || '0', 10); }
 function incrementQuota(){ if(premiumUnlocked) return 0; const k = quotaKeyForToday(); const u = getQuotaUsed()+1; localStorage.setItem(k, String(u)); updateQuotaUI(); return u; }
 function updateQuotaUI(){ const left = premiumUnlocked ? '∞' : Math.max(0, DAILY_QUOTA - getQuotaUsed()); photoQuotaEl.textContent = left; }
@@ -608,11 +437,7 @@ addPhotoBtn.addEventListener('click', ()=>{
   if(!f) return alert('Choose an image file first.');
   if(!/^image\//.test(f.type)) return alert('Only images allowed');
   const r = new FileReader();
-  r.onload = (ev) => {
-    const id = 'p' + Date.now();
-    photos.push({id, name: f.name, file: f, url: ev.target.result, sent:false});
-    renderPhotos();
-  };
+  r.onload = (ev) => { const id = 'p' + Date.now(); photos.push({id, name: f.name, file: f, url: ev.target.result, sent:false}); renderPhotos(); };
   r.readAsDataURL(f);
 });
 
@@ -620,185 +445,113 @@ function renderPhotos(){
   photoGrid.innerHTML = '';
   photos.forEach(p=>{
     const card = document.createElement('div'); card.className='photoCard';
-    const img = document.createElement('img'); img.src = p.url; img.alt = p.name;
-    card.appendChild(img);
+    const img = document.createElement('img'); img.src = p.url; img.alt = p.name; card.appendChild(img);
     const actions = document.createElement('div'); actions.className='photoActions';
     const sendBtn = document.createElement('button'); sendBtn.className='small'; sendBtn.textContent = p.sent ? 'Sent' : 'Send';
     sendBtn.onclick = async () => {
       if(p.sent){ alert('Already sent'); return; }
-      if(!premiumUnlocked && getQuotaUsed() >= DAILY_QUOTA){ alert('Daily photo send limit reached (5). Try again tomorrow or unlock premium.'); return; }
-      const startMsg = addBubble('ai', `<span class="small">Uploading image "${escapeHtml(p.name)}" to OpenAI (if allowed)...</span>`);
-      setThinkingText('Uploading image...');
-      setProgress(12);
+      if(!premiumUnlocked && getQuotaUsed() >= DAILY_QUOTA){ alert('Daily photo send limit reached (5). Try again tomorrow or unlock Plus.'); return; }
+      addBubble('ai', `<span class="small">Uploading image "${escapeHtml(p.name)}" to OpenAI (if allowed)...</span>`);
+      setThinkingText('Uploading image...'); setProgress(12);
       try{
         const uploadResult = await tryUploadImageToOpenAI(p.file);
         if(uploadResult.ok && uploadResult.fileId){
-          addBubble('user', `<div style="font-size:13px;color:var(--muted);margin-bottom:6px">Image uploaded to OpenAI: <strong>${escapeHtml(p.name)}</strong></div><div class="small">File ID: ${escapeHtml(uploadResult.fileId)}</div>`);
+          addBubble('user', `<div style="font-size:13px;color:var(--muted);margin-bottom:6px">Image uploaded: <strong>${escapeHtml(p.name)}</strong></div><div class="small">File ID: ${escapeHtml(uploadResult.fileId)}</div>`);
           session.push({role:'user', text:`[image:uploaded:${p.name}]`, img:p, fileId:uploadResult.fileId});
-          p.sent = true; incrementQuota(); renderPhotos(); updateSessionUI();
-          setProgress(100);
-          setThinkingText('Idle');
-          lastFetchEl.textContent = new Date().toLocaleString();
+          p.sent = true; incrementQuota(); renderPhotos(); updateSessionUI(); setProgress(100); setThinkingText('Idle'); lastFetchEl.textContent = new Date().toLocaleString();
         } else {
           addBubble('user', `<div style="font-size:13px;color:var(--muted);margin-bottom:6px">Image embedded (fallback): <strong>${escapeHtml(p.name)}</strong></div><img src="${p.url}" style="max-width:320px;width:100%;border-radius:8px">`);
           session.push({role:'user', text:`[image:embedded:${p.name}]`, img:p});
-          p.sent = true; incrementQuota(); renderPhotos(); updateSessionUI();
-          if(uploadResult && uploadResult.reason){
-            addBubble('ai', `<div class="small">Note: direct upload was blocked (${escapeHtml(uploadResult.reason)}). The image is embedded locally so the assistant can reference it in the conversation but OpenAI's direct file upload may not have worked due to CORS. For reliable uploads, run the optional proxy server (see code comments at bottom).</div>`);
-          }
-          setProgress(100);
-          setThinkingText('Idle');
+          p.sent = true; incrementQuota(); renderPhotos(); updateSessionUI(); setProgress(100); setThinkingText('Idle');
         }
       } catch(e){
         console.error(e);
         addBubble('ai', `<div class="small">Image upload failed: ${escapeHtml(String(e.message || e))}. Sent as embedded image instead.</div>`);
         addBubble('user', `<div style="font-size:13px;color:var(--muted);margin-bottom:6px">Image embedded (error): <strong>${escapeHtml(p.name)}</strong></div><img src="${p.url}" style="max-width:320px;width:100%;border-radius:8px">`);
         session.push({role:'user', text:`[image:embedded:${p.name}]`, img:p});
-        p.sent = true; incrementQuota(); renderPhotos(); updateSessionUI();
-        setProgress(100);
-        setThinkingText('Idle');
+        p.sent = true; incrementQuota(); renderPhotos(); updateSessionUI(); setProgress(100); setThinkingText('Idle');
       }
     };
     const removeBtn = document.createElement('button'); removeBtn.className='small'; removeBtn.textContent='Remove';
     removeBtn.onclick = ()=>{ photos = photos.filter(x=>x.id !== p.id); renderPhotos(); };
     actions.appendChild(sendBtn); actions.appendChild(removeBtn);
-    card.appendChild(actions);
-    photoGrid.appendChild(card);
+    card.appendChild(actions); photoGrid.appendChild(card);
   });
   updateQuotaUI();
 }
 
 async function tryUploadImageToOpenAI(file){
-  const apiKey = getOpenAIKey();
-  if(!apiKey) return {ok:false, reason:'no-api-key'};
+  const apiKey = getOpenAIKey(); if(!apiKey) return {ok:false, reason:'no-api-key'};
   try{
-    const form = new FormData();
-    form.append('file', file, file.name);
-    form.append('purpose', 'answers');
-    const res = await fetch('https://api.openai.com/v1/files', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: form
-    });
-    if(!res.ok){
-      const text = await res.text();
-      return {ok:false, reason: `upload-failed-status-${res.status}`, details: text};
-    }
-    const data = await res.json();
-    if(data && data.id) return {ok:true, fileId: data.id, details: data};
+    const form = new FormData(); form.append('file', file, file.name); form.append('purpose', 'answers');
+    const res = await fetch('https://api.openai.com/v1/files', { method: 'POST', headers: { 'Authorization': `Bearer ${apiKey}` }, body: form });
+    if(!res.ok){ const text = await res.text(); return {ok:false, reason: `upload-failed-status-${res.status}`, details: text}; }
+    const data = await res.json(); if(data && data.id) return {ok:true, fileId: data.id, details: data};
     return {ok:false, reason:'no-id-in-response', details:data};
-  } catch(err){
-    try{
-      const base64 = await fileToBase64(file);
-      return {ok:false, reason: String(err.message || 'network/cors'), fallbackData: base64};
-    } catch(e2){
-      return {ok:false, reason: String(err.message || 'unknown')};
-    }
-  }
+  } catch(err){ try{ const base64 = await fileToBase64(file); return {ok:false, reason: String(err.message || 'network/cors'), fallbackData: base64}; } catch(e2){ return {ok:false, reason: String(err.message || 'unknown')}; } }
 }
-function fileToBase64(file){
-  return new Promise((res, rej)=>{
-    const r = new FileReader();
-    r.onload = ()=>res(r.result);
-    r.onerror = ()=>rej(new Error('file->base64 failed'));
-    r.readAsDataURL(file);
-  });
-}
+function fileToBase64(file){ return new Promise((res, rej)=>{ const r = new FileReader(); r.onload = ()=>res(r.result); r.onerror = ()=>rej(new Error('file->base64 failed')); r.readAsDataURL(file); }); }
 
-// ---------- Snippet gathering (unchanged) ----------
-async function fetchWikiSummary(q){
-  try{ const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`); if(!r.ok) return null; const j = await r.json(); return j.extract || null; }catch(e){ return null; }
-}
-async function fetchDDG(q){
-  try{ const r = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`); if(!r.ok) return null; const j = await r.json(); return j.Abstract || (j.RelatedTopics ? j.RelatedTopics.map(t=>t.Text).join('. ') : null);}catch(e){return null;}
-}
-async function fetchWikiSearchSummaries(q, limit=6){
-  const out=[];
-  try{
-    const r = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(q)}&srlimit=${limit}&origin=*`);
-    if(!r.ok) return out;
-    const j = await r.json(); const hits = j.query?.search || [];
-    for(const h of hits){
-      try{ const s = await fetchWikiSummary(h.title); if(s) out.push(s); }catch(e){}
-      if(out.length>=limit) break;
-    }
-  }catch(e){}
-  return out;
-}
+// ---------- Snippet gathering ----------
+async function fetchWikiSummary(q){ try{ const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`); if(!r.ok) return null; const j = await r.json(); return j.extract || null; }catch(e){ return null; } }
+async function fetchDDG(q){ try{ const r = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`); if(!r.ok) return null; const j = await r.json(); return j.Abstract || (j.RelatedTopics ? j.RelatedTopics.map(t=>t.Text).join('. ') : null);}catch(e){return null;} }
+async function fetchWikiSearchSummaries(q, limit=6){ const out=[]; try{ const r = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(q)}&srlimit=${limit}&origin=*`); if(!r.ok) return out; const j = await r.json(); const hits = j.query?.search || []; for(const h of hits){ try{ const s = await fetchWikiSummary(h.title); if(s) out.push(s); }catch(e){} if(out.length>=limit) break; } }catch(e){} return out; }
 const EXPANSIONS = ['history','release date','overview','timeline','founding','specifications','launch date','origin','background'];
 
 async function gatherSnippets(query, desired=10, aggressive=false, progressCb){
-  const snippets=[];
-  progressCb && progressCb('Trying Wikipedia summary...');
+  const snippets=[]; progressCb && progressCb('Trying Wikipedia summary...');
   const s1 = await fetchWikiSummary(query); if(s1) snippets.push(s1);
-  progressCb && progressCb('Trying DuckDuckGo...');
-  const d = await fetchDDG(query); if(d) snippets.push(d);
-  progressCb && progressCb('Searching wiki hits...');
-  const hits = await fetchWikiSearchSummaries(query, Math.max(3, Math.min(8, desired)));
-  hits.forEach(h=>snippets.push(h));
-  if(aggressive){
-    for(const ex of EXPANSIONS){ if(snippets.length>=desired) break; progressCb && progressCb(`Expanding: ${ex}`); const t = await fetchWikiSummary(query + ' ' + ex); if(t) snippets.push(t); }
-  }
-  const seen = new Set(); const out=[];
-  for(const t of snippets){
-    const key = t.slice(0,200).replace(/\s+/g,' ').trim();
-    if(!seen.has(key)){ seen.add(key); out.push(t); }
-    if(out.length>=desired) break;
-  }
+  progressCb && progressCb('Trying DuckDuckGo...'); const d = await fetchDDG(query); if(d) snippets.push(d);
+  progressCb && progressCb('Searching wiki hits...'); const hits = await fetchWikiSearchSummaries(query, Math.max(3, Math.min(8, desired))); hits.forEach(h=>snippets.push(h));
+  if(aggressive){ for(const ex of EXPANSIONS){ if(snippets.length>=desired) break; progressCb && progressCb(`Expanding: ${ex}`); const t = await fetchWikiSummary(query + ' ' + ex); if(t) snippets.push(t); } }
+  const seen = new Set(); const out=[]; for(const t of snippets){ const key = (t||'').slice(0,200).replace(/\s+/g,' ').trim(); if(!key) continue; if(!seen.has(key)){ seen.add(key); out.push(t); } if(out.length>=desired) break; }
   return out;
 }
-function extractYear(text){
-  if(!text) return null;
-  const m = text.match(/\b(17\d{2}|18\d{2}|19\d{2}|20\d{2}|2100)\b/g);
-  if(!m) return null;
-  const freq={}; for(const y of m) freq[y]=(freq[y]||0)+1;
-  return Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
-}
-function pickBest(snips, query, modelKey, strictOnly){
-  if(!snips || snips.length===0) return {answer:"I couldn't find an answer.", confidence:8};
-  const wantsYear = /\bwhat\s+year|\bwhen\s+was|\bwhen\s+did\b/i.test(query) || /only the year|just the year/i.test(query);
-  if(wantsYear){
-    const years=[]; for(const s of snips){ const y = extractYear(s); if(y) years.push(y); }
-    if(years.length>0){ const freq={}; for(const y of years) freq[y]=(freq[y]||0)+1; const pick = Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0]; const conf = Math.min(95, 40 + (freq[pick]-1)*20 + Math.min(40, snips.length*3)); return {answer: pick, confidence:conf}; }
-  }
-  let best = snips.slice().sort((a,b)=>b.length - a.length)[0];
-  const sentences = (best||'').split(/(?<=\.)\s+/).filter(Boolean);
-  const verb = MODEL_CONFIG[modelKey].verb || 1;
-  const take = Math.max(1, Math.floor(verb * 1.6));
-  let answer = sentences.slice(0,take).join(' ').trim();
-  if(!answer) answer = (best||'').slice(0,300).trim();
-  if(strictOnly && /\bonly the year\b|\bonly the number\b/i.test(query)){
-    const n = answer.match(/-?\d+(\.\d+)?/);
-    if(n) return {answer:n[0], confidence: Math.min(90, 20 + snips.length*6)};
-  }
-  const filled = snips.filter(s=>s.length>40).length;
-  let conf = Math.min(95, 30 + filled*8 + Math.min(30, (snips.length-1)*3));
-  const yearsFound = {}; snips.forEach(s=>{ const y = extractYear(s); if(y) yearsFound[y] = (yearsFound[y]||0)+1; });
-  if(Object.keys(yearsFound).length>0){ const bestY = Object.keys(yearsFound).sort((a,b)=>yearsFound[b]-yearsFound[a])[0]; conf += Math.min(10, (yearsFound[bestY]-1)*5); }
-  conf = Math.min(99, Math.max(8, Math.round(conf)));
-  return {answer, confidence:conf};
-}
+function extractYear(text){ if(!text) return null; const m = text.match(/\b(17\d{2}|18\d{2}|19\d{2}|20\d{2}|2100)\b/g); if(!m) return null; const freq={}; for(const y of m) freq[y]=(freq[y]||0)+1; return Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0]; }
+function pickBest(snips, query, modelKey, strictOnly){ if(!snips || snips.length===0) return {answer:"I couldn't find an answer.", confidence:8}; const wantsYear = /\bwhat\s+year|\bwhen\s+was|\bwhen\s+did\b/i.test(query) || /only the year|just the year/i.test(query); if(wantsYear){ const years=[]; for(const s of snips){ const y = extractYear(s); if(y) years.push(y); } if(years.length>0){ const freq={}; for(const y of years) freq[y]=(freq[y]||0)+1; const pick = Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0]; const conf = Math.min(95, 40 + (freq[pick]-1)*20 + Math.min(40, snips.length*3)); return {answer: pick, confidence:conf}; } } let best = snips.slice().sort((a,b)=>b.length - a.length)[0]; const sentences = (best||'').split(/(?<=\.)\s+/).filter(Boolean); const verb = MODEL_CONFIG[modelKey].verb || 1; const take = Math.max(1, Math.floor(verb * 1.6)); let answer = sentences.slice(0,take).join(' ').trim(); if(!answer) answer = (best||'').slice(0,300).trim(); if(strictOnly && /\bonly the year\b|\bonly the number\b/i.test(query)){ const n = answer.match(/-?\d+(\.\d+)?/); if(n) return {answer:n[0], confidence: Math.min(90, 20 + snips.length*6)}; } const filled = snips.filter(s=>s && s.length>40).length; let conf = Math.min(95, 30 + filled*8 + Math.min(30, (snips.length-1)*3)); const yearsFound = {}; snips.forEach(s=>{ const y = extractYear(s); if(y) yearsFound[y] = (yearsFound[y]||0)+1; }); if(Object.keys(yearsFound).length>0){ const bestY = Object.keys(yearsFound).sort((a,b)=>yearsFound[b]-yearsFound[a])[0]; conf += Math.min(10, (yearsFound[bestY]-1)*5); } conf = Math.min(99, Math.max(8, Math.round(conf))); return {answer, confidence:conf}; }
 
-// V6 uses tracking (unchanged)
+// V6 uses tracking (unchanged behavior) — limits removed when Plus
 const V6_USES_KEY = 'gomega_v6_free_uses';
 function getV6Uses(){ return parseInt(localStorage.getItem(V6_USES_KEY) || '0', 10); }
 function incrementV6Uses(){ const u = getV6Uses() + 1; localStorage.setItem(V6_USES_KEY, String(u)); return u; }
 
-// Main ask flow (unchanged behavior except getOpenAIKey uses owner-first)
+// ---------- OpenAI call ----------
+async function callOpenAI(promptText, modelKey, options = {}){
+  const apiKey = getOpenAIKey();
+  if(!apiKey) throw new Error('No OpenAI key set.');
+  const cfg = MODEL_CONFIG[modelKey] || MODEL_CONFIG['gomega-v7'];
+  const systemMsg = { role: 'system', content:
+    `You are Gomega AI — a helpful assistant. Answer clearly and concisely.
+     Use more deliberate reasoning when the user enables Thinking or Think Harder.`};
+
+  const messages = [ systemMsg, { role: 'user', content: promptText } ];
+  const baseMax = premiumUnlocked ? 2000 : 800;
+  const maxTokens = Math.min(4096, options.max_tokens ?? baseMax);
+  const temp = options.temperature ?? (thinkingToggle.checked ? 0.25 : 0.2);
+
+  const body = { model: cfg.openai, messages, temperature: temp, max_tokens: maxTokens };
+
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${apiKey}` }, body: JSON.stringify(body)
+  });
+  if(!res.ok){ const text = await res.text(); let errMsg = `OpenAI request failed (${res.status})`; try { const json = JSON.parse(text); if(json.error && json.error.message) errMsg += `: ${json.error.message}`; } catch(e){ errMsg += ': ' + text; } throw new Error(errMsg); }
+  const data = await res.json();
+  const reply = data.choices && data.choices[0] && (data.choices[0].message?.content || data.choices[0].text) ? (data.choices  const reply = data.choices && data.choices[0] && (data.choices[0].message?.content || data.choices[0].text)
+    ? (data.choices[0].message?.content || data.choices[0].text)
+    : 'No response';
+  return reply;
+}
+
+// ---------- Main ask flow ----------
 askBtn.addEventListener('click', onAsk);
 promptEl.addEventListener('keydown', (e) => { if(e.key==='Enter' && !e.shiftKey){ onAsk(); e.preventDefault(); } });
 document.getElementById('clearBtn').addEventListener('click', ()=>{ messagesEl.innerHTML=''; session=[]; updateSessionUI(); });
-
-function looksLikeMath(q){
-  return /[0-9\+\-\*\/\^%()a-zA-Z]/.test(q) || /\b(area|circumference|perimeter|volume|pythagor|triangle|circle|radius|diameter|height|base|simplify)\b/i.test(q);
-}
 
 async function onAsk(){
   if(typingLocked) return;
   const qRaw = (promptEl.value || '').trim();
   if(!qRaw) return;
+
   promptEl.value = '';
   addBubble('user', escapeHtml(qRaw));
   session.push({role:'user', text:qRaw});
@@ -810,18 +563,20 @@ async function onAsk(){
   setThinkingText('Deciding strategy...');
   setProgress(6);
 
+  // apply one-shot Think Harder (consumed after this call)
+  const useHarder = forceThinkHarder;
+  forceThinkHarder = false;
+  updateThinkLeftUI();
+
   try{
-    const qLow = qRaw.trim().toLowerCase();
-    // intercepts (unchanged)
+    // quick intercepts
     if(/\bwho (?:made|created) (?:you|this)\b/i.test(qRaw) || /^who(?:'s| is)? the creator\b/i.test(qRaw)){
       removeTypingIndicator(typingDots);
       const reply = 'ScriptNova made me — follow scriptnovaa (two a\'s) on Instagram.';
       await typeTextInto(aiNode, reply, MODEL_CONFIG[currentModelKey].speed * 0.9);
       session.push({role:'ai', text:reply});
       updateSessionUI();
-      setTypingLocked(false);
-      setThinkingText('Idle');
-      setProgress(0);
+      setTypingLocked(false); setThinkingText('Idle'); setProgress(0);
       return;
     }
     if(/\bwhat (?:model|version) (?:am i|are we) using\b/i.test(qRaw) || /\bwhich model\b/i.test(qRaw)){
@@ -831,140 +586,128 @@ async function onAsk(){
       await typeTextInto(aiNode, reply, MODEL_CONFIG[currentModelKey].speed * 0.9);
       session.push({role:'ai', text:reply});
       updateSessionUI();
-      setTypingLocked(false);
-      setThinkingText('Idle');
-      setProgress(0);
+      setTypingLocked(false); setThinkingText('Idle'); setProgress(0);
       return;
     }
 
-    // V6 limit logic (unchanged)
     const selectedModelKey = modelSelect.value || currentModelKey;
+
+    // V6 free limit if not Plus
     if(selectedModelKey === 'gomega-v6' && !premiumUnlocked){
       const uses = getV6Uses();
       if(uses >= 3){
         removeTypingIndicator(typingDots);
-        const msg = `Gomega V6 is available for free testing but you've used it ${uses} times. Buy premium or enter a valid premium code to continue using V6 without limits.`;
+        const msg = `Gomega V6 is available for free testing but you've used it ${uses} times. Enter a valid Plus code to continue using V6 without limits.`;
         await typeTextInto(aiNode, msg, MODEL_CONFIG['gomega-v6'].speed * 1.2);
         session.push({role:'ai', text: msg});
         updateSessionUI();
-        setTypingLocked(false);
-        setThinkingText('Idle');
-        setProgress(0);
+        setTypingLocked(false); setThinkingText('Idle'); setProgress(0);
         return;
       } else {
         incrementV6Uses();
       }
     }
 
-    // algebra simplification
-    const needSimplify = /\bsimplify\b/i.test(qRaw) || (/[a-zA-Z]/.test(qRaw) && /[+\-*/^()]/.test(qRaw));
-    if(needSimplify){
-      setThinkingText('Simplifying algebra locally...');
-      setProgress(26);
-      const simplified = simplifyAlgebra(qRaw) || simplifyAlgebra(qRaw.replace(/simplify/i,'').trim());
-      if(simplified){
+    // Decide path: local math vs LLM vs search
+    const isMath = isLikelyMathExpression(qRaw);
+    if(isMath){
+      setThinkingText('Analyzing expression...');
+      setProgress(20);
+      // Geometry first (clear wins)
+      const geom = geometryQuery(qRaw);
+      if(geom){
         removeTypingIndicator(typingDots);
-        if(premiumUnlocked){
-          const numericCheck = evaluateNumeric(qRaw);
-          const extra = numericCheck !== null ? `\n\nSmartMath check (premium): computed numeric value = ${numericCheck}` : `\n\nSmartMath (premium): no simple numeric value found, returned algebraic simplification.`;
-          await typeTextInto(aiNode, simplified + extra, Math.max(4, MODEL_CONFIG[currentModelKey].speed * 0.6));
-        } else {
-          await typeTextInto(aiNode, simplified, MODEL_CONFIG[currentModelKey].speed * 1.4);
-        }
-        session.push({role:'ai', text:simplified});
-        updateSessionUI();
+        const text = premiumUnlocked ? `${geom.answer}\n\nReason: ${geom.explain}` : String(geom.answer);
+        await typeTextInto(aiNode, text, Math.max(4, MODEL_CONFIG[selectedModelKey].speed * 0.8));
+        session.push({role:'ai', text});
         confidenceEl.textContent = '99%';
         lastFetchEl.textContent = new Date().toLocaleString();
-        setProgress(100);
-        setThinkingText('Idle');
-        setTimeout(()=>{ setProgress(0); setTypingLocked(false); },700);
+        setProgress(100); setThinkingText('Idle');
+        setTimeout(()=>{ setProgress(0); setTypingLocked(false); }, 600);
         return;
       }
-    }
-
-    // geometry local
-    const geom = geometryQuery(qRaw);
-    if(geom && (selectedModelKey==='mathmaster' || looksLikeMath(qRaw))){
-      setThinkingText('Computing geometry locally...');
-      setProgress(30);
-      removeTypingIndicator(typingDots);
-      if(premiumUnlocked){
-        await typeTextInto(aiNode, String(geom.answer) + `\n\nReason (premium): ${geom.explain}`, Math.max(4, MODEL_CONFIG[currentModelKey].speed * 0.6));
-      } else {
-        await typeTextInto(aiNode, String(geom.answer), MODEL_CONFIG[currentModelKey].speed * 1.4);
-        const meta = document.createElement('div'); meta.className='explain'; meta.textContent = `Reason: ${geom.explain}`;
-        aiNode.appendChild(meta);
+      // Algebraic simplify / numeric
+      const simplified = simplifyAlgebra(qRaw) || simplifyAlgebra(qRaw.replace(/^(simplify|expand|factor)\b/i,'').trim());
+      const numeric = evaluateNumeric(qRaw);
+      if(simplified || numeric !== null){
+        removeTypingIndicator(typingDots);
+        let out = '';
+        if(simplified) out += simplified;
+        if(numeric !== null) out += (out ? '\n\n' : '') + `Computed value: ${numeric}`;
+        await typeTextInto(aiNode, out || 'Unable to compute.', Math.max(4, MODEL_CONFIG[selectedModelKey].speed * 0.8));
+        session.push({role:'ai', text: out});
+        confidenceEl.textContent = '—';
+        lastFetchEl.textContent = new Date().toLocaleString();
+        setProgress(100); setThinkingText('Idle');
+        setTimeout(()=>{ setProgress(0); setTypingLocked(false); }, 600);
+        return;
       }
-      session.push({role:'ai', text:String(geom.answer)});
-      updateSessionUI();
-      confidenceEl.textContent = '99%';
-      lastFetchEl.textContent = new Date().toLocaleString();
-      setProgress(100);
-      setThinkingText('Idle');
-      setTimeout(()=>{ setProgress(0); setTypingLocked(false); },700);
-      return;
+      // fall through to LLM if math parsing didn't help
     }
 
-    // if OpenAI key available, call OpenAI
+    // Try OpenAI (respect Plus gating)
     const key = getOpenAIKey();
     if(key){
-      setThinkingText('Calling OpenAI...');
-      setProgress(18);
+      setThinkingText(useHarder ? 'Think Harder with OpenAI…' : (thinkingToggle.checked ? 'Deliberate reasoning…' : 'Calling OpenAI…'));
+      setProgress(28);
       const cfg = MODEL_CONFIG[selectedModelKey];
       if(cfg.premium && !premiumUnlocked && selectedModelKey !== 'gomega-v6'){
-        throw new Error('This model is premium. Enter a premium code or host /browser/premiumcodes.txt');
+        throw new Error('This model is Plus only. Enter a Plus code to unlock it.');
       }
-      try {
-        const openAiOptions = { temperature: 0.15, max_tokens: premiumUnlocked ? 2000 : 700 };
+      try{
+        const openAiOptions = {
+          temperature: thinkingToggle.checked || useHarder ? 0.25 : 0.2,
+          max_tokens: premiumUnlocked ? (useHarder ? 2400 : 2000) : 700
+        };
         const reply = await callOpenAI(qRaw, selectedModelKey, openAiOptions);
         removeTypingIndicator(typingDots);
         setProgress(70);
-        const speed = premiumUnlocked ? Math.max(4, MODEL_CONFIG[selectedModelKey].speed * 0.5) : Math.max(6, MODEL_CONFIG[selectedModelKey].speed * 1.4);
+        const speed = premiumUnlocked ? Math.max(4, MODEL_CONFIG[selectedModelKey].speed * 0.6)
+                                      : Math.max(6, MODEL_CONFIG[selectedModelKey].speed * 1.1);
         await typeTextInto(aiNode, reply, speed);
         session.push({role:'ai', text: reply});
         updateSessionUI();
         confidenceEl.textContent = '—';
         lastFetchEl.textContent = new Date().toLocaleString();
-        setProgress(100);
-        setThinkingText('Idle');
-        setTimeout(()=>{ setProgress(0); setTypingLocked(false); },800);
+        setProgress(100); setThinkingText('Idle');
+        setTimeout(()=>{ setProgress(0); setTypingLocked(false); }, 700);
         return;
-      } catch(openErr){
-        console.warn('OpenAI failed:', openErr);
-        // fallback to local search
+      }catch(e){
+        console.warn('OpenAI failed, falling back to web snippets:', e);
       }
     }
 
-    // fallback gather
-    setThinkingText('Searching multiple sources (client-side)...');
-    setProgress(14);
-    const aggressive = thinkingToggle.checked || selectedModelKey.startsWith('gomega-v6') || selectedModelKey.startsWith('gomega-v8') || premiumUnlocked;
-    const snippets = await gatherSnippets(qRaw, 10, aggressive, (msg)=>{ lastAction.textContent = msg; const cur = parseInt(progressBar.style.width) || 10; setProgress(Math.min(90, cur + 8)); });
+    // Fallback: client-side snippets
+    setThinkingText(useHarder ? 'Deep search mode…' : 'Searching multiple sources…');
+    setProgress(36);
+    const aggressive = useHarder || thinkingToggle.checked || selectedModelKey.startsWith('gomega-v6') || premiumUnlocked;
+    const snippets = await gatherSnippets(qRaw, aggressive ? 14 : 10, aggressive, (msg)=>{
+      lastAction.textContent = msg;
+      const cur = parseInt(progressBar.style.width) || 10;
+      setProgress(Math.min(92, cur + (useHarder ? 10 : 7)));
+    });
 
     if(!snippets || snippets.length===0){
       removeTypingIndicator(typingDots);
-      await typeTextInto(aiNode, "I couldn't find an answer — I tried looking it up.", MODEL_CONFIG[currentModelKey].speed * 1.8);
-      session.push({role:'ai', text:"I couldn't find an answer — I tried looking it up."});
+      const txt = "I couldn't find an answer — I tried looking it up.";
+      await typeTextInto(aiNode, txt, MODEL_CONFIG[currentModelKey].speed * 1.2);
+      session.push({role:'ai', text:txt});
       updateSessionUI();
       confidenceEl.textContent = '10%';
-      setTypingLocked(false);
-      setThinkingText('Idle');
-      setProgress(0);
+      setTypingLocked(false); setThinkingText('Idle'); setProgress(0);
       return;
     }
 
-    setProgress(86);
+    setProgress(92);
     const strict = strictToggle.checked;
     const picked = pickBest(snippets, qRaw, selectedModelKey, strict);
 
-    const verification = evaluateNumeric(qRaw);
-    let finalAnswer = picked.answer;
-    if(verification !== null && !/\bonly the number\b/i.test(qRaw)) finalAnswer += `\n\n(Computed: ${verification})`;
     const sentImgs = photos.filter(p=>p.sent).length;
-    if(sentImgs>0) finalAnswer += `\n\n(You provided ${sentImgs} image(s) in this session.)`;
+    let finalAnswer = picked.answer + (sentImgs>0 ? `\n\n(You provided ${sentImgs} image(s) in this session.)` : '');
 
     removeTypingIndicator(typingDots);
-    const speed = premiumUnlocked ? Math.max(6, MODEL_CONFIG[selectedModelKey].speed * 0.6) : Math.max(10, Math.round(MODEL_CONFIG[selectedModelKey].speed * 1.6));
+    const speed = premiumUnlocked ? Math.max(6, MODEL_CONFIG[selectedModelKey].speed * 0.7)
+                                  : Math.max(10, Math.round(MODEL_CONFIG[selectedModelKey].speed * 1.4));
     await typeTextInto(aiNode, finalAnswer, speed);
     const meta = document.createElement('div'); meta.className='explain'; meta.textContent = `Confidence: ${picked.confidence}%`;
     aiNode.appendChild(meta);
@@ -972,41 +715,35 @@ async function onAsk(){
     updateSessionUI();
     lastFetchEl.textContent = new Date().toLocaleString();
     confidenceEl.textContent = picked.confidence + '%';
-    setProgress(100);
-    setThinkingText('Idle');
+    setProgress(100); setThinkingText('Idle');
     setTimeout(()=>{ setProgress(0); setTypingLocked(false); }, 800);
 
   } catch(err){
     console.error(err);
     removeTypingIndicator(typingDots);
     const msg = '⚠️ Error: ' + (err.message || 'failed to compute');
-    const aiNode = messagesEl.querySelector('.bubble.ai:last-child') || addBubble('ai','');
-    aiNode.innerHTML = escapeHtml(msg);
+    const node = messagesEl.querySelector('.bubble.ai:last-child') || addBubble('ai','');
+    node.innerHTML = escapeHtml(msg);
     session.push({role:'ai', text: msg});
     updateSessionUI();
-    setTypingLocked(false);
-    setThinkingText('Idle');
-    setProgress(0);
+    setTypingLocked(false); setThinkingText('Idle'); setProgress(0);
   }
 }
 
-// ---------- init ----------
+// ---------- Time + init ----------
+function tickLocalTime(){ const el = document.getElementById('localTime'); if(el) el.textContent = new Date().toLocaleString(); setTimeout(tickLocalTime,1000); }
+clearSessionBtn.addEventListener('click', ()=>{ session=[]; photos=[]; messagesEl.innerHTML=''; renderPhotos(); updateSessionUI(); localStorage.removeItem(quotaKeyForToday()); updateQuotaUI(); });
+
 (function init(){
   renderModels();
   updateQuotaUI();
-  addBubble('ai', 'Welcome to Gomega AI. The owner API key is set in the file if provided; otherwise you may paste a temporary key using Set Key.');
-  addBubble('ai', 'Try: "Simplify 4a-2(5a-7)" or "Area of circle radius 5" or "What year was Nokia released in North America?"');
+  updateThinkLeftUI();
+  addBubble('ai', 'Welcome to Gomega AI.');
+  addBubble('ai', 'Try: "Simplify 4a-2(5a-7)" or "Area of circle radius 5" or ask general questions with Thinking enabled.');
   updateSessionUI();
   tickLocalTime();
+  renderPhotos();
 })();
-function tickLocalTime(){ document.getElementById('localTime').textContent = new Date().toLocaleString(); setTimeout(tickLocalTime,1000); }
-
-// clear session & photos
-document.getElementById('clearSession').addEventListener('click', ()=>{ session=[]; photos=[]; messagesEl.innerHTML=''; renderPhotos(); updateSessionUI(); localStorage.removeItem(quotaKeyForToday()); updateQuotaUI(); });
-
-// initial render photos & quota
-renderPhotos();
-updateQuotaUI();
 </script>
 </body>
 </html>
