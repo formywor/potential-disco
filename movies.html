@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Movies</title>
+  <meta name="description" content="Browse and play your Google Drive-embedded movies. Add more anytime." />
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --card: #141a22;
+      --muted: #9fb0c3;
+      --text: #e8f0f7;
+      --primary: #7cc0ff;
+      --ring: rgba(124,192,255,.35);
+      --shadow: rgba(0,0,0,.3);
+      --danger: #ff5c7a;
+      --success: #6ad38a;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: radial-gradient(1200px 600px at 100% -10%, rgba(124,192,255,.05), transparent) , var(--bg);
+      color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    header {
+      position: sticky; top: 0; z-index: 5; backdrop-filter: blur(10px); background: linear-gradient(180deg, rgba(11,15,20,.8), rgba(11,15,20,.45) 65%, transparent);
+      border-bottom: 1px solid rgba(124,192,255,.12);
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .title-row { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    h1 { font-size: clamp(20px, 2.6vw, 30px); margin: 0; letter-spacing: .3px; }
+
+    .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .field { position: relative; }
+    .input {
+      background: var(--card); color: var(--text); border: 1px solid rgba(124,192,255,.18);
+      padding: 10px 12px; border-radius: 10px; outline: none; min-width: 250px;
+      box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 0 0 0 var(--ring);
+      transition: box-shadow .15s ease, border-color .15s ease, transform .05s ease;
+    }
+    .input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--ring); }
+    .btn {
+      appearance: none; background: linear-gradient(180deg, #1f2a37, #151d27);
+      color: var(--text); border: 1px solid rgba(124,192,255,.22);
+      padding: 10px 14px; border-radius: 10px; cursor: pointer;
+      transition: transform .05s ease, box-shadow .15s ease, border-color .15s ease;
+      box-shadow: 0 6px 20px -10px var(--shadow);
+    }
+    .btn:hover { border-color: var(--primary); box-shadow: 0 0 0 4px var(--ring); }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: linear-gradient(180deg, #2b87ff, #1e5bd6); border-color: #5aa5ff; }
+    .btn.ghost { background: transparent; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; padding: 18px 0 80px; }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border: 1px solid rgba(124,192,255,.15); border-radius: 14px; overflow: hidden;
+      box-shadow: 0 20px 40px -25px var(--shadow);
+      display: flex; flex-direction: column; min-height: 220px;
+      transition: transform .12s ease, box-shadow .15s ease, border-color .15s ease;
+    }
+    .card:hover { transform: translateY(-2px); border-color: rgba(124,192,255,.45); box-shadow: 0 25px 50px -28px var(--shadow); }
+    .poster { aspect-ratio: 16 / 9; background: #0e1319; display: grid; place-items: center; font-size: 13px; color: var(--muted); letter-spacing: .2px; }
+    .meta { padding: 10px 12px 12px; display: grid; gap: 6px; }
+    .name { font-weight: 600; line-height: 1.2; }
+    .year { color: var(--muted); font-size: 12px; }
+    .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag { font-size: 11px; color: var(--muted); padding: 3px 7px; border: 1px dashed rgba(124,192,255,.2); border-radius: 999px; }
+
+    .empty { text-align: center; color: var(--muted); padding: 32px 8px; }
+
+    /* Modal */
+    dialog[open] { display: grid; }
+    dialog {
+      width: min(920px, 92vw); padding: 0; border: none; border-radius: 16px; overflow: hidden;
+      background: #0b0f14; color: var(--text);
+      box-shadow: 0 30px 120px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(124,192,255,.32) inset;
+    }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid rgba(124,192,255,.18); }
+    .modal-title { font-weight: 700; }
+    .modal-body { padding: 12px; }
+    .player { position: relative; padding-top: 56.25%; background: #000; border-radius: 10px; overflow: hidden; }
+    .player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+    /* Add form */
+    .sheet { max-width: 700px; width: 92vw; background: var(--card); border: 1px solid rgba(124,192,255,.2); border-radius: 16px; padding: 16px; box-shadow: 0 20px 60px -25px var(--shadow); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    label { font-size: 12px; color: var(--muted); margin-bottom: 6px; display: block; }
+    .hint { font-size: 12px; color: var(--muted); opacity: .9; }
+    .danger { color: var(--danger); }
+    .success { color: var(--success); }
+
+    /* Queue badge */
+    .badge { font-size: 10px; color: #c1cee0; background: rgba(124,192,255,.09); border: 1px solid rgba(124,192,255,.2); padding: 2px 6px; border-radius: 999px; }
+
+    footer { position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(0deg, rgba(11,15,20,.9), rgba(11,15,20,.6)); border-top: 1px solid rgba(124,192,255,.2); }
+    .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; gap: 10px; align-items: center; padding: 10px 16px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container title-row">
+      <h1>🎬 My Movies</h1>
+      <div class="controls">
+        <div class="field"><input id="search" class="input" type="search" placeholder="Search movies by name or year…" autocomplete="off" /></div>
+        <button id="btnAdd" class="btn">＋ Add Movie</button>
+        <button id="btnExport" class="btn ghost" title="Export your list as JSON">Export</button>
+        <input id="fileImport" type="file" accept="application/json" hidden />
+        <button id="btnImport" class="btn ghost" title="Import movies from JSON">Import</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="grid" class="grid" role="list"></div>
+    <div id="empty" class="empty" hidden>No movies match your search.</div>
+  </main>
+
+  <!-- Player Modal -->
+  <dialog id="viewer">
+    <div class="modal-head">
+      <div class="modal-title" id="viewerTitle">Playing</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <a id="openInDrive" class="btn ghost" target="_blank" rel="noopener">Open in Drive</a>
+        <button id="closeViewer" class="btn">Close</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="player"><iframe id="playerFrame" allow="autoplay; encrypted-media" allowfullscreen referrerpolicy="no-referrer"></iframe></div>
+    </div>
+  </dialog>
+
+  <!-- Add/Edit Modal -->
+  <dialog id="editor">
+    <form method="dialog" class="sheet">
+      <h3 style="margin:0 0 10px;">Add / Edit Movie</h3>
+      <div class="row">
+        <div>
+          <label for="title">Title</label>
+          <input id="title" class="input" placeholder="e.g., Moana 2" required />
+        </div>
+        <div>
+          <label for="year">Year</label>
+          <input id="year" class="input" placeholder="e.g., 2024" />
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <label for="drive">Google Drive link or File ID</label>
+        <input id="drive" class="input" placeholder="https://drive.google.com/file/d/FILE_ID/… or just FILE_ID" />
+        <div class="hint">Tip: use a shared link set to "Anyone with the link – Viewer". The embedded player uses <code>/preview</code>.</div>
+      </div>
+      <div style="margin-top:10px;">
+        <label for="notes">Notes / Filename (optional)</label>
+        <input id="notes" class="input" placeholder="Local filename or any note" />
+      </div>
+      <div style="display:flex; gap:10px; margin-top:14px; justify-content:flex-end;">
+        <button class="btn" value="cancel">Cancel</button>
+        <button id="saveMovie" class="btn primary" value="default">Save</button>
+      </div>
+      <div id="saveMsg" style="margin-top:8px;" class="success" hidden>Saved!</div>
+    </form>
+  </dialog>
+
+  <footer>
+    <div class="footer-inner">
+      <span class="hint">Add movies without links to keep them in your <strong>Movie Queue</strong>. Edit later to attach a Drive link.</span>
+      <button id="btnClear" class="btn ghost" title="This clears only items you've added in this browser.">Clear My Added Items</button>
+    </div>
+  </footer>
+
+  <script>
+    // —— Utilities ——
+    const byId = (id) => document.getElementById(id);
+    const grid = byId('grid');
+    const empty = byId('empty');
+    const search = byId('search');
+    const viewer = byId('viewer');
+    const playerFrame = byId('playerFrame');
+    const viewerTitle = byId('viewerTitle');
+    const openInDrive = byId('openInDrive');
+
+    const editor = byId('editor');
+    const titleEl = byId('title');
+    const yearEl = byId('year');
+    const driveEl = byId('drive');
+    const notesEl = byId('notes');
+    const saveMsg = byId('saveMsg');
+
+    const btnAdd = byId('btnAdd');
+    const btnExport = byId('btnExport');
+    const btnImport = byId('btnImport');
+    const fileImport = byId('fileImport');
+    const btnClear = byId('btnClear');
+
+    const DRIVE_PREVIEW = (fileId) => `https://drive.google.com/file/d/${fileId}/preview`;
+    const DRIVE_OPEN = (fileId) => `https://drive.google.com/file/d/${fileId}/view`;
+
+    const extractDriveId = (val = '') => {
+      const trimmed = String(val).trim();
+      if (!trimmed) return '';
+      // Accept raw ID or full URL
+      const m = trimmed.match(/(?:^|\/d\/)([a-zA-Z0-9_-]{20,})(?:\b|\/)/);
+      return m ? m[1] : trimmed; // if looks like an ID, return it
+    };
+
+    // —— Data Model ——
+    const seed = [
+      { title: 'Moana 2', year: 2024, note: 'Moana_2_(2024)_BluRay_720p…' },
+      { title: 'Moana', year: 2016, note: 'Moana_2016_(2016)_BluRay_720p…' },
+      { title: 'Lilo and Stitch', year: 2002, note: 'Lilo_and_Stitch_(2002)_BluRay_720p…' },
+      { title: 'Lilo & Stitch 2: Stitch Has a Glitch', year: 2005, note: 'Lilo_and_Stitch_2__Stitch_Has_a_Glitch__…' },
+      { title: 'Stitch! The Movie', year: 2003, note: 'Stitch_The_Movie_(2003)_BluRay_720p…' },
+      { title: 'A Minecraft Movie', year: 2025, note: 'A_Minecraft_Movie_(2025)_WEB-DL_720p…' },
+      { title: 'The Real Black Panther', year: 2020, note: 'The_Real_Black_Panther_(2020)_WEB-DL_high…' },
+      { title: 'The Black Panther 1977', year: 2016, note: 'The_Black_Panther_1977_(2016)_DVDRip_720p…' },
+      { title: 'Fast & Furious 7', year: 2015, note: 'Fast_and_Furious_7_(2015)_BluRay_720p…' },
+      { title: 'Deadpool & Wolverine', year: 2024, note: 'Deadpool_and_Wolverine_(2024)_BluRay_720p…' },
+      { title: 'Black Panther: Wakanda Forever', year: 2022, note: 'Black_Panther_Wakanda_Forever_(2022)_BluRay_720p…' },
+      { title: 'Black Panther', year: 2018, note: 'Black_Panther_(2018)_BluRay_720p…' },
+      { title: 'Doctor Strange in the Multiverse of Madness', year: 2022, note: 'Doctor_Strange_in_the_Multiverse_of_Madness_(2022)_BluRay_high…' },
+      { title: 'Doctor Strange', year: 2016, note: 'Doctor_Strange_(2016)_BluRay_high…' },
+      { title: 'Paws of Fury: The Legend of Hank', year: 2022, note: 'Paws_of_Fury_The_Legend_of_Hank_(2022)_BluRay_high…' },
+      { title: 'How to Train Your Dragon: The Hidden World', year: 2019, note: 'How_to_Train_Your_Dragon_The_Hidden_World_(2019)_BluRay_high…' },
+      { title: 'Black Clover (Dub) Episode 100', year: '', note: 'Black Clover (TV) (Dub) Episode 100.mp4' },
+      { title: 'Zootopia', year: 2016, note: 'Zootopia (2016) [NaijaPrey.com].mp4' },
+      { title: 'Haikyuu!! (Dub) Episode 1', year: '', note: 'Haikyuu!! (Dub) Episode 1.mp4' },
+      { title: 'Deadpool', year: 2016, note: 'Deadpool_(2016)_BluRay_high…' },
+      { title: 'Harry Potter and the Chamber of Secrets', year: 2002 },
+      { title: 'Harry Potter and the Half-Blood Prince', year: 2009 },
+      { title: 'Harry Potter and the Goblet of Fire', year: 2005 },
+      { title: 'The Bad Guys 2', year: 2025, note: 'The Bad Guys 2 (2025).mp4' },
+      { title: 'Superman', year: 2025, fileId: '1RGytu3y5W4_k5qKD2Y3KeI5VAXToffHQ' },
+      { title: 'The Fantastic 4: First Steps', year: 2025, note: 'The Fantastic 4 First Steps (2025).mkv' },
+      { title: 'Despicable Me 4', year: 2024, note: 'Despicable Me 4 (2024).mp4' },
+      { title: 'Hotel Transylvania 2', year: 2015, note: 'Hotel Transylvania 2 (2015).mp4' },
+      { title: 'Hotel Transylvania', year: 2012, note: 'Hotel Transylvania (2012).mp4' },
+      { title: 'Hotel Transylvania 3: Summer Vacation', year: 2018, note: 'Hotel Transylvania 3_ Summer Vacation (2018).mp4' }
+    ];
+
+    const STORAGE_KEY = 'my-movies-v1';
+
+    function loadMovies() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        // Merge: user-saved first (so they can override), then seed items that aren't duplicated by title+year
+        const map = new Map();
+        saved.forEach(m => map.set(`${m.title}|${m.year}`, m));
+        seed.forEach(m => {
+          const key = `${m.title}|${m.year}`;
+          if (!map.has(key)) map.set(key, m);
+        });
+        return Array.from(map.values());
+      } catch {
+        return seed.slice();
+      }
+    }
+
+    function saveMovies(customList) {
+      // Only save items that the user has added or edited (i.e., anything with _custom=true)
+      const toSave = customList.filter(m => m._custom);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    }
+
+    let movies = loadMovies();
+
+    function render(list = movies) {
+      grid.innerHTML = '';
+      const q = search.value.trim().toLowerCase();
+      const filtered = list.filter(m => !q || `${m.title} ${m.year || ''}`.toLowerCase().includes(q));
+      empty.hidden = filtered.length !== 0;
+
+      for (const m of filtered) {
+        const hasLink = !!(m.fileId && m.fileId.length > 0);
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.setAttribute('role','listitem');
+
+        const poster = document.createElement('div');
+        poster.className = 'poster';
+        poster.innerHTML = hasLink ? 'Click to play' : 'No Drive link yet';
+        card.appendChild(poster);
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const title = document.createElement('div');
+        title.className = 'name';
+        title.textContent = m.title;
+        const year = document.createElement('div');
+        year.className = 'year';
+        year.textContent = m.year || '';
+
+        const tags = document.createElement('div');
+        tags.className = 'tags';
+        if (m.note) {
+          const t = document.createElement('span'); t.className = 'tag'; t.textContent = m.note.length > 38 ? m.note.slice(0,35)+'…' : m.note; tags.appendChild(t);
+        }
+        if (!hasLink) { const b = document.createElement('span'); b.className = 'badge'; b.textContent = 'Queued (add link)'; tags.appendChild(b); }
+
+        meta.appendChild(title); meta.appendChild(year); meta.appendChild(tags);
+        card.appendChild(meta);
+
+        // open player or edit if no link
+        card.addEventListener('click', () => {
+          if (hasLink) {
+            openPlayer(m);
+          } else {
+            openEditor(m);
+          }
+        });
+
+        // context menu to edit
+        card.addEventListener('contextmenu', (e) => { e.preventDefault(); openEditor(m); });
+
+        grid.appendChild(card);
+      }
+    }
+
+    function openPlayer(movie) {
+      const src = DRIVE_PREVIEW(movie.fileId);
+      playerFrame.src = src;
+      viewerTitle.textContent = `${movie.title} ${movie.year ? '('+movie.year+')' : ''}`;
+      openInDrive.href = DRIVE_OPEN(movie.fileId);
+      viewer.showModal();
+    }
+    byId('closeViewer').addEventListener('click', () => { playerFrame.src = ''; viewer.close(); });
+
+    // Editor logic
+    let editing = null;
+    function openEditor(movie = null) {
+      editing = movie;
+      titleEl.value = movie?.title || '';
+      yearEl.value = movie?.year || '';
+      driveEl.value = movie?.fileId || '';
+      notesEl.value = movie?.note || '';
+      saveMsg.hidden = true;
+      editor.showModal();
+      setTimeout(() => titleEl.focus(), 30);
+    }
+
+    btnAdd.addEventListener('click', () => openEditor());
+
+    editor.addEventListener('close', () => { saveMsg.hidden = true; });
+
+    byId('saveMovie').addEventListener('click', (e) => {
+      e.preventDefault();
+      const fileId = extractDriveId(driveEl.value);
+      const data = {
+        title: titleEl.value.trim() || 'Untitled',
+        year: yearEl.value.trim(),
+        fileId: fileId,
+        note: notesEl.value.trim(),
+        _custom: true
+      };
+      if (editing) {
+        // Update existing (by identity: title+year before edit)
+        const idx = movies.indexOf(editing);
+        if (idx >= 0) movies[idx] = { ...editing, ...data };
+      } else {
+        movies.unshift(data);
+      }
+      saveMovies(movies);
+      render();
+      saveMsg.hidden = false;
+      setTimeout(() => editor.close(), 250);
+    });
+
+    // Search
+    search.addEventListener('input', () => render());
+
+    // Export / Import
+    btnExport.addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(movies, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'movies.json'; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    btnImport.addEventListener('click', () => fileImport.click());
+    fileImport.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const arr = JSON.parse(text);
+        if (!Array.isArray(arr)) throw new Error('Invalid JSON format');
+        // Mark imported as custom so they persist
+        const cleaned = arr.map(m => ({ ...m, _custom: true }));
+        movies = cleaned.concat(seed.filter(s => !cleaned.find(x => x.title === s.title && String(x.year||'') === String(s.year||''))));
+        saveMovies(movies);
+        render();
+        alert('Import complete.');
+      } catch (err) {
+        alert('Import failed: ' + err.message);
+      } finally {
+        fileImport.value = '';
+      }
+    });
+
+    // Clear user-added items
+    btnClear.addEventListener('click', () => {
+      if (confirm('Clear your added/edited items from this browser?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        movies = loadMovies();
+        render();
+      }
+    });
+
+    // First paint
+    render();
+
+    // Accessibility: ESC closes modals
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (viewer.open) { playerFrame.src = ''; viewer.close(); }
+        if (editor.open) editor.close();
+      }
+    });
+  </script>
+</body>
+</html>
