@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Gomega AI (OpenAI) — ai.html</title>
+<title>Gomega AI (BETA) — Gomega Smart AI</title>
 <style>
   :root{
     --bg1:#071021; --bg2:#0b1220; --accent:#34d3ff; --accent2:#7c3aed; --muted:#94a3b8;
@@ -118,7 +118,7 @@
   <div class="chat-area">
     <div class="messages" id="messages"></div>
     <div class="controls" style="margin-top:12px">
-      <input id="prompt" class="prompt" placeholder="Ask anything (math runs only when you include operators or say 'simplify')"/>
+      <input id="prompt" class="prompt" placeholder="Ask anything"/>
       <select id="modelSelect" title="Choose model"></select>
       <button id="askBtn" class="primary">Ask</button>
       <button id="setKeyBtn" class="ghost">Set Key</button>
@@ -218,10 +218,10 @@ const MODEL_CONFIG = {
   'gomega-v9' : { label: 'Gomega V9 (Plus)',  openai: 'gpt-4o', speed:8, smart:true, verb:1.9, premium: true },
   'gomega-v8' : { label: 'Gomega V8 (Plus)',  openai: 'gpt-4o', speed:10, smart:true, verb:1.6, premium: true },
   'gomega-v6' : { label: 'Gomega V6 (Plus)',  openai: 'gpt-4o', speed:12, smart:true, verb:1.5, premium: true },
-  'gomega-v7' : { label: 'Gomega V7',        openai: 'gpt-4o-mini', speed:51, smart:true,  verb:1.0, premium: false },
-  'gomega-v7mini':{ label: 'Gomega V7-mini',  openai: 'gpt-3.5-turbo', speed:50, smart:false, verb:0.5, premium: false },
-  'gomega-v5' : { label: 'Gomega V5',        openai: 'gpt-3.5-turbo', speed:50, smart:false, verb:1.0, premium:false },
-  'mathmaster': { label: 'MathMaster',        openai: 'gpt-3.5-turbo', speed:50, smart:true,  verb:0.2, premium:false }
+  'gomega-v7' : { label: 'Gomega V7',        openai: 'gpt-4o-mini', speed:41, smart:true,  verb:1.0, premium: false },
+  'gomega-v7mini':{ label: 'Gomega V7-mini',  openai: 'gpt-3.5-turbo', speed:38, smart:false, verb:0.5, premium: false },
+  'gomega-v5' : { label: 'Gomega V5',        openai: 'gpt-3.5-turbo', speed:30, smart:false, verb:1.0, premium:false },
+  'mathmaster': { label: 'MathMaster',        openai: 'gpt-3.5-turbo', speed:30, smart:true,  verb:0.2, premium:false }
 };
 let currentModelKey = 'gomega-v7';
 
@@ -851,8 +851,8 @@ async function onAsk(){
 /* ---------- init ---------- */
 (function init(){
   renderModels(); updateQuotaUI();
-  addBubble('ai', 'Welcome to Gomega AI. The owner API key is set in the file if provided; otherwise you may paste a temporary key using Set Key.');
-  addBubble('ai', 'Try: "Simplify 4a-2(5a-7)" or "Area of circle radius 5" or "What year was Nokia released in North America?"');
+  addBubble('ai', 'Welcome to Gomega AI. We are trying really hard to update the AI regularly. Please go to the GPD doc and report any errors.');
+  addBubble('ai', 'Follow scriptnovaa on Instagram"');
   updateSessionUI(); tickLocalTime();
 })();
 function tickLocalTime(){ document.getElementById('localTime').textContent = new Date().toLocaleString(); setTimeout(tickLocalTime,1000); }
