@@ -31,7 +31,6 @@
     const msg = document.getElementById('msg');
     const overlay = document.getElementById('overlay');
     const ctx = overlay.getContext('2d');
-
     const isDigits = s => /^\d{4,50}$/.test(s);
     function setStatus(t,c){ msg.textContent=t; msg.className='bar ' + (c||''); }
 
@@ -41,17 +40,21 @@
       ctx.closePath(); ctx.lineWidth=width; ctx.strokeStyle=color; ctx.stroke();
     }
 
-    function submitCode(code){
+    async function submitCode(code){
       setStatus('Unlocking…','');
-      fetch('scan_submit.php?session='+encodeURIComponent(session)+'&code='+encodeURIComponent(code),
-        {method:'GET',cache:'no-store'}
-      )
-      .then(r=>r.text())
-      .then(t=>{
-        if(t.trim()==='OK'){ setStatus('Unlocked — check Gomega Browser','ok'); try{Quagga.stop()}catch(e){} }
-        else { setStatus('Failed to sync — try again','bad'); }
-      })
-      .catch(()=>setStatus('Network error — try again','bad'));
+      for (let attempt=1; attempt<=3; attempt++){
+        try{
+          const res = await fetch('scan_submit.php', {
+            method:'POST', cache:'no-store',
+            headers:{'Content-Type':'application/x-www-form-urlencoded'},
+            body: new URLSearchParams({session, code}).toString()
+          });
+          const json = await res.json().catch(()=>({ok:false}));
+          if (json && json.ok){ setStatus('Unlocked — check Gomega Browser','ok'); try{Quagga.stop()}catch(e){} return; }
+        }catch(e){}
+        await new Promise(r=>setTimeout(r, 350));
+      }
+      setStatus('Failed to sync — try again','bad');
     }
 
     let last='', streak=0, failTimer=0, sized=false;
@@ -80,7 +83,7 @@
 
     Quagga.onDetected(res=>{
       const code = (res && res.codeResult && res.codeResult.code) ? String(res.codeResult.code).trim() : '';
-      if(!isDigits(code)){ streak=0; last=''; setStatus('Reading… (waiting for numeric ID)',''); return; }
+      if(!isDigits(code)){ streak=0; last=''; setStatus('Reading… (numeric ID only)',''); return; }
       if(code===last) streak++; else { last=code; streak=1; }
       setStatus('Reading… '+code+' ('+streak+'/3)','');
       if(streak>=3) submitCode(code);
