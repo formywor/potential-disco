@@ -6,17 +6,17 @@ header('Pragma: no-cache');
 $session = isset($_GET['session']) ? preg_replace('/[^A-Za-z0-9\-_.]/','', $_GET['session']) : '';
 if ($session === '') { exit(''); }
 
-// Look in system temp first
-$dir  = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'gomega_scans';
-$file = $dir . DIRECTORY_SEPARATOR . $session . '.txt';
-if (!is_file($file)) {
-  // fallback to ./sessions
-  $dir  = __DIR__ . DIRECTORY_SEPARATOR . 'sessions';
-  $file = $dir . DIRECTORY_SEPARATOR . $session . '.txt';
-}
+// Attach to the same session id the HTA created
+session_id($session);
+session_start();
 
-if (is_file($file)) {
-  $digits = preg_replace('/\D/', '', (string)file_get_contents($file));
-  @unlink($file); // one-time read
-  echo $digits;   // HTA only accepts digits
+$digits = '';
+if (!empty($_SESSION['code'])) {
+  $digits = preg_replace('/\D/', '', (string)$_SESSION['code']);
+  // one-time read
+  $_SESSION['code'] = '';
 }
+session_write_close();
+
+// Return digits (or empty if not set yet)
+echo $digits;
