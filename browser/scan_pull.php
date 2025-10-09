@@ -6,11 +6,17 @@ header('Pragma: no-cache');
 $session = isset($_GET['session']) ? preg_replace('/[^A-Za-z0-9\-_.]/','', $_GET['session']) : '';
 if ($session === '') { exit(''); }
 
+// Look in system temp first
 $dir  = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'gomega_scans';
 $file = $dir . DIRECTORY_SEPARATOR . $session . '.txt';
+if (!is_file($file)) {
+  // fallback to ./sessions
+  $dir  = __DIR__ . DIRECTORY_SEPARATOR . 'sessions';
+  $file = $dir . DIRECTORY_SEPARATOR . $session . '.txt';
+}
 
 if (is_file($file)) {
   $digits = preg_replace('/\D/', '', (string)file_get_contents($file));
   @unlink($file); // one-time read
-  echo $digits;   // HTA only accepts pure digits
+  echo $digits;   // HTA only accepts digits
 }
