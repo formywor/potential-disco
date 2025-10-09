@@ -3,48 +3,127 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Gomega • Scan ID</title>
+  <title>Gomega Intelligence • Camera</title>
   <style>
-    :root { --ink:#e5e7eb; --muted:#94a3b8; --ok:#22c55e; --bad:#ef4444; --bg:#0b1220; }
+    :root{
+      --ink:#0b1020; --muted:#475569; --bg:#f8fafc;
+      --grad: linear-gradient(135deg,#7c3aed,#2563eb,#10b981,#f59e0b);
+    }
     html,body{height:100%;margin:0}
-    body{font-family:system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink);
-         display:flex;align-items:center;justify-content:center;min-height:100vh}
-    .wrap{max-width:860px;width:96vw}
-    h1{margin:0 0 10px;font-size:22px}
-    #preview{position:relative;width:100%;max-height:72vh;border-radius:12px;border:1px solid rgba(148,163,184,.25);overflow:hidden}
-    #video,#overlay{width:100%;height:auto;display:block}
-    .bar{margin:10px 0 0;color:var(--muted)}
-    .bar.ok{color:var(--ok)} .bar.bad{color:var(--bad)}
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+      background:var(--bg); color:#111827;
+      display:flex; align-items:center; justify-content:center; min-height:100vh;
+    }
+    .panel{width: min(880px, 94vw); background:#fff; border-radius:24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.12); padding:28px 28px 22px}
+    .hdr{display:flex; align-items:center; gap:16px; margin-bottom:8px}
+    .logo{
+      width:48px; height:48px; border-radius:12px; position:relative; overflow:hidden;
+      background:var(--grad); background-size:400% 400%; animation:flow 8s ease infinite;
+      box-shadow: 0 6px 18px rgba(99,102,241,.35);
+    }
+    .beta{position:absolute; top:-6px; right:-6px; background:#111827; color:#fff; font-size:10px;
+      padding:2px 6px; border-radius:6px; transform:rotate(15deg)}
+    @keyframes flow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    h1{font-size:26px; margin:0}
+    .sub{color:#475569; margin:2px 0 14px}
+    .capsule{display:inline-block; font-size:12px; padding:6px 10px; border-radius:999px;
+      background:#eef2ff; color:#3730a3; font-weight:700; margin-bottom:8px}
+    .stage{display:flex; gap:16px; align-items:flex-start}
+    .videoWrap{flex: 1 1 auto; position:relative; border-radius:16px; overflow:hidden;
+      border:1px solid #e2e8f0; background:#0b1020}
+    #video{width:100%; height:auto; display:block}
+    #overlay{position:absolute; inset:0}
+    .right{width:280px}
+    .tile{display:flex; gap:10px; padding:10px 12px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:10px}
+    .dot{width:10px; height:10px; border-radius:50%; margin-top:6px; background:#94a3b8; animation:pulse 2s ease infinite}
+    .tile.ok .dot{background:#22c55e}
+    .tile.warn .dot{background:#f59e0b}
+    .tile.bad .dot{background:#ef4444}
+    @keyframes pulse{50%{opacity:.5}}
+    .titleSm{font-weight:700}
+    .msg{color:#475569; font-size:13px}
+    .foot{margin-top:10px; font-size:12px; color:#64748b}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Scan your ID barcode</h1>
-    <div id="preview"><div id="video"></div><canvas id="overlay"></canvas></div>
-    <div class="bar" id="msg">Initializing camera…</div>
+  <div class="panel">
+    <div class="hdr">
+      <div class="logo"><div class="beta">BETA</div></div>
+      <div>
+        <div class="capsule">Gomega Intelligence</div>
+        <h1>Loading camera with Gomega Intelligence BETA</h1>
+        <div class="sub">Point your ID barcode at the camera. We’ll highlight it in green.</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="videoWrap">
+        <video id="video" playsinline autoplay muted></video>
+        <canvas id="overlay"></canvas>
+      </div>
+      <div class="right">
+        <div id="tile-status" class="tile">
+          <div class="dot"></div>
+          <div>
+            <div class="titleSm">Status</div>
+            <div id="status" class="msg">Starting camera…</div>
+          </div>
+        </div>
+        <div id="tile-scan" class="tile">
+          <div class="dot"></div>
+          <div>
+            <div class="titleSm">Scanner</div>
+            <div id="scanmsg" class="msg">Initializing…</div>
+          </div>
+        </div>
+        <div id="tile-unlock" class="tile">
+          <div class="dot"></div>
+          <div>
+            <div class="titleSm">Action</div>
+            <div id="unlockmsg" class="msg">Waiting for a valid ID…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">If the barcode doesn’t lock focus, move closer, keep it flat, and reduce glare.</div>
   </div>
 
+  <!-- Fallback library for legacy browsers -->
   <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
   <script>
     const params = new URLSearchParams(location.search);
     const session = params.get('session') || '';
-    const msg = document.getElementById('msg');
+    const video = document.getElementById('video');
     const overlay = document.getElementById('overlay');
     const ctx = overlay.getContext('2d');
 
+    const statusTile = document.getElementById('tile-status');
+    const scanTile   = document.getElementById('tile-scan');
+    const unlockTile = document.getElementById('tile-unlock');
+    const statusEl   = document.getElementById('status');
+    const scanEl     = document.getElementById('scanmsg');
+    const unlockEl   = document.getElementById('unlockmsg');
+
+    const set = (tile, el, text, cls='')=>{
+      el.textContent = text;
+      tile.className = 'tile ' + cls;
+    };
+
     const isDigits = s => /^\d{4,50}$/.test(s);
-    const setStatus = (t,c) => { msg.textContent=t; msg.className='bar ' + (c||''); };
+    const drawPoly = (pts, color, width=3)=>{
+      if(!pts || !pts.length) return;
+      ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+      for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.closePath(); ctx.lineWidth = width; ctx.strokeStyle = color; ctx.stroke();
+    };
 
-    function drawBox(path, color, width=3){
-      ctx.beginPath(); ctx.moveTo(path[0].x, path[0].y);
-      for(let i=1;i<path.length;i++) ctx.lineTo(path[i].x, path[i].y);
-      ctx.closePath(); ctx.lineWidth=width; ctx.strokeStyle=color; ctx.stroke();
-    }
-
-    async function submitCode(code){
-      setStatus('Unlocking…','');
-      // POST (no cache). Treat plain "OK" as success.
-      for (let attempt=1; attempt<=4; attempt++){
+    async function postCode(code){
+      set(unlockTile, unlockEl, 'Unlocking Browser with Gomega Intelligence…', 'warn');
+      // Keep retrying quietly until OK
+      while (true){
         try{
           const res = await fetch('scan_submit.php', {
             method:'POST', cache:'no-store',
@@ -52,52 +131,108 @@
             body: new URLSearchParams({session, code}).toString()
           });
           const text = (await res.text()).trim().toUpperCase();
-          if (text === 'OK'){ setStatus('Unlocked — check Gomega Browser','ok'); try{Quagga.stop()}catch(e){} return; }
+          if (text === 'OK'){
+            set(unlockTile, unlockEl, 'Unlocked — check Gomega Browser', 'ok');
+            try { const s = video.srcObject; s && s.getTracks().forEach(t=>t.stop()); } catch(e){}
+            break;
+          }
         }catch(e){}
-        await new Promise(r=>setTimeout(r, 350));
+        await new Promise(r=>setTimeout(r, 300));
       }
-      setStatus('Failed to sync — try again','bad');
     }
 
-    let last='', streak=0, sized=false, failTimer=0;
+    function startBarcodeDetector(){
+      const BarcodeDetectorCls = window.BarcodeDetector;
+      if (!BarcodeDetectorCls) return false;
+      const formats = ['qr_code','code_128','code_39','codabar','ean_13','ean_8','upc_a','upc_e','itf','data_matrix','pdf417'];
+      const detector = new BarcodeDetectorCls({formats});
 
-    Quagga.init({
-      inputStream:{ type:"LiveStream", target:document.getElementById('video'), constraints:{facingMode:"environment"} },
-      locator:{ patchSize:"medium", halfSample:true },
-      decoder:{ readers:[
-        "code_128_reader","ean_reader","ean_8_reader",
-        "code_39_reader","codabar_reader",
-        "upc_reader","upc_e_reader","i2of5_reader"
-      ]},
-      locate:true
-    }, err=>{
-      if(err){ setStatus('Camera error: '+err,'bad'); return; }
-      Quagga.start(); setStatus('Point the camera at your ID barcode…','');
-      const v = document.querySelector('#video video');
-      function size(){ if(!v) return; const w=v.videoWidth||v.clientWidth, h=v.videoHeight||v.clientHeight;
-        if(w&&h){ overlay.width=w; overlay.height=h; sized=true; } }
-      size(); window.addEventListener('resize', size);
-    });
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: {ideal:"environment"} }})
+        .then(stream=>{
+          video.srcObject = stream;
+          video.onloadedmetadata = ()=>{
+            video.play();
+            overlay.width = video.videoWidth || video.clientWidth;
+            overlay.height = video.videoHeight || video.clientHeight;
+            set(statusTile, statusEl, 'Camera ready', 'ok');
+            scanLoop();
+          };
+        })
+        .catch(()=> set(statusTile, statusEl, 'Camera permission denied', 'bad'));
 
-    Quagga.onProcessed(res=>{
-      if(!sized) return;
-      ctx.clearRect(0,0,overlay.width,overlay.height);
-      if(!res) return;
-      if(res.boxes){ res.boxes.filter(b=>b!==res.box).forEach(b=>drawBox(b,'rgba(147,197,253,.5)',2)); }
-      if(res.box){ drawBox(res.box,'rgba(250,204,21,.9)',3); setStatus('Reading…',''); }
-      if(res.codeResult && res.codeResult.code){ drawBox(res.line,'rgba(34,197,94,1)',4); }
-    });
+      let last='', streak=0;
+      async function scanLoop(){
+        if (!video.srcObject) return;
+        try{
+          const barcodes = await detector.detect(video);
+          ctx.clearRect(0,0,overlay.width,overlay.height);
+          if (barcodes && barcodes.length){
+            const b = barcodes[0];
+            const raw = (b.rawValue||'').trim();
+            const digits = raw.replace(/\D/g,'');
+            if (b.cornerPoints) drawPoly(b.cornerPoints, 'rgba(34,197,94,1)', 4);
+            set(scanTile, scanEl, 'Reading…', '');
+            if (digits && isDigits(digits)){
+              if (digits===last) streak++; else { last=digits; streak=1; }
+              set(scanTile, scanEl, 'Reading… ' + digits + ' ('+streak+'/3)', '');
+              if (streak>=3) { postCode(digits); return; }
+            } else {
+              streak = 0; last = '';
+            }
+          } else {
+            set(scanTile, scanEl, 'Searching for barcode…', '');
+          }
+        }catch(e){}
+        requestAnimationFrame(scanLoop);
+      }
+      return true;
+    }
 
-    Quagga.onDetected(res=>{
-      const code = (res && res.codeResult && res.codeResult.code) ? String(res.codeResult.code).trim() : '';
-      if(!isDigits(code)){ streak=0; last=''; setStatus('Reading… (numeric ID only)',''); return; }
-      if(code===last) streak++; else { last=code; streak=1; }
-      setStatus('Reading… '+code+' ('+streak+'/3)','');
-      if(streak>=3) submitCode(code);
-    });
+    function startQuaggaFallback(){
+      set(statusTile, statusEl, 'Starting legacy scanner…', '');
+      Quagga.init({
+        inputStream:{ type:"LiveStream", target:video, constraints:{ facingMode:"environment" } },
+        locator:{ patchSize:"medium", halfSample:true },
+        decoder:{ readers:[
+          "code_128_reader","ean_reader","ean_8_reader",
+          "code_39_reader","codabar_reader","upc_reader","upc_e_reader","i2of5_reader"
+        ]},
+        locate:true
+      }, err=>{
+        if(err){ set(statusTile, statusEl, 'Scanner error', 'bad'); return; }
+        Quagga.start(); set(statusTile, statusEl, 'Camera ready', 'ok');
+        const v = document.querySelector('video'); // quagga injects one
+        function size(){ const w=v.videoWidth||v.clientWidth, h=v.videoHeight||v.clientHeight;
+          if(w&&h){ overlay.width=w; overlay.height=h; } }
+        size(); window.addEventListener('resize', size);
+      });
 
-    const failInterval=setInterval(()=>{ if(msg.classList.contains('ok')){clearInterval(failInterval);return;}
-      failTimer++; if(failTimer===20) setStatus('Failed — move closer, avoid glare, keep barcode flat','bad'); },1000);
+      Quagga.onProcessed(res=>{
+        ctx.clearRect(0,0,overlay.width,overlay.height);
+        if(!res) return;
+        if(res.box) drawPoly(res.box, 'rgba(250,204,21,.9)', 3);
+        if(res.codeResult && res.codeResult.code) drawPoly(res.line, 'rgba(34,197,94,1)', 4);
+      });
+
+      let last='', streak=0;
+      Quagga.onDetected(res=>{
+        const code = (res && res.codeResult && res.codeResult.code) ? String(res.codeResult.code).trim() : '';
+        const digits = code.replace(/\D/g,'');
+        set(scanTile, scanEl, 'Reading…', '');
+        if (!isDigits(digits)) { last=''; streak=0; return; }
+        if (digits===last) streak++; else { last=digits; streak=1; }
+        set(scanTile, scanEl, 'Reading… ' + digits + ' ('+streak+'/3)', '');
+        if (streak>=3) postCode(digits);
+      });
+    }
+
+    // Start: prefer BarcodeDetector, else Quagga
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      set(statusTile, statusEl, 'Camera API not available', 'bad');
+    } else {
+      const ok = startBarcodeDetector();
+      if (!ok) startQuaggaFallback();
+    }
   </script>
 </body>
 </html>
