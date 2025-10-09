@@ -5,46 +5,76 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Gomega • Scan ID</title>
   <style>
-    body{margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;background:#0b1220;color:#e5e7eb;display:flex;min-height:100vh;align-items:center;justify-content:center}
-    .wrap{max-width:760px;width:95vw}
-    h1{margin:0 0 8px;font-size:22px}
-    #preview{width:100%;max-height:70vh;border-radius:12px;border:1px solid rgba(148,163,184,.25);overflow:hidden}
-    .bar{margin:12px 0 0;color:#94a3b8}
-    .ok{color:#22c55e}
-    .bad{color:#ef4444}
+    :root { --ink:#e5e7eb; --muted:#94a3b8; --ok:#22c55e; --bad:#ef4444; --bg:#0b1220; }
+    html,body{height:100%;margin:0}
+    body{
+      font-family: system-ui, Segoe UI, Arial, sans-serif;
+      background: var(--bg); color: var(--ink);
+      display:flex; align-items:center; justify-content:center; min-height:100vh;
+    }
+    .wrap{ max-width:860px; width:96vw }
+    h1{margin:0 0 10px; font-size:22px}
+    #preview{position:relative; width:100%; max-height:72vh; border-radius:12px;
+             border:1px solid rgba(148,163,184,.25); overflow:hidden}
+    #video, #overlay { width:100%; height:auto; display:block }
+    .bar{margin:10px 0 0; color:var(--muted)}
+    .bar.ok{ color:var(--ok) }
+    .bar.bad{ color:var(--bad) }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Scan your ID barcode</h1>
-    <div id="preview"></div>
+    <div id="preview">
+      <div id="video"></div>
+      <canvas id="overlay"></canvas>
+    </div>
     <div class="bar" id="msg">Initializing camera…</div>
   </div>
 
-  <!-- Quagga for 1D barcodes (Code128/EAN/UPC/etc.) -->
+  <!-- Quagga for 1D barcodes -->
   <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
   <script>
     const params = new URLSearchParams(location.search);
     const session = params.get('session') || '';
     const msg = document.getElementById('msg');
+    const overlay = document.getElementById('overlay');
+    const ctx = overlay.getContext('2d');
 
-    function set(m, cls){ msg.textContent = m; msg.className = 'bar ' + (cls||''); }
+    function setStatus(text, cls) {
+      msg.textContent = text;
+      msg.className = 'bar ' + (cls||'');
+    }
+    const isDigits = s => /^\d{5,25}$/.test(s);
 
     function submitCode(code){
-      set('Sending…','');
-      fetch('scan_submit.php?session='+encodeURIComponent(session)+'&code='+encodeURIComponent(code), {method:'GET',cache:'no-store'})
-      .then(()=>{ set('Scanned ✓ You can close this tab.','ok'); Quagga.stop(); })
-      .catch(()=>{ set('Network error submitting code.','bad'); });
+      setStatus('Unlocked — check Gomega Browser', 'ok');
+      fetch('scan_submit.php?session='+encodeURIComponent(session)+'&code='+encodeURIComponent(code),
+        { method:'GET', cache:'no-store' }
+      ).catch(()=>{}); // HTA will poll; we don't block the UI
+      try { Quagga.stop(); } catch(e) {}
     }
 
-    function isDigits(s){ return /^\d{5,25}$/.test(s); }
+    // Require stability: same numeric code 3 times in a row
+    let last = '', streak = 0, failTimer = 0;
+
+    function drawBox(path, color, width=3){
+      ctx.beginPath();
+      ctx.moveTo(path[0].x, path[0].y);
+      for (let i=1;i<path.length;i++) ctx.lineTo(path[i].x, path[i].y);
+      ctx.closePath();
+      ctx.lineWidth = width;
+      ctx.strokeStyle = color;
+      ctx.stroke();
+    }
 
     Quagga.init({
       inputStream:{
         type:"LiveStream",
-        target:document.querySelector('#preview'),
-        constraints:{facingMode:"environment"}
+        target:document.getElementById('video'),
+        constraints:{ facingMode:"environment" }
       },
+      locator: { patchSize: "medium", halfSample: true },
       decoder:{
         readers:[
           "code_128_reader","ean_reader","ean_8_reader",
@@ -54,20 +84,62 @@
       },
       locate:true
     }, function(err){
-      if(err){ set('Camera error: '+err,'bad'); return; }
+      if(err){ setStatus('Camera error: '+err,'bad'); return; }
+      const videoEl = document.querySelector('#video video');
       Quagga.start();
-      set('Point the camera at your ID barcode…','');
+      setStatus('Point the camera at your ID barcode…','');
+
+      // Resize overlay to match video
+      function sizeOverlay(){
+        if(!videoEl) return;
+        const w = videoEl.videoWidth || videoEl.clientWidth;
+        const h = videoEl.videoHeight || videoEl.clientHeight;
+        if (w && h) { overlay.width = w; overlay.height = h; }
+      }
+      sizeOverlay();
+      window.addEventListener('resize', sizeOverlay);
     });
 
-    let last = '';
-    Quagga.onDetected(function(res){
-      const code = (res && res.codeResult && res.codeResult.code) ? res.codeResult.code.trim() : '';
-      if(!code || code===last) return;
-      last = code;
-      if(!isDigits(code)){ set('Detected non-numeric code; waiting for a valid student/staff ID…','bad'); return; }
-      set('Detected '+code+' — validating…','');
-      submitCode(code);
+    // Draw feedback each frame
+    Quagga.onProcessed(function(result){
+      ctx.clearRect(0,0,overlay.width,overlay.height);
+      if (!result) return;
+
+      if (result.boxes) {
+        result.boxes.filter(b => b !== result.box)
+                    .forEach(b => drawBox(b, 'rgba(147,197,253,.5)', 2)); // light blue for candidates
+      }
+      if (result.box) {
+        // Candidate box while reading
+        drawBox(result.box, 'rgba(250,204,21,.9)', 3); // amber while reading
+        setStatus('Reading…','');
+      }
+      if (result.codeResult && result.codeResult.code) {
+        // When codeResult exists, draw strong green
+        drawBox(result.line, 'rgba(34,197,94,1)', 4); // green line over barcode
+      }
     });
+
+    Quagga.onDetected(function(res){
+      let code = (res && res.codeResult && res.codeResult.code) ? String(res.codeResult.code).trim() : '';
+      if (!code) return;
+
+      // Only numeric IDs
+      if (!isDigits(code)) { streak = 0; last=''; setStatus('Reading… (waiting for numeric ID)', ''); return; }
+
+      if (code === last) streak++; else { last = code; streak = 1; }
+      drawBox(res.box, 'rgba(34,197,94,1)', 4); // highlight in green on valid numeric
+      setStatus('Reading… ' + code + ' ('+streak+'/3)', '');
+
+      if (streak >= 3) submitCode(code);
+    });
+
+    // Show "Failed" after 20s without success (but keep scanning)
+    const failInterval = setInterval(()=>{
+      if (msg.classList.contains('ok')) { clearInterval(failInterval); return; }
+      failTimer++;
+      if (failTimer === 20) setStatus('Failed — move closer, avoid glare, keep barcode flat', 'bad');
+    }, 1000);
   </script>
 </body>
 </html>
