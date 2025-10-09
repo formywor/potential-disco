@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gomega • Scan ID</title>
+  <style>
+    body{margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;background:#0b1220;color:#e5e7eb;display:flex;min-height:100vh;align-items:center;justify-content:center}
+    .wrap{max-width:760px;width:95vw}
+    h1{margin:0 0 8px;font-size:22px}
+    #preview{width:100%;max-height:70vh;border-radius:12px;border:1px solid rgba(148,163,184,.25);overflow:hidden}
+    .bar{margin:12px 0 0;color:#94a3b8}
+    .ok{color:#22c55e}
+    .bad{color:#ef4444}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Scan your ID barcode</h1>
+    <div id="preview"></div>
+    <div class="bar" id="msg">Initializing camera…</div>
+  </div>
+
+  <!-- Quagga for 1D barcodes (Code128/EAN/UPC/etc.) -->
+  <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const session = params.get('session') || '';
+    const msg = document.getElementById('msg');
+
+    function set(m, cls){ msg.textContent = m; msg.className = 'bar ' + (cls||''); }
+
+    function submitCode(code){
+      set('Sending…','');
+      fetch('scan_submit.php?session='+encodeURIComponent(session)+'&code='+encodeURIComponent(code), {method:'GET',cache:'no-store'})
+      .then(()=>{ set('Scanned ✓ You can close this tab.','ok'); Quagga.stop(); })
+      .catch(()=>{ set('Network error submitting code.','bad'); });
+    }
+
+    function isDigits(s){ return /^\d{5,25}$/.test(s); }
+
+    Quagga.init({
+      inputStream:{
+        type:"LiveStream",
+        target:document.querySelector('#preview'),
+        constraints:{facingMode:"environment"}
+      },
+      decoder:{
+        readers:[
+          "code_128_reader","ean_reader","ean_8_reader",
+          "code_39_reader","codabar_reader",
+          "upc_reader","upc_e_reader","i2of5_reader"
+        ]
+      },
+      locate:true
+    }, function(err){
+      if(err){ set('Camera error: '+err,'bad'); return; }
+      Quagga.start();
+      set('Point the camera at your ID barcode…','');
+    });
+
+    let last = '';
+    Quagga.onDetected(function(res){
+      const code = (res && res.codeResult && res.codeResult.code) ? res.codeResult.code.trim() : '';
+      if(!code || code===last) return;
+      last = code;
+      if(!isDigits(code)){ set('Detected non-numeric code; waiting for a valid student/staff ID…','bad'); return; }
+      set('Detected '+code+' — validating…','');
+      submitCode(code);
+    });
+  </script>
+</body>
+</html>
