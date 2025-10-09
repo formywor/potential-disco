@@ -1,16 +1,30 @@
 <?php
-header('Content-Type: text/plain');
+// JSON + no-cache
+header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
-$s = preg_replace('/[^A-Za-z0-9\-_.]/','', $_GET['session'] ?? '');
-$c = preg_replace('/\D/','', $_GET['code'] ?? '');
-if ($s === '' || $c === '') { http_response_code(400); exit('ERR'); }
+// Validate
+$session = isset($_POST['session']) ? preg_replace('/[^A-Za-z0-9\-_.]/','', $_POST['session']) : '';
+$codeRaw = isset($_POST['code']) ? $_POST['code'] : '';
+$code = preg_replace('/\D/', '', $codeRaw);   // digits only
 
-$dir = __DIR__ . '/sessions';
-if (!is_dir($dir) && !@mkdir($dir, 0775, true)) { http_response_code(500); exit('ERR'); }
+if ($session === '' || $code === '') {
+  http_response_code(400);
+  echo json_encode(['ok'=>false, 'err'=>'bad_input']); exit;
+}
 
-$f = "$dir/$s.txt";
-if (@file_put_contents($f, $c, LOCK_EX) === false) { http_response_code(500); exit('ERR'); }
+// Use system temp dir so it works on any host
+$dir = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'gomega_scans';
+if (!is_dir($dir) && !@mkdir($dir, 0775, true)) {
+  http_response_code(500);
+  echo json_encode(['ok'=>false, 'err'=>'mkdir_failed']); exit;
+}
 
-echo 'OK';
+$file = $dir . DIRECTORY_SEPARATOR . $session . '.txt';
+if (@file_put_contents($file, $code, LOCK_EX) === false) {
+  http_response_code(500);
+  echo json_encode(['ok'=>false, 'err'=>'write_failed']); exit;
+}
+
+echo json_encode(['ok'=>true]);
