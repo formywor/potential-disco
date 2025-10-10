@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gomega Intelligence — Overview & Access</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Styles -->
+<style>
+  :root{
+    --bg:#0f172a; --panel:#111827; --ink:#e5e7eb; --muted:#94a3b8;
+    --accent:#22c55e; --accent2:#0ea5e9; --warn:#ef4444;
+    --glass:rgba(255,255,255,.06); --border:rgba(148,163,184,.25)
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(135deg,#0f172a 0%,#1f2937 40%,#0ea5e9 100%);font-family:Segoe UI,Arial,sans-serif;color:var(--ink)}
+  a{color:#7dd3fc;text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:1100px;margin:0 auto;padding:24px}
+  .card{background:rgba(17,24,39,.72);border:1px solid var(--border);border-radius:16px;padding:16px 16px 20px;backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
+  .header{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .logo{width:44px;height:44px;border-radius:12px;background:conic-gradient(from 0deg,#22c55e 0 25%,#0ea5e9 0 50%,#7c3aed 0 75%,#22c55e);box-shadow:0 8px 24px rgba(34,197,94,.35),0 0 0 1px rgba(255,255,255,.08) inset}
+  h1{margin:0;font-size:22px;letter-spacing:.2px}
+  p{margin:4px 0;color:var(--muted);font-size:14px;line-height:1.5}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#0b1220;border:1px solid var(--border);font-size:12px}
+  .ok{color:var(--accent)} .warn{color:var(--warn)}
+  #stage{position:relative;display:flex;justify-content:center;align-items:center;margin-top:12px}
+  video{width:100%;max-width:980px;border-radius:14px;background:#000;aspect-ratio:16/9;object-fit:cover}
+  canvas{position:absolute;inset:0;width:100%;max-width:980px;height:100%;border-radius:14px;pointer-events:none}
+  .row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .btn{border:1px solid rgba(148,163,184,.35);background:#0b1220;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer}
+  .btn:active{transform:scale(.99)} .btn[hidden]{display:none}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);margin:18px 0}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .tile{grid-column:span 12;background:rgba(2,6,23,.6);border:1px solid var(--border);border-radius:16px;padding:16px}
+  @media(min-width:900px){
+    .tile.span-6{grid-column:span 6}
+    .tile.span-4{grid-column:span 4}
+    .tile.span-8{grid-column:span 8}
+  }
+  .kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#cbd5e1;margin-bottom:6px}
+  h2{margin:0 0 6px;font-size:18px}
+  ul{margin:8px 0 0 18px;color:var(--muted);font-size:14px}
+  .callout{border-left:3px solid var(--accent);background:rgba(34,197,94,.06);padding:12px;border-radius:12px}
+  .foot{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px}
+  .linkbtn{display:inline-flex;align-items:center;gap:8px;background:rgba(125,211,252,.08);border:1px solid rgba(125,211,252,.3);padding:10px 12px;border-radius:12px}
+  .locked{filter:blur(2px);pointer-events:none;user-select:none}
+  .hidden{display:none !important}
+</style>
+
+<script src="https://unpkg.com/@zxing/library@0.20.0"></script>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Access / Scanner Card -->
+    <div class="card" id="gate">
+      <div class="header">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Gomega Intelligence — Secure Overview</h1>
+          <p id="desc">Loading camera for barcode access…</p>
+          <div class="badges">
+            <span class="badge" id="status">Initializing…</span>
+            <span class="badge" id="hint">Show your barcode to the camera.</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="stage">
+        <video id="preview" autoplay playsinline muted></video>
+        <canvas id="overlay"></canvas>
+      </div>
+
+      <div class="row">
+        <button class="btn" id="flip" hidden>Switch Camera</button>
+        <button class="btn" id="lock" hidden>Lock & Hide Content</button>
+      </div>
+    </div>
+
+    <!-- CONTENT (hidden until unlocked) -->
+    <div id="content" class="hidden">
+      <div class="divider"></div>
+
+      <div class="grid">
+        <div class="tile span-8">
+          <div class="kicker">About</div>
+          <h2>What is Gomega Intelligence?</h2>
+          <p>
+            Gomega Intelligence is the core decision and understanding engine that powers the Gomega ecosystem.
+            It provides fast, context-aware reasoning, safe execution paths, and a consistent experience across
+            apps and platforms. Whether you’re opening the Gomega Browser, getting step-by-step help in
+            Homework Helper (BETA), or chatting in Gomega AI, Intelligence is the layer that interprets your intent,
+            routes tasks, and composes helpful results.
+          </p>
+          <p>
+            Designed from the ground up for reliability and extensibility, Gomega Intelligence combines local signals,
+            cloud models, and policy-driven tools to deliver answers with traceable steps and transparent controls.
+          </p>
+        </div>
+
+        <div class="tile span-4">
+          <div class="kicker">Status</div>
+          <h2>Where It’s Used Right Now</h2>
+          <ul>
+            <li><strong>Gomega Browser</strong> — launch experience & guarded entry.</li>
+            <li><strong>Homework Helper (BETA)</strong> — structured explanations, hints, and guided solving.</li>
+            <li><strong>Gomega AI</strong> — conversational interface with smart actions.</li>
+          </ul>
+          <p class="callout" style="margin-top:8px">
+            We’re actively expanding Intelligence across more pages and tools, moving toward a
+            <em>barcode-first</em> access layer for every page.
+          </p>
+        </div>
+
+        <div class="tile span-6">
+          <div class="kicker">Access</div>
+          <h2>Barcode-First Security</h2>
+          <p>
+            This page uses the same camera-based barcode scanning flow as our verification page. Once a valid code is
+            detected, restricted content is decrypted and revealed locally. The scanner never exposes page content until
+            unlock is confirmed.
+          </p>
+          <ul>
+            <li>On-device camera decode (no server round-trip for viewing).</li>
+            <li>Visible guide box and success outline for instant feedback.</li>
+            <li>Optional camera switch for multi-camera devices.</li>
+          </ul>
+        </div>
+
+        <div class="tile span-6">
+          <div class="kicker">Principles</div>
+          <h2>Design Pillars</h2>
+          <ul>
+            <li><strong>Helpful</strong>: answers shaped to intent, not just keywords.</li>
+            <li><strong>Transparent</strong>: clear states, visible actions, consistent UI.</li>
+            <li><strong>Guarded</strong>: gated content until access conditions are met.</li>
+            <li><strong>Extensible</strong>: pluggable skills and domain packs.</li>
+          </ul>
+        </div>
+
+        <div class="tile span-6">
+          <div class="kicker">Homework Helper (BETA)</div>
+          <h2>How Intelligence Assists Learning</h2>
+          <ul>
+            <li>Breaks problems into human-readable steps with hints.</li>
+            <li>Detects when to scaffold vs. when to summarize.</li>
+            <li>Supports algebraic reasoning, unit checks, and definition lookups.</li>
+            <li>Balances explanation depth with student autonomy.</li>
+          </ul>
+        </div>
+
+        <div class="tile span-6">
+          <div class="kicker">Gomega AI</div>
+          <h2>Conversations That Do Things</h2>
+          <ul>
+            <li>Understands goals, not just sentences.</li>
+            <li>Coordinates multi-step tasks with guardrails.</li>
+            <li>Integrates with Plus memberships and advanced modes.</li>
+            <li>Expanding toolset for creative and analytical workflows.</li>
+          </ul>
+        </div>
+
+        <div class="tile span-8">
+          <div class="kicker">Architecture</div>
+          <h2>How It Works (High-Level)</h2>
+          <ul>
+            <li><strong>Perception</strong>: parse inputs (text, selections, context, page state).</li>
+            <li><strong>Planning</strong>: select skills, data sources, and action order.</li>
+            <li><strong>Execution</strong>: run steps with safe fallbacks and progress feedback.</li>
+            <li><strong>Explanation</strong>: produce answer + trace and optional citations.</li>
+          </ul>
+          <p>
+            The same flow powers the browser launch experience, Homework Helper’s guided solving, and Gomega AI’s
+            action orchestration.
+          </p>
+        </div>
+
+        <div class="tile span-4">
+          <div class="kicker">Roadmap</div>
+          <h2>What’s Next</h2>
+          <ul>
+            <li>Barcode-gated access for every core page.</li>
+            <li>Richer skill library with domain adapters.</li>
+            <li>Personalized, opt-in context packs.</li>
+            <li>Deeper cross-app continuity and handoffs.</li>
+          </ul>
+        </div>
+
+        <div class="tile span-6">
+          <div class="kicker">Privacy</div>
+          <h2>Your Controls</h2>
+          <ul>
+            <li>Camera is used only for local barcode decoding.</li>
+            <li>No unlock ⇒ no content exposure.</li>
+            <li>Clear lock button to instantly re-hide sections.</li>
+          </ul>
+        </div>
+
+        <div class="tile span-6">
+          <div class="kicker">FAQ</div>
+          <h2>Common Questions</h2>
+          <ul>
+            <li><strong>Why the barcode?</strong> Strong, quick access checks with minimal friction.</li>
+            <li><strong>Does it work offline?</strong> Camera decode is local; some content may require network.</li>
+            <li><strong>Multiple devices?</strong> Use the camera switch; we default to the environment camera.</li>
+          </ul>
+        </div>
+
+        <div class="tile span-12">
+          <div class="foot">
+            <a class="linkbtn" href="https://gomega.watch/Intelligence" target="_blank" rel="noopener">
+              <span>Want more from Gomega Intelligence?</span> <strong>Visit gomega.watch/Intelligence →</strong>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div><!-- /content -->
+  </div>
+
+<!-- Scanner Logic (same approach as scan.html, adapted to unlock local content) -->
+<script>
+(function(){
+  const statusEl = document.getElementById('status');
+  const hintEl   = document.getElementById('hint');
+  const descEl   = document.getElementById('desc');
+  const video    = document.getElementById('preview');
+  const overlay  = document.getElementById('overlay');
+  const ctx      = overlay.getContext('2d');
+  const flipBtn  = document.getElementById('flip');
+  const lockBtn  = document.getElementById('lock');
+  const gate     = document.getElementById('gate');
+  const content  = document.getElementById('content');
+
+  let devices = [];
+  let currentDeviceId = null;
+  let lastDraw = 0;
+  let unlocked = false;
+
+  function setStatus(text, ok){
+    statusEl.textContent = text;
+    statusEl.classList.remove('ok','warn');
+    if(ok === true) statusEl.classList.add('ok');
+    if(ok === false) statusEl.classList.add('warn');
+  }
+
+  function fitCanvas(){
+    const r = video.getBoundingClientRect();
+    overlay.width  = r.width * devicePixelRatio;
+    overlay.height = r.height* devicePixelRatio;
+    overlay.style.width  = r.width + 'px';
+    overlay.style.height = r.height+ 'px';
+  }
+  addEventListener('resize', fitCanvas);
+
+  async function enumerate(){
+    try{
+      const list = await navigator.mediaDevices.enumerateDevices();
+      devices = list.filter(d => d.kind === 'videoinput');
+      if(devices.length > 1) flipBtn.hidden = false;
+    }catch(e){}
+  }
+
+  async function startCamera(preferBack=true){
+    setStatus('Requesting camera…');
+    let stream;
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode: preferBack ? {ideal:'environment'} : 'user'}});
+    }catch(e){
+      stream = await navigator.mediaDevices.getUserMedia({video:true});
+    }
+    video.srcObject = stream;
+    await video.play();
+    await enumerate();
+    fitCanvas();
+    setStatus('Reading…');
+  }
+
+  flipBtn.onclick = async () => {
+    try{
+      const stream = video.srcObject;
+      if(stream){ stream.getTracks().forEach(t=>t.stop()); }
+    }catch(e){}
+    const list = await navigator.mediaDevices.enumerateDevices();
+    const cams = list.filter(d => d.kind==='videoinput');
+    if(!cams.length){ return; }
+    const idx = currentDeviceId ? Math.max(0, cams.findIndex(d=>d.deviceId===currentDeviceId)) : -1;
+    const next = cams[(idx+1) % cams.length];
+    currentDeviceId = next.deviceId;
+    const stream = await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact: currentDeviceId}}});
+    video.srcObject = stream; await video.play(); fitCanvas();
+  };
+
+  const reader = new ZXing.BrowserMultiFormatReader();
+
+  function drawBox(pts, color){
+    if(!pts || !pts.length) return;
+    const now = performance.now();
+    if(now - lastDraw < 40) return;
+    lastDraw = now;
+    const r = video.getBoundingClientRect();
+    const sx = overlay.width / r.width;
+    const sy = overlay.height/ r.height;
+
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = color || '#22c55e';
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x*sx, pts[0].y*sy);
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x*sx, pts[i].y*sy);
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  function outlineUnlocked(){
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+    drawBox([
+      {x:20,y:20},
+      {x:overlay.width-20,y:20},
+      {x:overlay.width-20,y:overlay.height-20},
+      {x:20,y:overlay.height-20}
+    ], '#22c55e');
+  }
+
+  function unlockContent(code){
+    if(unlocked) return;
+    unlocked = true;
+    setStatus('Unlocked — content revealed', true);
+    hintEl.textContent = 'Access granted.';
+    outlineUnlocked();
+
+    // Reveal content and show lock button
+    content.classList.remove('hidden');
+    lockBtn.hidden = false;
+
+    // Visually de-emphasize the scanner but keep it available
+    descEl.textContent = 'Access is active. You can lock content again at any time.';
+    gate.classList.remove('locked');
+  }
+
+  lockBtn.onclick = () => {
+    unlocked = false;
+    setStatus('Locked', false);
+    hintEl.textContent = 'Show your barcode to the camera.';
+    content.classList.add('hidden');
+    lockBtn.hidden = true;
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+  };
+
+  async function scanLoop(){
+    try{
+      const list = await ZXing.BrowserCodeReader.listVideoInputDevices();
+      let deviceId = list && list.length ? list[0].deviceId : undefined;
+
+      reader.decodeFromVideoDevice(deviceId, 'preview', (result, err, controls) => {
+        if(unlocked) return;
+
+        if(result && result.getText){
+          const txt = (result.getText() || '').trim();
+          const pts = (result.resultPoints || []).map(p => ({x:p.getX(), y:p.getY()}));
+          drawBox(pts, '#22c55e');
+
+          // Accept the same numeric code format used in scan.html
+          if(/^\d{6,20}$/.test(txt)){
+            unlockContent(txt);
+          }else{
+            setStatus('Invalid code detected', false);
+          }
+        }else if(err && !(err instanceof ZXing.NotFoundException)){
+          setStatus('Camera decode error', false);
+        }else if(!unlocked){
+          // Faint guide box while waiting
+          ctx.clearRect(0,0,overlay.width,overlay.height);
+          ctx.strokeStyle = "rgba(255,255,255,.25)";
+          ctx.lineWidth = 2;
+          const w = overlay.width*.6, h = overlay.height*.3;
+          const x = (overlay.width-w)/2, y = (overlay.height-h)/2;
+          ctx.strokeRect(x,y,w,h);
+        }
+      });
+    }catch(e){
+      setStatus('Failed to start scanner', false);
+      hintEl.textContent = (e && e.message) ? e.message : 'Check camera permissions.';
+    }
+  }
+
+  (async () => {
+    descEl.textContent = 'Gomega Intelligence is loading your camera…';
+    await startCamera(true);
+    await scanLoop();
+  })();
+})();
+</script>
+</body>
+</html>
