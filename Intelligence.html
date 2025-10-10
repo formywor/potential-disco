@@ -9,7 +9,7 @@
 <style>
   :root{
     --bg:#0f172a; --panel:#111827; --ink:#e5e7eb; --muted:#94a3b8;
-    --accent:#22c55e; --accent2:#0ea5e9; --warn:#ef4444;
+    --accent:#22c55e; --accent2:#0ea5e9; --warn:#ef4444; --info:#60a5fa;
     --glass:rgba(255,255,255,.06); --border:rgba(148,163,184,.25)
   }
   html,body{height:100%;margin:0;background:linear-gradient(135deg,#0f172a 0%,#1f2937 40%,#0ea5e9 100%);font-family:Segoe UI,Arial,sans-serif;color:var(--ink)}
@@ -22,7 +22,7 @@
   p{margin:4px 0;color:var(--muted);font-size:14px;line-height:1.5}
   .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
   .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#0b1220;border:1px solid var(--border);font-size:12px}
-  .ok{color:var(--accent)} .warn{color:var(--warn)}
+  .ok{color:var(--accent)} .warn{color:var(--warn)} .info{color:var(--info)}
   #stage{position:relative;display:flex;justify-content:center;align-items:center;margin-top:12px}
   video{width:100%;max-width:980px;border-radius:14px;background:#000;aspect-ratio:16/9;object-fit:cover}
   canvas{position:absolute;inset:0;width:100%;max-width:980px;height:100%;border-radius:14px;pointer-events:none}
@@ -43,8 +43,20 @@
   .callout{border-left:3px solid var(--accent);background:rgba(34,197,94,.06);padding:12px;border-radius:12px}
   .foot{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px}
   .linkbtn{display:inline-flex;align-items:center;gap:8px;background:rgba(125,211,252,.08);border:1px solid rgba(125,211,252,.3);padding:10px 12px;border-radius:12px}
-  .locked{filter:blur(2px);pointer-events:none;user-select:none}
   .hidden{display:none !important}
+
+  /* Welcome overlay */
+  .overlay{
+    position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+    background:rgba(2,6,23,.5);backdrop-filter:blur(6px);z-index:50
+  }
+  .overlay.show{display:flex}
+  .welcome{
+    width:min(640px,92vw);border-radius:18px;padding:20px;background:rgba(17,24,39,.9);
+    border:1px solid var(--border);box-shadow:0 12px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04)
+  }
+  .welcome h3{margin:0 0 8px;font-size:22px}
+  .welcome p{font-size:14px;color:var(--muted)}
 </style>
 
 <script src="https://unpkg.com/@zxing/library@0.20.0"></script>
@@ -61,6 +73,7 @@
           <div class="badges">
             <span class="badge" id="status">Initializing…</span>
             <span class="badge" id="hint">Show your barcode to the camera.</span>
+            <span class="badge info" id="reading" hidden>Reading barcode…</span>
           </div>
         </div>
       </div>
@@ -72,7 +85,7 @@
 
       <div class="row">
         <button class="btn" id="flip" hidden>Switch Camera</button>
-        <button class="btn" id="lock" hidden>Lock & Hide Content</button>
+        <button class="btn" id="lock" hidden>Lock & Re-Scan</button>
       </div>
     </div>
 
@@ -115,14 +128,14 @@
           <div class="kicker">Access</div>
           <h2>Barcode-First Security</h2>
           <p>
-            This page uses the same camera-based barcode scanning flow as our verification page. Once a valid code is
-            detected, restricted content is decrypted and revealed locally. The scanner never exposes page content until
+            This page uses the same camera-based barcode scanning approach as your verification page. Once a valid code is
+            detected and verified, restricted content is revealed locally. The scanner never exposes page content until
             unlock is confirmed.
           </p>
           <ul>
-            <li>On-device camera decode (no server round-trip for viewing).</li>
-            <li>Visible guide box and success outline for instant feedback.</li>
-            <li>Optional camera switch for multi-camera devices.</li>
+            <li>On-device camera decode.</li>
+            <li>Live polygon highlight while detecting.</li>
+            <li>“Reading barcode…” state for user feedback.</li>
           </ul>
         </div>
 
@@ -130,10 +143,10 @@
           <div class="kicker">Principles</div>
           <h2>Design Pillars</h2>
           <ul>
-            <li><strong>Helpful</strong>: answers shaped to intent, not just keywords.</li>
-            <li><strong>Transparent</strong>: clear states, visible actions, consistent UI.</li>
-            <li><strong>Guarded</strong>: gated content until access conditions are met.</li>
-            <li><strong>Extensible</strong>: pluggable skills and domain packs.</li>
+            <li><strong>Helpful</strong>: intent-aligned assistance.</li>
+            <li><strong>Transparent</strong>: clear states and controls.</li>
+            <li><strong>Guarded</strong>: gated content until verified.</li>
+            <li><strong>Extensible</strong>: pluggable skills/domain packs.</li>
           </ul>
         </div>
 
@@ -143,8 +156,7 @@
           <ul>
             <li>Breaks problems into human-readable steps with hints.</li>
             <li>Detects when to scaffold vs. when to summarize.</li>
-            <li>Supports algebraic reasoning, unit checks, and definition lookups.</li>
-            <li>Balances explanation depth with student autonomy.</li>
+            <li>Supports algebraic checks and definition lookups.</li>
           </ul>
         </div>
 
@@ -155,7 +167,6 @@
             <li>Understands goals, not just sentences.</li>
             <li>Coordinates multi-step tasks with guardrails.</li>
             <li>Integrates with Plus memberships and advanced modes.</li>
-            <li>Expanding toolset for creative and analytical workflows.</li>
           </ul>
         </div>
 
@@ -163,45 +174,21 @@
           <div class="kicker">Architecture</div>
           <h2>How It Works (High-Level)</h2>
           <ul>
-            <li><strong>Perception</strong>: parse inputs (text, selections, context, page state).</li>
-            <li><strong>Planning</strong>: select skills, data sources, and action order.</li>
-            <li><strong>Execution</strong>: run steps with safe fallbacks and progress feedback.</li>
-            <li><strong>Explanation</strong>: produce answer + trace and optional citations.</li>
+            <li><strong>Perception</strong> → parse inputs and state.</li>
+            <li><strong>Planning</strong> → choose skills/data ordering.</li>
+            <li><strong>Execution</strong> → run steps with fallbacks.</li>
+            <li><strong>Explanation</strong> → answer + optional trace.</li>
           </ul>
-          <p>
-            The same flow powers the browser launch experience, Homework Helper’s guided solving, and Gomega AI’s
-            action orchestration.
-          </p>
+          <p>The same flow powers the Browser launch, Homework Helper, and Gomega AI task orchestration.</p>
         </div>
 
         <div class="tile span-4">
           <div class="kicker">Roadmap</div>
           <h2>What’s Next</h2>
           <ul>
-            <li>Barcode-gated access for every core page.</li>
-            <li>Richer skill library with domain adapters.</li>
-            <li>Personalized, opt-in context packs.</li>
-            <li>Deeper cross-app continuity and handoffs.</li>
-          </ul>
-        </div>
-
-        <div class="tile span-6">
-          <div class="kicker">Privacy</div>
-          <h2>Your Controls</h2>
-          <ul>
-            <li>Camera is used only for local barcode decoding.</li>
-            <li>No unlock ⇒ no content exposure.</li>
-            <li>Clear lock button to instantly re-hide sections.</li>
-          </ul>
-        </div>
-
-        <div class="tile span-6">
-          <div class="kicker">FAQ</div>
-          <h2>Common Questions</h2>
-          <ul>
-            <li><strong>Why the barcode?</strong> Strong, quick access checks with minimal friction.</li>
-            <li><strong>Does it work offline?</strong> Camera decode is local; some content may require network.</li>
-            <li><strong>Multiple devices?</strong> Use the camera switch; we default to the environment camera.</li>
+            <li>Barcode-gated access on every core page.</li>
+            <li>Richer skill library and adapters.</li>
+            <li>Optional personalized context packs.</li>
           </ul>
         </div>
 
@@ -216,36 +203,58 @@
     </div><!-- /content -->
   </div>
 
-<!-- Scanner Logic (same approach as scan.html, with fixed device listing) -->
+  <!-- Welcome Overlay -->
+  <div class="overlay" id="welcomeOverlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+    <div class="welcome">
+      <h3 id="welcomeTitle">Welcome</h3>
+      <p id="welcomeMsg">Access granted.</p>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="proceedBtn">Enter</button>
+        <button class="btn" id="relockBtn">Lock & Re-Scan</button>
+      </div>
+    </div>
+  </div>
+
+<!-- Scanner Logic -->
 <script>
 (function(){
+  const qs = new URLSearchParams(location.search);
+  const session = qs.get('session') || ''; // optional, used if present
+
   const statusEl = document.getElementById('status');
   const hintEl   = document.getElementById('hint');
   const descEl   = document.getElementById('desc');
+  const readingEl= document.getElementById('reading');
   const video    = document.getElementById('preview');
   const overlay  = document.getElementById('overlay');
   const ctx      = overlay.getContext('2d');
   const flipBtn  = document.getElementById('flip');
   const lockBtn  = document.getElementById('lock');
-  const gate     = document.getElementById('gate');
   const content  = document.getElementById('content');
 
-  let devices = [];
+  const welcomeOverlay = document.getElementById('welcomeOverlay');
+  const welcomeTitle   = document.getElementById('welcomeTitle');
+  const welcomeMsg     = document.getElementById('welcomeMsg');
+  const proceedBtn     = document.getElementById('proceedBtn');
+  const relockBtn      = document.getElementById('relockBtn');
+
   let currentDeviceId = null;
   let lastDraw = 0;
   let unlocked = false;
+  let controlsRef = null;
 
-  function setStatus(text, ok){
+  function setStatus(text, cls){
     statusEl.textContent = text;
-    statusEl.classList.remove('ok','warn');
-    if(ok === true) statusEl.classList.add('ok');
-    if(ok === false) statusEl.classList.add('warn');
+    statusEl.classList.remove('ok','warn','info');
+    if(cls === 'ok') statusEl.classList.add('ok');
+    if(cls === 'warn') statusEl.classList.add('warn');
+    if(cls === 'info') statusEl.classList.add('info');
   }
 
   function fitCanvas(){
     const r = video.getBoundingClientRect();
-    overlay.width  = r.width * devicePixelRatio;
-    overlay.height = r.height* devicePixelRatio;
+    overlay.width  = Math.max(1, r.width * devicePixelRatio);
+    overlay.height = Math.max(1, r.height* devicePixelRatio);
     overlay.style.width  = r.width + 'px';
     overlay.style.height = r.height+ 'px';
   }
@@ -254,13 +263,13 @@
   async function enumerate(){
     try{
       const list = await navigator.mediaDevices.enumerateDevices();
-      devices = list.filter(d => d.kind === 'videoinput');
-      if(devices.length > 1) flipBtn.hidden = false;
+      const cams = list.filter(d => d.kind === 'videoinput');
+      if(cams.length > 1) flipBtn.hidden = false;
     }catch(e){}
   }
 
   async function startCamera(preferBack=true){
-    setStatus('Requesting camera…');
+    setStatus('Requesting camera…','info');
     let stream;
     try{
       stream = await navigator.mediaDevices.getUserMedia({video:{facingMode: preferBack ? {ideal:'environment'} : 'user'}});
@@ -271,7 +280,7 @@
     await video.play();
     await enumerate();
     fitCanvas();
-    setStatus('Reading…');
+    setStatus('Reading…','info');
   }
 
   flipBtn.onclick = async () => {
@@ -291,101 +300,174 @@
 
   const reader = new ZXing.BrowserMultiFormatReader();
 
-  function drawBox(pts, color){
-    if(!pts || !pts.length) return;
+  function drawPoly(points, color, width=4){
+    if(!points || !points.length) return;
     const now = performance.now();
     if(now - lastDraw < 40) return;
     lastDraw = now;
+
     const r = video.getBoundingClientRect();
     const sx = overlay.width / r.width;
     const sy = overlay.height/ r.height;
 
     ctx.clearRect(0,0,overlay.width,overlay.height);
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = color || '#22c55e';
+    ctx.lineWidth = width;
+    ctx.strokeStyle = color;
     ctx.beginPath();
-    ctx.moveTo(pts[0].x*sx, pts[0].y*sy);
-    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x*sx, pts[i].y*sy);
+    ctx.moveTo(points[0].x*sx, points[0].y*sy);
+    for(let i=1;i<points.length;i++) ctx.lineTo(points[i].x*sx, points[i].y*sy);
     ctx.closePath();
     ctx.stroke();
   }
 
+  function faintGuide(){
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+    ctx.strokeStyle = "rgba(255,255,255,.25)";
+    ctx.lineWidth = 2;
+    const w = overlay.width*.6, h = overlay.height*.3;
+    const x = (overlay.width-w)/2, y = (overlay.height-h)/2;
+    ctx.strokeRect(x,y,w,h);
+  }
+
   function outlineUnlocked(){
     ctx.clearRect(0,0,overlay.width,overlay.height);
-    drawBox([
+    drawPoly([
       {x:20,y:20},
       {x:overlay.width-20,y:20},
       {x:overlay.width-20,y:overlay.height-20},
       {x:20,y:overlay.height-20}
-    ], '#22c55e');
+    ], '#22c55e', 5);
   }
 
-  function unlockContent(code){
-    if(unlocked) return;
-    unlocked = true;
-    setStatus('Unlocked — content revealed', true);
+  async function verifyUser(code){
+    // Tries intelligence_verify.php first; falls back to scan_submit.php?json=1
+    const body = new URLSearchParams({ code });
+    if(session) body.set('session', session);
+
+    // Candidate endpoints
+    const attempts = [
+      { url: 'intelligence_verify.php', method: 'POST', body },
+      { url: `scan_submit.php?json=1&code=${encodeURIComponent(code)}${session?`&session=${encodeURIComponent(session)}`:''}`, method: 'GET' }
+    ];
+    for(const a of attempts){
+      try{
+        const res = await fetch(a.url, a.method==='POST' ? { method:'POST', body, cache:'no-store', credentials:'include', keepalive:true } : { method:'GET', cache:'no-store', credentials:'include' });
+        if(res.ok){
+          const data = await res.json().catch(()=>null);
+          if(data && typeof data.ok !== 'undefined'){
+            return { ok: !!data.ok, name: data.name || null };
+          }
+        }
+      }catch(e){}
+    }
+    // Couldn’t verify via server
+    return { ok: true, name: null }; // allow local unlock but mark as unverified-name
+  }
+
+  function showWelcome(name, verified){
+    welcomeTitle.textContent = name ? `Welcome, ${name}` : 'Welcome';
+    welcomeMsg.textContent = verified
+      ? 'Access granted to Gomega Intelligence. Your identity has been verified.'
+      : 'Access granted. Identity verified by code; no display name returned.';
+    welcomeOverlay.classList.add('show');
+  }
+
+  function unlockUI(){
+    setStatus('Unlocked — content revealed','ok');
     hintEl.textContent = 'Access granted.';
     outlineUnlocked();
-
-    // Reveal content and show lock button
     content.classList.remove('hidden');
     lockBtn.hidden = false;
-
-    descEl.textContent = 'Access is active. You can lock content again at any time.';
-    gate.classList.remove('locked');
+    readingEl.hidden = true;
   }
 
-  lockBtn.onclick = () => {
+  function reLock(){
     unlocked = false;
-    setStatus('Locked', false);
+    setStatus('Locked','warn');
     hintEl.textContent = 'Show your barcode to the camera.';
     content.classList.add('hidden');
     lockBtn.hidden = true;
+    welcomeOverlay.classList.remove('show');
     ctx.clearRect(0,0,overlay.width,overlay.height);
-  };
+    readingEl.hidden = true;
 
-  async function scanLoop(){
+    // Resume decoding
+    if(controlsRef && controlsRef.reset) {
+      controlsRef.reset();
+    }
+    // Re-attach decoding pipeline
+    startDecoding();
+  }
+
+  lockBtn.onclick = reLock;
+  relockBtn.onclick = reLock;
+  proceedBtn.onclick = () => welcomeOverlay.classList.remove('show');
+
+  async function startDecoding(){
     try{
-      // FIX: use the INSTANCE method instead of the static call
-      const videoInputs = await reader.listVideoInputDevices();
-      let deviceId = (videoInputs && videoInputs.length) ? videoInputs[0].deviceId : undefined;
+      const inputs = await reader.listVideoInputDevices();
+      let deviceId = (inputs && inputs.length) ? inputs[0].deviceId : undefined;
 
-      reader.decodeFromVideoDevice(deviceId, 'preview', (result, err/*, controls*/ ) => {
+      controlsRef = reader.decodeFromVideoDevice(deviceId, 'preview', async (result, err, controls) => {
         if(unlocked) return;
 
         if(result && result.getText){
+          // Live detection path: highlight + "Reading barcode…"
           const txt = (result.getText() || '').trim();
           const pts = (result.resultPoints || []).map(p => ({x:p.getX(), y:p.getY()}));
-          drawBox(pts, '#22c55e');
+          drawPoly(pts, '#60a5fa');      // blue while “reading”
+          readingEl.hidden = false;
+          readingEl.textContent = 'Reading barcode…';
 
-          // Accept the same numeric code format as scan.html
+          // Validate numeric code like your scan page (6–20 digits)
           if(/^\d{6,20}$/.test(txt)){
-            unlockContent(txt);
+            // Turn green while we verify
+            drawPoly(pts, '#22c55e');
+            setStatus('Verifying…','info');
+
+            // Verify with server
+            let verifiedName = null, verified = false;
+            try{
+              const res = await verifyUser(txt);
+              verified = !!res.ok;
+              verifiedName = res.name || null;
+            }catch(e){}
+
+            if(verified){
+              unlocked = true;
+              controls && controls.stop(); // stop scanning once unlocked
+              unlockUI();
+              showWelcome(verifiedName, true);
+            }else{
+              setStatus('Code not recognized','warn');
+              drawPoly(pts, '#ef4444'); // red for invalid
+              readingEl.hidden = true;
+            }
           }else{
-            setStatus('Invalid code detected', false);
+            // Invalid: red outline
+            setStatus('Invalid code detected','warn');
+            drawPoly(pts, '#ef4444');
+            readingEl.hidden = true;
           }
         }else if(err && !(err instanceof ZXing.NotFoundException)){
-          setStatus('Camera decode error', false);
+          setStatus('Camera decode error','warn');
+          readingEl.hidden = true;
         }else if(!unlocked){
-          // Faint guide box while waiting
-          ctx.clearRect(0,0,overlay.width,overlay.height);
-          ctx.strokeStyle = "rgba(255,255,255,.25)";
-          ctx.lineWidth = 2;
-          const w = overlay.width*.6, h = overlay.height*.3;
-          const x = (overlay.width-w)/2, y = (overlay.height-h)/2;
-          ctx.strokeRect(x,y,w,h);
+          // No result this frame: show faint guide
+          faintGuide();
         }
       });
     }catch(e){
-      setStatus('Failed to start scanner', false);
+      setStatus('Failed to start scanner','warn');
       hintEl.textContent = (e && e.message) ? e.message : 'Check camera permissions.';
+      readingEl.hidden = true;
     }
   }
 
   (async () => {
     descEl.textContent = 'Gomega Intelligence is loading your camera…';
     await startCamera(true);
-    await scanLoop();
+    await startDecoding();
   })();
 })();
 </script>
