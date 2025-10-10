@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-<title>Gomega Intelligence — HW Helper (BETA)</title>
+<title>Gomega Intellagence — HW Helper (BETA)</title>
 
 <style>
   :root{
@@ -26,7 +26,7 @@
     overflow-x:hidden;
   }
 
-  /* Animated watermark (kept) */
+  /* animated watermark (kept) */
   .watermark{
     position:fixed; inset:0; pointer-events:none; opacity:.07; z-index:0;
     background-image:
@@ -34,7 +34,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="600" height="180" viewBox="0 0 600 180">\
           <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%23a5f3fc"/><stop offset="100%" stop-color="%23bbf7d0"/></linearGradient></defs>\
           <rect width="600" height="180" fill="transparent"/>\
-          <text x="20" y="110" font-family="Inter,Segoe UI,Arial" font-size="28" fill="url(%23g)" opacity="0.85">Gomega Intelligence — BETA</text>\
+          <text x="20" y="110" font-family="Inter,Segoe UI,Arial" font-size="28" fill="url(%23g)" opacity="0.85">Gomega Intellagence — BETA</text>\
         </svg>');
     background-size: 420px 126px;
     animation: drift 30s linear infinite;
@@ -72,19 +72,16 @@
   .progress{height:8px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden}
   .progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#60a5fa,#6ee7b7)}
   .answer{padding:12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
-  .links a{color:var(--accent);text-decoration:none;display:inline-block;margin:6px 8px 0 0;word-break:break-all}
   footer{margin-top:10px;color:var(--muted);font-size:.85rem}
-  .wrap,header,.grid,.controls,.links{min-width:0}
+  .wrap,header,.grid,.controls{min-width:0}
 
-  /* Solved ribbon */
+  /* Solved banner */
   .solved{
     display:none; margin-top:10px; padding:10px 12px; border-radius:10px;
     background:linear-gradient(90deg, #34d399, #7dd3fc);
-    color:#052123; font-weight:900; letter-spacing:.4px;
-    text-align:center;
+    color:#052123; font-weight:900; letter-spacing:.4px; text-align:center;
   }
 
-  /* History list */
   .history{margin-top:10px}
   .history .item{padding:10px;border:1px solid rgba(255,255,255,.06);border-radius:10px;margin-bottom:8px}
 </style>
@@ -97,8 +94,8 @@
     <div class="brand">
       <div class="logo" aria-hidden="true"></div>
       <div>
-        <h1>Gomega Intelligence <span class="beta">BETA</span></h1>
-        <div class="muted small">Homework Helper — Powered entirely by OpenAI (answers, steps, and model-generated PDFs). <span class="badge">BETA</span></div>
+        <h1>Gomega Intellagence <span class="beta">BETA</span></h1>
+        <div class="muted small">Homework Helper — Powered by Gomega Intellagence (answers, steps, and model-generated PDFs). <span class="badge">BETA</span></div>
       </div>
     </div>
     <div class="pill" id="counterPill">SS: 5 • LD: 5</div>
@@ -113,7 +110,7 @@
             <div class="small muted">Mode</div>
             <select id="modeSel" style="width:100%;padding:.6em;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(10,18,32,.6);color:#eaf2fa;outline:none">
               <option value="answers">Answers only (on-page)</option>
-              <option value="fillpdf">Ask OpenAI to create an answered PDF</option>
+              <option value="fillpdf">Ask Gomega Intellagence to create an answered PDF</option>
             </select>
           </div>
           <div style="flex:1;min-width:220px">
@@ -134,7 +131,7 @@
             </select>
           </div>
         </div>
-        <div class="small muted" style="margin-top:6px">All uploads (including PDFs and images) are sent to OpenAI for solving and PDF generation.</div>
+        <div class="small muted" style="margin-top:6px">All uploads (including PDFs and images) are sent to Gomega Intellagence for solving and PDF generation.</div>
       </div>
 
       <div class="section">
@@ -147,7 +144,7 @@
             <button id="btnRetry" title="Retry last run">Retry</button>
             <button id="btnClear">Clear</button>
           </div>
-          <div class="small muted" style="margin-top:6px">Privacy: Calls go only to OpenAI using your key below.</div>
+          <div class="small muted" style="margin-top:6px">Privacy: Calls go only to Gomega Intellagence using your key below.</div>
         </div>
       </div>
 
@@ -161,12 +158,16 @@
         </div>
         <div class="history" id="history"></div>
       </div>
+
+      <div class="section">
+        <a href="https://gomega.watch/Intelligence" target="_blank" rel="noopener" class="pill" style="text-decoration:none">Want more from Gomega Intellagence? Visit gomega.watch/Intelligence</a>
+      </div>
     </div>
 
     <!-- RIGHT -->
     <div class="result">
       <div class="toprow">
-        <div><strong>Answer preview</strong> <span class="badge">Gomega Intelligence — BETA</span></div>
+        <div><strong>Answer preview</strong> <span class="badge">Gomega Intellagence — BETA</span></div>
         <div class="status">Status: <span id="status">idle</span></div>
       </div>
 
@@ -180,16 +181,11 @@
 
       <div id="solution" class="answer" style="margin-top:12px"></div>
 
-      <div style="margin-top:12px">
-        <strong>Source links</strong>
-        <div id="links" class="links"></div>
-      </div>
-
       <div id="advancedNotes" class="small muted" style="margin-top:10px"></div>
 
       <div id="pdfOut" style="margin-top:14px"></div>
 
-      <footer>Gomega Intelligence is in <strong>BETA</strong>. For best results, use clear photos and one question per upload.</footer>
+      <footer>Gomega Intellagence is in <strong>BETA</strong>. For best results, use clear photos and one question per upload.</footer>
     </div>
   </div>
 </div>
@@ -199,21 +195,18 @@
 <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
 
 <script>
-/* ==============================
-   CONFIG — OpenAI
-   ============================== */
-const GOMEGA_API_KEY_RAW = "sk-proj-esQZvuHfktHXvSoEtfPRy-IZuDRXYWSTrtphEqUXFlTds,1tOHtjZzg3daCpD_VzKs7yT0I8p_HT3BlbkFJFlcclxKg8g_R6gscPp1gekMQXtDmVkwzkKY6Y4LJtSGfDxC7EMVWj16dzS9sM-dz3TaRb52zkA";
+/* ============ CONFIG (uses OpenAI under the hood) ============ */
+const GOMEGA_API_KEY_RAW = "sk-proj-esQZvuHfktHXvSoEtfPRy-IZuDRXYWSTrtphEqUXFlTds,1tOHtjZzg3daCpD_VzKs7yT0I8p_HT3BlbkFJFlcclxKg8g_R6gscPp1gekMQXtDmVkwzkKY6Y4LJtSGfDxC7EMVWj16dzS9sM-dz3TaRb52zkA"; // commas/spaces OK; we sanitize
 
-/* Gomega models -> OpenAI models */
 const GOMEGA_BACKING = {
-  'gomega-v1':       { model:'gpt-4o-mini' },   // language & history
-  'gomega-v2':       { model:'gpt-4o' },        // math & physics
-  'gomega-v3':       { model:'o4-mini' },       // bio & chem
-  'gomega-v3-turbo': { model:'o4-mini' },       // coding & debugging
-  'gomega-vision':   { model:'gpt-4o-mini' }    // vision
+  'gomega-v1':       { model:'gpt-4o-mini' },
+  'gomega-v2':       { model:'gpt-4o' },
+  'gomega-v3':       { model:'o4-mini' },
+  'gomega-v3-turbo': { model:'o4-mini' },
+  'gomega-vision':   { model:'gpt-4o-mini' }
 };
 
-/* UI refs */
+/* ---------- UI refs ---------- */
 const filein = document.getElementById('filein');
 const btnProcess = document.getElementById('btnProcess');
 const btnRetry = document.getElementById('btnRetry');
@@ -223,32 +216,22 @@ const modeSel  = document.getElementById('modeSel');
 const styleSel = document.getElementById('styleSel');
 const extractedEl = document.getElementById('extracted');
 const solutionEl = document.getElementById('solution');
-const linksEl = document.getElementById('links');
 const pdfOut = document.getElementById('pdfOut');
 const statusEl = document.getElementById('status');
 const progBar = document.getElementById('progBar');
 const tokenStat = document.getElementById('tokenStat');
 const solvedBanner = document.getElementById('solvedBanner');
 const historyEl = document.getElementById('history');
-const btnCopy = document.getElementById('btnCopy');
-const btnDownloadTxt = document.getElementById('btnDownloadTxt');
-const btnSwitchModel = document.getElementById('btnSwitchModel');
 
 function setStatus(s){ statusEl.textContent = s; }
 function setProgress(p){ progBar.style.width = Math.max(0,Math.min(100,p)) + '%'; }
 function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[c]); }
 function sanitizeKey(k){ return String(k||'').replace(/[^a-zA-Z0-9_-]/g,'').trim(); }
-function requireKey(){ const k = sanitizeKey(GOMEGA_API_KEY_RAW); if(!k) throw new Error('Missing OpenAI API key in CONFIG.'); return k; }
+function requireKey(){ const k = sanitizeKey(GOMEGA_API_KEY_RAW); if(!k) throw new Error('Missing API key in CONFIG.'); return k; }
 function backingFor(name){ return GOMEGA_BACKING[name] || GOMEGA_BACKING['gomega-v2']; }
-function buildSearchLinks(q){ const e=encodeURIComponent(q||'homework question'); return [
-  {title:'Google',url:`https://www.google.com/search?q=${e}`},
-  {title:'WolframAlpha',url:`https://www.wolframalpha.com/input?i=${e}`},
-  {title:'YouTube',url:`https://www.youtube.com/results?search_query=${e}`},
-  {title:'Scholar',url:`https://scholar.google.com/scholar?q=${e}`},
-];}
-function showLinks(q){ linksEl.innerHTML=''; buildSearchLinks(q).forEach(l=>{ const a=document.createElement('a'); a.href=l.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=l.title;linksEl.appendChild(a); }); }
+function showSolvedBanner(show){ solvedBanner.style.display = show ? 'block' : 'none'; }
 
-/* Helpers: base64 + PDF.js raster for scanned PDFs */
+/* ---------- File helpers ---------- */
 async function blobToBase64(blob){
   return new Promise((resolve,reject)=>{
     const r = new FileReader();
@@ -275,7 +258,7 @@ async function pdfPagesToImages(blob, maxPages=2){
 async function extractTextFromPDF(blob){
   const arr = await blob.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data:arr}).promise;
-  let text=''; for(let p=1;p<=pdf.numPages;p++){ const page = await pdf.getPage(p); const t = await page.getTextContent({normalizeWhitespace:true}); text += t.items.map(i=>i.str).join(' ') + '\n\n'; }
+  let text=''; for(let p=1;p<=pdf.numPages;p++){ const pg=await pdf.getPage(p); const t=await pg.getTextContent({normalizeWhitespace:true}); text+=t.items.map(i=>i.str).join(' ')+'\n\n'; }
   return text.trim();
 }
 async function extractTextFromDOCX(arrayBuffer){
@@ -283,7 +266,7 @@ async function extractTextFromDOCX(arrayBuffer){
   return (res.value||'').trim();
 }
 
-/* ===== OpenAI call: send everything here ===== */
+/* ---------- OpenAI call (behind Gomega Intellagence) ---------- */
 async function gomegaAsk({modelName, text, images=[], wantPdf=false, style='concise'}){
   const key = requireKey();
   const model = backingFor(modelName).model;
@@ -292,11 +275,10 @@ async function gomegaAsk({modelName, text, images=[], wantPdf=false, style='conc
   for(const img of images){ parts.push({type:'image_url', image_url:{url:`data:${img.mime};base64,${img.base64}`}}); }
 
   const sys = [
-    "You are Gomega Intelligence (BETA). Read the provided content (text and/or images).",
-    "Answer clearly. Return strict JSON with this shape:",
-    "{\"answers\":[{\"number\":string,\"question\"?:string,\"answer\":string,\"steps\"?:string}],",
-    "\"pdf_b64\"?:string}  // if asked to create a PDF, include a base64 application/pdf.",
-    style==='full' ? "Include steps." : "Be concise by default; steps optional."
+    "You are Gomega Intellagence (BETA). Read the provided content (text and/or images).",
+    "Return strict JSON: {\"answers\":[{\"number\":string,\"question\"?:string,\"answer\":string,\"steps\"?:string}],\"pdf_b64\"?:string}.",
+    "If asked to make a PDF, return base64 of a clean answer sheet in pdf_b64 (no data URL).",
+    style==='full' ? "Include steps." : "Be concise; steps optional."
   ].join(' ');
 
   const body = {
@@ -305,7 +287,7 @@ async function gomegaAsk({modelName, text, images=[], wantPdf=false, style='conc
     response_format: { type: "json_object" },
     messages: [
       { role:'system', content: sys },
-      { role:'user', content: parts.concat(wantPdf ? [{type:'text', text:"Create a neat answered PDF titled 'Gomega Intelligence — Answer Sheet (BETA)'. Put each Q with its answer (and steps if present). Return base64 in pdf_b64."}] : []) }
+      { role:'user', content: parts.concat(wantPdf ? [{type:'text', text:"Create an answered PDF titled 'Gomega Intellagence — Answer Sheet (BETA)'. Return base64 in pdf_b64 (no data URL)."}] : []) }
     ],
     max_tokens: 2000
   };
@@ -320,11 +302,9 @@ async function gomegaAsk({modelName, text, images=[], wantPdf=false, style='conc
 
   if(!res.ok){
     const txt = await res.text().catch(()=>res.statusText);
-    throw new Error('OpenAI error: ' + txt);
+    throw new Error('Gomega Intellagence backend error: ' + txt);
   }
   const json = await res.json();
-
-  // token estimate (rough)
   const usage = json.usage || {};
   tokenStat.textContent = usage.total_tokens ? `~${usage.total_tokens} tokens` : `~${Math.round((t1-t0)/1000)}s`;
 
@@ -333,39 +313,65 @@ async function gomegaAsk({modelName, text, images=[], wantPdf=false, style='conc
   catch{ return { answers:[{number:"1", answer:content}] }; }
 }
 
-/* ===== Pipeline ===== */
-let lastRun = null;
-let lastText = '';
+/* ---------- SAFE base64 -> Blob (fixes atob error) ---------- */
+function normalizeB64(input){
+  let b64 = String(input||'').trim();
+  // strip data URL if present
+  b64 = b64.replace(/^data:application\/pdf;base64,/i,'');
+  // remove whitespace & newlines
+  b64 = b64.replace(/\s+/g,'');
+  // convert URL-safe base64 to standard
+  b64 = b64.replace(/-/g,'+').replace(/_/g,'/');
+  // pad to multiple of 4
+  const pad = b64.length % 4;
+  if(pad) b64 += '='.repeat(4 - pad);
+  return b64;
+}
+function b64ToBlobSafe(b64, mime='application/pdf'){
+  const clean = normalizeB64(b64);
+  // decode in chunks to avoid overflow on big PDFs
+  const sliceSize = 8192;
+  const byteChars = atob(clean);
+  const bytes = new Uint8Array(byteChars.length);
+  for(let offset=0; offset<byteChars.length; offset+=sliceSize){
+    const slice = byteChars.slice(offset, offset + sliceSize);
+    for(let i=0; i<slice.length; i++) bytes[offset+i] = slice.charCodeAt(i);
+  }
+  return new Blob([bytes], {type:mime});
+}
 
-function showSolvedBanner(show){ solvedBanner.style.display = show ? 'block' : 'none'; }
+/* ---------- Pipeline ---------- */
+let lastRun = null;
 
 async function processFile(file){
-  setStatus('uploading to OpenAI'); setProgress(8);
-  solutionEl.innerHTML=''; pdfOut.innerHTML=''; extractedEl.textContent=''; linksEl.innerHTML=''; showSolvedBanner(false);
+  setStatus('sending to Gomega Intellagence'); setProgress(10);
+  solutionEl.innerHTML=''; pdfOut.innerHTML=''; extractedEl.textContent=''; showSolvedBanner(false);
 
-  // Prep inputs for OpenAI (text and/or images)
-  let text = ''; let images = [];
+  let text=''; let images=[];
   if(file.type.startsWith('image/')){
     const b64 = await blobToBase64(file);
     images = [{mime:file.type, base64:b64}];
     extractedEl.textContent = '[Image sent to Vision]';
   } else if (/\.pdf$/i.test(file.name||'') || file.type==='application/pdf'){
     text = await extractTextFromPDF(file);
-    if(!text || text.length < 20){ images = await pdfPagesToImages(file, 2); extractedEl.textContent='[Scanned PDF pages sent to Vision]'; }
-    else { extractedEl.textContent = text; }
+    if(!text || text.length < 20){
+      images = await pdfPagesToImages(file, 2);
+      extractedEl.textContent='[Scanned PDF pages sent to Vision]';
+    } else {
+      extractedEl.textContent = text;
+    }
   } else if (/\.docx$/i.test(file.name||'')){
     text = await extractTextFromDOCX(await file.arrayBuffer());
     extractedEl.textContent = text;
   } else {
-    text = await file.text().catch(()=> '');
-    extractedEl.textContent = text;
+    text = await file.text().catch(()=> ''); extractedEl.textContent = text;
   }
-  lastText = text;
+
   const wantPdf = (modeSel.value === 'fillpdf');
   const modelName = images.length ? 'gomega-vision' : modelSel.value;
   const style = styleSel.value;
 
-  setStatus('solving with OpenAI'); setProgress(60);
+  setStatus('solving'); setProgress(65);
   const ai = await gomegaAsk({ modelName, text, images, wantPdf, style });
 
   const answers = Array.isArray(ai.answers) ? ai.answers : [];
@@ -378,30 +384,23 @@ async function processFile(file){
   `).join('') || `<pre>${escapeHtml(JSON.stringify(ai,null,2))}</pre>`;
   solutionEl.innerHTML = html;
 
-  // PDF from OpenAI (preferred)
   pdfOut.innerHTML = '';
   if(ai.pdf_b64){
-    const blob = b64ToBlob(ai.pdf_b64, 'application/pdf');
-    const url = URL.createObjectURL(blob);
-    pdfOut.innerHTML = `<a class="pill" href="${url}" download="answers.pdf">Download answered PDF (OpenAI)</a>`;
+    try{
+      const blob = b64ToBlobSafe(ai.pdf_b64, 'application/pdf');
+      const url = URL.createObjectURL(blob);
+      pdfOut.innerHTML = `<a class="pill" href="${url}" download="answers.pdf">Download answered PDF (Gomega Intellagence)</a>`;
+    }catch(err){
+      pdfOut.innerHTML = `<div style="color:#ff9b9b">Could not build PDF: ${escapeHtml(err.message)}</div>`;
+    }
   }
 
-  showLinks(lastText);
-  setStatus('done'); setProgress(100);
-  showSolvedBanner(true);
+  setStatus('done'); setProgress(100); showSolvedBanner(true);
   pushHistory({ model:modelName, when:new Date().toISOString(), answers });
   lastRun = { file };
 }
 
-/* base64 -> Blob helper */
-function b64ToBlob(b64, type){
-  const byteChars = atob(b64.replace(/^data:application\/pdf;base64,/,''));
-  const byteNumbers = new Array(byteChars.length);
-  for (let i=0;i<byteChars.length;i++) byteNumbers[i] = byteChars.charCodeAt(i);
-  return new Blob([new Uint8Array(byteNumbers)], {type});
-}
-
-/* History */
+/* ---------- History ---------- */
 function pushHistory(entry){
   const key='gomega-history-v1';
   const list = JSON.parse(localStorage.getItem(key)||'[]');
@@ -409,16 +408,16 @@ function pushHistory(entry){
   renderHistory(list);
 }
 function renderHistory(list){
-  historyEl.innerHTML = (list||[]).map((it,idx)=>`
+  const h = (list||[]).map(it=>`
     <div class="item">
       <div class="small muted">${new Date(it.when).toLocaleString()} • ${it.model}</div>
       <div class="small" style="margin-top:6px">${escapeHtml((it.answers?.[0]?.answer||'').slice(0,140))}...</div>
-    </div>
-  `).join('');
+    </div>`).join('');
+  historyEl.innerHTML = h;
 }
 renderHistory(JSON.parse(localStorage.getItem('gomega-history-v1')||'[]'));
 
-/* Buttons */
+/* ---------- Buttons ---------- */
 btnProcess.addEventListener('click', async ()=>{
   const f = filein.files?.[0]; if(!f) return alert('Choose a file first.');
   try{ await processFile(f); }
@@ -430,43 +429,32 @@ btnRetry.addEventListener('click', async ()=>{
   catch(e){ setStatus('error'); setProgress(0); solutionEl.innerHTML = `<div style="color:#ff9b9b">Error: ${escapeHtml(e.message||e)}</div>`; }
 });
 btnClear.addEventListener('click', ()=>{
-  filein.value=''; extractedEl.textContent=''; solutionEl.innerHTML=''; pdfOut.innerHTML=''; linksEl.innerHTML='';
+  filein.value=''; extractedEl.textContent=''; solutionEl.innerHTML=''; pdfOut.innerHTML='';
   setStatus('idle'); setProgress(0); showSolvedBanner(false);
 });
-btnSwitchModel.addEventListener('click', async ()=>{
+document.getElementById('btnSwitchModel').addEventListener('click', async ()=>{
   if(!lastRun?.file) return alert('Run something first.');
-  // rotate through options
   const opts=[...modelSel.options].map(o=>o.value);
   const i=(opts.indexOf(modelSel.value)+1)%opts.length; modelSel.value=opts[i];
   await processFile(lastRun.file);
 });
-btnCopy.addEventListener('click', ()=>{
+document.getElementById('btnCopy').addEventListener('click', ()=>{
   const t = solutionEl.innerText.trim(); if(!t) return alert('Nothing to copy.');
   navigator.clipboard.writeText(t).then(()=>alert('Copied!')).catch(()=>alert('Copy failed'));
 });
-btnDownloadTxt.addEventListener('click', ()=>{
+document.getElementById('btnDownloadTxt').addEventListener('click', ()=>{
   const t = solutionEl.innerText.trim(); if(!t) return alert('Nothing to download.');
   const blob = new Blob([t], {type:'text/plain'}); const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='answers.txt'; a.click(); URL.revokeObjectURL(url);
 });
 
-/* Drag & drop + paste */
+/* Drag & drop */
 const dropzone = document.getElementById('dropzone');
 dropzone.addEventListener('dragover', e=>{ e.preventDefault(); dropzone.classList.add('drag');});
 dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('drag'));
 dropzone.addEventListener('drop', e=>{ e.preventDefault(); dropzone.classList.remove('drag'); if(e.dataTransfer.files?.[0]) filein.files = e.dataTransfer.files;});
-window.addEventListener('paste', e=>{
-  const items = (e.clipboardData||window.clipboardData).items || [];
-  for(const it of items){
-    if(it.type && it.type.indexOf('image') !== -1){
-      const file = it.getAsFile();
-      const dt = new DataTransfer(); dt.items.add(file); filein.files = dt.files;
-      break;
-    }
-  }
-});
 
-/* Minimal progress + counter (kept from earlier for UI parity) */
+/* Counters (kept for UI) */
 const MAX_USES_PER_DAY = 5; const KEY_COUNTS = 'hw-helper-counts-v1';
 function todayKey(){ return new Date().toISOString().slice(0,10); }
 function loadCounts(){ const raw=JSON.parse(localStorage.getItem(KEY_COUNTS)||'{}'); if(raw.date!==todayKey()){Object.assign(raw,{date:todayKey(),solveSmarter:0,lookDeeper:0});} localStorage.setItem(KEY_COUNTS,JSON.stringify(raw)); return raw;}
@@ -475,3 +463,4 @@ updatePill(); setProgress(0); setStatus('idle');
 </script>
 </body>
 </html>
+
