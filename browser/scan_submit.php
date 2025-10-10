@@ -5,7 +5,7 @@ header('Pragma: no-cache');
 
 $session = isset($_POST['session']) ? preg_replace('/[^A-Za-z0-9\-_.]/','', $_POST['session']) : '';
 $codeRaw = isset($_POST['code']) ? $_POST['code'] : '';
-$code    = preg_replace('/\D/', '', $codeRaw);
+$code    = preg_replace('/\D/','', $codeRaw);
 
 if ($session === '' || $code === '') { http_response_code(400); echo 'ERR'; exit; }
 

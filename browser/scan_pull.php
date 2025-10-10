@@ -8,8 +8,10 @@ if ($session === '') { exit(''); }
 
 session_id($session);
 session_start();
-$digits = isset($_SESSION['code']) ? preg_replace('/\D/','', (string)$_SESSION['code']) : '';
-$_SESSION['code'] = '';  // one-time read
+$digits = '';
+if (!empty($_SESSION['code'])) {
+  $digits = preg_replace('/\D/','', (string)$_SESSION['code']);
+  $_SESSION['code'] = '';
+}
 session_write_close();
-
 echo $digits;

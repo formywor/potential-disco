@@ -40,7 +40,7 @@
       <div>
         <div class="capsule">Gomega Intelligence</div>
         <h1>Loading camera with Gomega Intelligence BETA</h1>
-        <div class="sub">Click “Allow” if prompted. Gomega Intelligence may make errors.</div>
+        <div class="sub">Click “Allow” if prompted. Gomega Intelligence is BETA and may make errors.</div>
       </div>
     </div>
 
@@ -59,92 +59,71 @@
           <button id="startBtn" class="btn">Start camera</button>
           <button id="dismissBtn" class="btn link">Dismiss</button>
         </div>
-        <div class="foot">Move closer, keep the barcode flat, avoid glare. We’ll outline it in green.</div>
+        <div class="foot">We’ll outline the barcode in green once detected.</div>
       </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
   <script>
-    const params = new URLSearchParams(location.search);
-    const session = params.get('session') || '';
+    const params=new URLSearchParams(location.search);
+    const session=params.get('session')||'';
 
-    const wrap = document.getElementById('videoWrap');
-    const streamDiv = document.getElementById('stream');
-    const cam = document.getElementById('cam');
-    const overlay = document.getElementById('overlay');
-    const ctx = overlay.getContext('2d');
-    const startBtn = document.getElementById('startBtn');
-    const dismissBtn = document.getElementById('dismissBtn');
+    const wrap=document.getElementById('videoWrap');
+    const streamDiv=document.getElementById('stream');
+    const cam=document.getElementById('cam');
+    const overlay=document.getElementById('overlay');
+    const ctx=overlay.getContext('2d');
+    const startBtn=document.getElementById('startBtn');
+    const dismissBtn=document.getElementById('dismissBtn');
 
     const statusTile=document.getElementById('tile-status'), scanTile=document.getElementById('tile-scan'), unlockTile=document.getElementById('tile-unlock');
     const statusEl=document.getElementById('status'), scanEl=document.getElementById('scanmsg'), unlockEl=document.getElementById('unlockmsg');
 
-    const set=(tile,el,text,cls='')=>{ el.textContent=text; tile.className='tile '+cls; };
-    const isDigits=s=>/^\d{6,14}$/.test(s); // tighter numeric rule
-    const drawPoly=(pts,color,w=3)=>{ if(!pts||!pts.length)return; ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x,pts[i].y); ctx.closePath(); ctx.lineWidth=w; ctx.strokeStyle=color; ctx.stroke(); };
-    function sizeOverlayTo(el){ const w=el.videoWidth||el.clientWidth||wrap.clientWidth, h=el.videoHeight||el.clientHeight||wrap.clientHeight; if(w&&h){ overlay.width=w; overlay.height=h; } }
+    const set=(tile,el,text,cls='')=>{el.textContent=text;tile.className='tile '+cls;}
+    const isDigits=s=>/^\d{6,14}$/.test(s);
+    const drawPoly=(pts,color,w=3)=>{if(!pts||!pts.length)return;ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);ctx.closePath();ctx.lineWidth=w;ctx.strokeStyle=color;ctx.stroke();}
+    function sizeOverlayTo(el){const w=el.videoWidth||el.clientWidth||wrap.clientWidth,h=el.videoHeight||el.clientHeight||wrap.clientHeight;if(w&&h){overlay.width=w;overlay.height=h;}}
 
-    dismissBtn.onclick = ()=>{ try{ window.close(); }catch(e){} };
+    dismissBtn.onclick=()=>{try{window.close();}catch(e){}};
 
     async function postCode(code){
       set(unlockTile,unlockEl,'Unlocking Browser with Gomega Intelligence…','warn');
       while(true){
         try{
-          const res = await fetch('scan_submit.php',{method:'POST',cache:'no-store',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({session,code}).toString()});
+          const res=await fetch('scan_submit.php',{method:'POST',cache:'no-store',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({session,code}).toString()});
           const txt=(await res.text()).trim().toUpperCase();
-          if(txt==='OK'){ set(unlockTile,unlockEl,'Unlocked — check Gomega Browser','ok'); try{cam.srcObject&&cam.srcObject.getTracks().forEach(t=>t.stop())}catch(e){}; break; }
+          if(txt==='OK'){ set(unlockTile,unlockEl,'Unlocked — check Gomega Browser','ok'); try{cam.srcObject&&cam.srcObject.getTracks().forEach(t=>t.stop())}catch(e){}; break;}
         }catch(e){}
         await new Promise(r=>setTimeout(r,250));
       }
     }
 
-    // ---- Preferred: BarcodeDetector + <video>
     async function startBarcodeDetector(){
-      if(!('BarcodeDetector' in window)) return false;
-      let formats=['code_128','code_39','codabar','ean_13','ean_8','upc_a','upc_e','itf','qr_code'];
-      let detector; try{ detector=new BarcodeDetector({formats}); }catch(e){ return false; }
-
+      if(!('BarcodeDetector' in window))return false;
+      let detector; try{ detector=new BarcodeDetector({formats:['code_128','code_39','codabar','ean_13','ean_8','upc_a','upc_e','itf','qr_code']}); }catch(e){return false;}
       try{
         const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
         cam.srcObject=stream;
-        cam.onloadedmetadata=()=>{ cam.play().catch(()=>{}); sizeOverlayTo(cam); set(statusTile,statusEl,'Camera ready','ok'); scanLoop(); };
+        cam.onloadedmetadata=()=>{ cam.play().catch(()=>{}); sizeOverlayTo(cam); set(statusTile,statusEl,'Camera ready','ok'); scanLoop();};
         startBtn.style.display='none';
       }catch(e){
         set(statusTile,statusEl,'Click “Start camera” to allow access','warn');
-        startBtn.onclick=async()=>{ try{ const s=await navigator.mediaDevices.getUserMedia({video:true}); cam.srcObject=s; cam.play().catch(()=>{}); sizeOverlayTo(cam); set(statusTile,statusEl,'Camera ready','ok'); scanLoop(); startBtn.style.display='none'; }catch(_){ set(statusTile,statusEl,'Camera permission denied','bad'); } };
+        startBtn.onclick=async()=>{try{const s=await navigator.mediaDevices.getUserMedia({video:true}); cam.srcObject=s; cam.play().catch(()=>{}); sizeOverlayTo(cam); set(statusTile,statusEl,'Camera ready','ok'); scanLoop(); startBtn.style.display='none';}catch(_){set(statusTile,statusEl,'Camera permission denied','bad');}}
         return true;
       }
-
-      let buf=[], LOCK=false;
-      function voteAdd(d){ buf.push(d); if(buf.length>8) buf.shift(); }
-      function voteCount(d){ return buf.filter(x=>x===d).length; }
-
+      let buf=[],LOCK=false; function voteAdd(d){buf.push(d);if(buf.length>8)buf.shift();} function count(d){return buf.filter(x=>x===d).length;}
       function scanLoop(){
-        if(!cam.srcObject || LOCK) return;
+        if(!cam.srcObject||LOCK)return;
         detector.detect(cam).then(list=>{
           ctx.clearRect(0,0,overlay.width,overlay.height);
           if(list&&list.length){
-            const b=list[0];
-            const raw=(b.rawValue||'').trim();
-            const digits=raw.replace(/\D/g,'');
-            const pts=b.cornerPoints || (b.boundingBox?[
-              {x:b.boundingBox.x,y:b.boundingBox.y},
-              {x:b.boundingBox.x+b.boundingBox.width,y:b.boundingBox.y},
-              {x:b.boundingBox.x+b.boundingBox.width,y:b.boundingBox.y+b.boundingBox.height},
-              {x:b.boundingBox.x,y:b.boundingBox.y+b.boundingBox.height}
-            ]:null);
+            const b=list[0]; const raw=(b.rawValue||'').trim(); const digits=raw.replace(/\D/g,'');
+            const pts=b.cornerPoints||(b.boundingBox?[{x:b.boundingBox.x,y:b.boundingBox.y},{x:b.boundingBox.x+b.boundingBox.width,y:b.boundingBox.y},{x:b.boundingBox.x+b.boundingBox.width,y:b.boundingBox.y+b.boundingBox.height},{x:b.boundingBox.x,y:b.boundingBox.y+b.boundingBox.height}]:null);
             if(pts) drawPoly(pts,'rgba(34,197,94,1)',4);
             set(scanTile,scanEl,'Reading…','');
-            if(isDigits(digits)){
-              voteAdd(digits);
-              const c=voteCount(digits);
-              set(scanTile,scanEl,'Reading… '+digits+' ('+c+'/5)','');
-              if(c>=5){ LOCK=true; postCode(digits); return; }
-            }
-          } else {
-            set(scanTile,scanEl,'Searching for barcode…','');
-          }
+            if(isDigits(digits)){ voteAdd(digits); const c=count(digits); set(scanTile,scanEl,'Reading… '+digits+' ('+c+'/5)',''); if(c>=5){LOCK=true; postCode(digits);} }
+          }else{ set(scanTile,scanEl,'Searching for barcode…',''); }
           requestAnimationFrame(scanLoop);
         }).catch(()=>{ startQuaggaFallback(); });
       }
@@ -152,64 +131,32 @@
       return true;
     }
 
-    // ---- Fallback: Quagga on visible container + error-score filter
     function startQuaggaFallback(){
       set(statusTile,statusEl,'Starting legacy scanner…','');
       cam.style.display='none';
       Quagga.init({
-        inputStream:{ type:'LiveStream', target:streamDiv, constraints:{ facingMode:'environment' } },
-        locator:{ patchSize:'medium', halfSample:true },
-        decoder:{ readers:['code_128_reader','ean_reader','ean_8_reader','code_39_reader','codabar_reader','upc_reader','upc_e_reader','i2of5_reader'] },
+        inputStream:{type:'LiveStream',target:streamDiv,constraints:{facingMode:'environment'}},
+        locator:{patchSize:'medium',halfSample:true},
+        decoder:{readers:['code_128_reader','ean_reader','ean_8_reader','code_39_reader','codabar_reader','upc_reader','upc_e_reader','i2of5_reader']},
         locate:true
-      }, err=>{
-        if(err){ set(statusTile,statusEl,'Scanner error','bad'); return; }
+      },err=>{
+        if(err){set(statusTile,statusEl,'Scanner error','bad');return;}
         Quagga.start(); set(statusTile,statusEl,'Camera ready','ok');
-        const qv=streamDiv.querySelector('video');
-        function resize(){ sizeOverlayTo(qv||cam); }
-        resize(); window.addEventListener('resize',resize);
+        const qv=streamDiv.querySelector('video'); function resize(){sizeOverlayTo(qv||cam);} resize(); window.addEventListener('resize',resize);
       });
-
-      let buf=[], LOCK=false;
-      function voteAdd(d){ buf.push(d); if(buf.length>8) buf.shift(); }
-      function voteCount(d){ return buf.filter(x=>x===d).length; }
-
-      Quagga.onProcessed(res=>{
-        ctx.clearRect(0,0,overlay.width,overlay.height);
-        if(!res) return;
-        if(res.box) drawPoly(res.box,'rgba(250,204,21,.9)',3);
-        if(res.codeResult && res.codeResult.code) drawPoly(res.line,'rgba(34,197,94,1)',4);
-      });
-
+      let buf=[],LOCK=false; function voteAdd(d){buf.push(d);if(buf.length>8)buf.shift();} function count(d){return buf.filter(x=>x===d).length;}
+      Quagga.onProcessed(res=>{ctx.clearRect(0,0,overlay.width,overlay.height); if(!res)return; if(res.box)drawPoly(res.box,'rgba(250,204,21,.9)',3); if(res.codeResult&&res.codeResult.code)drawPoly(res.line,'rgba(34,197,94,1)',4);});
       Quagga.onDetected(res=>{
-        if(LOCK) return;
-        const cr = res && res.codeResult;
-        if(!cr || !cr.code) return;
-
-        // noise filter: average error across decoded segments
-        let err = 1;
-        try{
-          const errs = (cr.decodedCodes||[]).map(c=>typeof c.error==='number'?c.error:1).filter(e=>e>=0&&e<=1);
-          if(errs.length) err = errs.reduce((a,b)=>a+b,0)/errs.length;
-        }catch(e){ err = 1; }
-        if(err > 0.15) return; // too noisy → ignore
-
-        const digits = String(cr.code).replace(/\D/g,'');
-        if(!isDigits(digits)) return;
-
-        voteAdd(digits);
-        const c = voteCount(digits);
-        set(scanTile,scanEl,'Reading… '+digits+' ('+c+'/5)','');
-        if(c>=5){ LOCK=true; postCode(digits); }
+        if(LOCK)return;
+        const cr=res&&res.codeResult; if(!cr||!cr.code)return;
+        let err=1; try{const errs=(cr.decodedCodes||[]).map(c=>typeof c.error==='number'?c.error:1).filter(e=>e>=0&&e<=1); if(errs.length)err=errs.reduce((a,b)=>a+b,0)/errs.length;}catch(e){err=1;}
+        if(err>0.15)return;
+        const digits=String(cr.code).replace(/\D/g,''); if(!/^\d{6,14}$/.test(digits))return;
+        voteAdd(digits); const c=count(digits); set(scanTile,scanEl,'Reading… '+digits+' ('+c+'/5)',''); if(c>=5){LOCK=true; postCode(digits);}
       });
     }
 
-    (async ()=>{
-      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-        set(statusTile,statusEl,'Camera API not available','bad'); return;
-      }
-      const ok = await startBarcodeDetector();
-      if(!ok) startQuaggaFallback();
-    })();
+    (async()=>{ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){set(statusTile,statusEl,'Camera API not available','bad');return;} const ok=await startBarcodeDetector(); if(!ok) startQuaggaFallback(); })();
   </script>
 </body>
 </html>
