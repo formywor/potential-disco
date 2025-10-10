@@ -1,180 +1,304 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>HW Beta — Homework Helper</title>
-<!-- Simple, modern styles -->
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Gomega Intelligence — HW Helper</title>
+
 <style>
   :root{
-    --bg:#0f1724; --card:#0b1220; --accent:#6ee7b7; --muted:#9aa6b2;
+    --bg:#070f1a; --bg2:#0b1423; --card:#0b1220; --glass:rgba(255,255,255,.06);
+    --accent:#7dd3fc; --accent2:#34d399; --muted:#9aa6b2; --ink:#e6eef6;
+    --ring:rgba(125,211,252,.45);
   }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
   body{
-    background: radial-gradient(1200px 600px at 10% 10%, rgba(102,126,234,0.12), transparent),
-                linear-gradient(180deg,#071021 0%, #07121b 100%);
-    color:#e6eef6; display:flex; align-items:center; justify-content:center; padding:24px;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 8% 2%, rgba(56,189,248,.18), transparent 60%),
+      radial-gradient(900px 400px at 96% 8%, rgba(52,211,153,.14), transparent 60%),
+      linear-gradient(180deg,#06101b 0%, #070e18 100%);
+    padding:28px; display:flex; align-items:center; justify-content:center;
   }
-  .wrap{width:100%;max-width:980px;}
-  header{display:flex;align-items:center;gap:16px;margin-bottom:14px}
-  .beta{background:linear-gradient(90deg,#ffb86b,#ff7b7b);padding:6px 10px;border-radius:999px;font-weight:700;color:#111}
-  h1{margin:0;font-size:20px}
-  p.lead{color:var(--muted);margin:6px 0 20px}
-  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.03); padding:18px; border-radius:12px; box-shadow: 0 6px 30px rgba(2,6,23,0.6);}
+  .wrap{width:100%;max-width:1100px}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .brand{
+    display:flex;align-items:center;gap:14px
+  }
+  .logo{
+    width:42px;height:42px;border-radius:12px;
+    background: conic-gradient(from 160deg,#38bdf8, #22c55e,#8b5cf6,#38bdf8);
+    filter:saturate(120%); position:relative; overflow:hidden;
+  }
+  .logo::after{
+    content:""; position:absolute; inset:3px; border-radius:9px;
+    background: radial-gradient(60% 60% at 30% 30%, rgba(255,255,255,.22), transparent 60%),
+                linear-gradient(180deg,#0b1220, #0b1526);
+    box-shadow: inset 0 0 12px rgba(255,255,255,.08);
+  }
+  h1{margin:0;font-size:20px;letter-spacing:.2px}
+  .beta{background:linear-gradient(90deg,#ffb86b,#ff7b7b);padding:6px 10px;border-radius:999px;font-weight:700;color:#111;margin-left:10px}
+
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:14px; box-shadow:0 12px 40px rgba(2,6,23,.55);
+  }
   .grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
-  .uploader{display:flex;flex-direction:column;gap:10px}
-  input[type=file]{display:block}
-  .drop{border:2px dashed rgba(255,255,255,0.04); padding:12px; border-radius:8px; text-align:center; color:var(--muted)}
+  @media (max-width:980px){ .grid{grid-template-columns:1fr} }
+
+  /* Left panel */
+  .panel{padding:16px}
+  .section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:12px;padding:12px}
+  .section + .section{margin-top:12px}
+  label.small{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+  input[type="text"], input[type="password"], select{
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.08);
+    background:rgba(10,18,32,.6); color:var(--ink); outline:none;
+  }
+  input:focus, select:focus{ box-shadow:0 0 0 3px var(--ring); border-color:transparent }
+  .keyline{display:flex;gap:8px}
+  .keyline input{flex:1}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);font-weight:600}
+  .muted{color:var(--muted)}
   .controls{display:flex;gap:8px;flex-wrap:wrap}
-  button{background:linear-gradient(180deg,#0b1b2a,#071026);border:1px solid rgba(255,255,255,0.03); color:#e6eef6;padding:8px 12px;border-radius:8px;cursor:pointer}
-  button.primary{background:linear-gradient(90deg,var(--accent),#60a5fa); color:#052123; font-weight:700}
-  .result{padding:12px;border-radius:10px;background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.02)}
-  .links a{color:var(--accent); text-decoration:none; display:inline-block; margin:6px 8px 6px 0}
-  .small{font-size:13px;color:var(--muted)}
-  footer{margin-top:12px;color:var(--muted);font-size:13px}
-  .progress{height:8px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden}
-  .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,#60a5fa,#6ee7b7)}
-  .pill{display:inline-block;padding:6px 9px;border-radius:999px;background:rgba(255,255,255,0.02);font-weight:600}
-  .feedbacks{margin-top:8px;font-size:13px}
-  .muted-note{color:var(--muted);font-size:13px;margin-top:8px}
-  @media (max-width:880px){ .grid{grid-template-columns:1fr} .uploader{order:2} }
+  button{
+    background:linear-gradient(180deg,#0b1b2a,#071026);
+    border:1px solid rgba(255,255,255,.06); color:#e6eef6; padding:10px 12px; border-radius:10px; cursor:pointer;
+    transition:.2s transform ease,.2s background ease;
+  }
+  button:hover{transform:translateY(-1px)}
+  button.primary{
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    color:#052123; font-weight:800; border:none;
+  }
+  .drop{
+    border:2px dashed rgba(255,255,255,.07); padding:14px; border-radius:12px; text-align:center; color:var(--muted);
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .drop.drag{ border-color:#22c55e; background:rgba(34,197,94,.05); }
+
+  /* Right panel */
+  .result{padding:16px}
+  .toprow{display:flex;justify-content:space-between;align-items:center}
+  .status{font-size:13px;color:var(--muted)}
+  .progress{height:8px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden}
+  .progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#60a5fa,#6ee7b7)}
+  .answer{padding:12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+  .links a{color:var(--accent);text-decoration:none;display:inline-block;margin:6px 8px 0 0}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  /* Toast */
+  .toast{
+    position:fixed; right:18px; bottom:18px; background:rgba(14,23,38,.9);
+    border:1px solid rgba(255,255,255,.08); padding:12px 14px; border-radius:12px; font-size:13px; color:var(--ink);
+    box-shadow:0 10px 32px rgba(0,0,0,.45); opacity:0; transform:translateY(8px); pointer-events:none; transition:.22s;
+  }
+  .toast.show{opacity:1; transform:translateY(0); pointer-events:auto}
+  .badge{display:inline-block;font-size:11px;padding:3px 8px;border-radius:999px;background:rgba(125,211,252,.18);border:1px solid rgba(125,211,252,.35);color:#9de1ff;margin-left:6px}
+  footer{margin-top:10px;color:var(--muted);font-size:12.5px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="beta">BETA</div>
-    <div>
-      <h1>HW Helper — Beta</h1>
-      <p class="lead">Upload a photo or file (no <code>.exe</code>) and this page will try to solve or find answers online. Use "Look Deeper" or "Solve Smarter" up to 5×/day each.</p>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Gomega Intelligence — HW Helper <span class="beta">BETA</span></h1>
+        <div class="muted">Upload a photo or file. Choose “Answers only” or “Fill PDF”. “Solve Smarter” & “Look Deeper” are limited to 5×/day.</div>
+      </div>
     </div>
+    <div class="pill" id="counterPill">SS: 5 • LD: 5</div>
   </header>
 
   <div class="card grid" role="main">
-    <div class="uploader">
-      <div class="drop" id="dropzone">
-        <div style="font-weight:700;margin-bottom:6px">Upload or take a photo</div>
-        <div class="small">Images (jpg, png, webp), PDF, .txt, .docx — (no .exe). You can also paste images or drag & drop.</div>
-        <input id="filein" type="file" accept="image/*,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
-        <div style="margin-top:8px" class="controls">
-          <button id="btnUseCamera">Take Photo (opens camera)</button>
-          <button id="btnProcess" class="primary">Process & Solve</button>
-          <button id="btnClear">Clear</button>
+    <!-- Left -->
+    <div class="panel">
+      <div class="section">
+        <label class="small">OpenAI API key (we’ll ignore stray commas)</label>
+        <div class="keyline">
+          <input id="keyInput" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false">
+          <button id="saveKeyBtn">Save</button>
         </div>
-        <div class="muted-note">Privacy: Everything runs in your browser. No files are uploaded to our servers from this page (unless you explicitly click a link to external sites).</div>
+        <div class="muted" style="margin-top:6px">Stored in your browser only. Required for Gomega Intelligence.</div>
       </div>
 
-      <div style="margin-top:12px" class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div><strong>Assist tools</strong><div class="small">Try "Solve Smarter" for more aggressive math solving, or "Look Deeper" to gather more links & references.</div></div>
-          <div class="pill" id="counterPill">SS: 5 • LD: 5</div>
+      <div class="section">
+        <div class="row">
+          <div style="flex:1">
+            <label class="small">Mode</label>
+            <select id="modeSel">
+              <option value="answers">Answers only (on-page)</option>
+              <option value="fillpdf">Fill PDF (if possible) or add Answer Sheet</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <label class="small">Model</label>
+            <select id="modelSel">
+              <option value="gpt-4o-mini">gpt-4o-mini</option>
+              <option value="gpt-4o">gpt-4o</option>
+              <option value="o4-mini">o4-mini</option>
+            </select>
+          </div>
         </div>
+        <div class="row" style="margin-top:8px">
+          <label class="small" style="flex:1">Answer Style</label>
+          <select id="styleSel" style="flex:1">
+            <option value="concise">Concise answers</option>
+            <option value="full">Show steps & reasoning</option>
+          </select>
+        </div>
+      </div>
 
-        <div style="margin-top:10px" class="controls">
+      <div class="section">
+        <div class="drop" id="dropzone">
+          <div style="font-weight:700;margin-bottom:6px">Upload or take a photo</div>
+          <div class="muted">Images (jpg, png, webp), PDF, .txt, .docx. You can also paste images or drag & drop.</div>
+          <input id="filein" type="file" accept="image/*,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="margin-top:10px"/>
+          <div class="controls" style="margin-top:10px">
+            <button id="btnUseCamera">Take Photo</button>
+            <button id="btnProcess" class="primary">Process & Solve</button>
+            <button id="btnFill" title="Uses your key and returns a filled/annotated PDF">Fill PDF</button>
+            <button id="btnClear">Clear</button>
+          </div>
+          <div class="muted" style="margin-top:6px">Privacy: Files stay in your browser except calls you make to OpenAI.</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <strong>Assist</strong>
+        <div class="muted" style="margin:4px 0 8px">Use “Solve Smarter” for aggressive math & parsing, or “Look Deeper” for extra search links.</div>
+        <div class="controls">
           <button id="btnSolveSmarter">Solve Smarter</button>
           <button id="btnLookDeeper">Look Deeper</button>
         </div>
-
-        <div class="feedbacks">
-          <button id="btnRight">Was this answer right?</button>
-          <button id="btnWrong">Was this answer wrong?</button>
-          <div id="feedbackNote" class="small" style="margin-top:6px"></div>
-        </div>
       </div>
 
+      <div class="section">
+        <strong>Feedback</strong>
+        <div class="controls" style="margin-top:8px">
+          <button id="btnRight">Answer was right</button>
+          <button id="btnWrong">Answer was wrong</button>
+        </div>
+        <div id="feedbackNote" class="muted" style="margin-top:6px"></div>
+      </div>
     </div>
 
-    <div>
-      <div class="result" id="resultArea">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong>Answer preview</strong>
-          <div class="small">Status: <span id="status">idle</span></div>
-        </div>
-
-        <div style="margin-top:10px;">
-          <div class="progress" aria-hidden><i id="progBar"></i></div>
-          <div id="extracted" style="margin-top:10px;white-space:pre-wrap;color:#cfe7e0"></div>
-        </div>
-
-        <div id="solution" style="margin-top:12px"></div>
-
-        <div style="margin-top:12px">
-          <strong>Source links</strong>
-          <div id="links" class="links small"></div>
-        </div>
-
-        <div id="advancedNotes" style="margin-top:10px;color:var(--muted)"></div>
+    <!-- Right -->
+    <div class="result">
+      <div class="toprow">
+        <div><strong>Answer preview</strong> <span class="badge">Gomega Intelligence</span></div>
+        <div class="status">Status: <span id="status">idle</span></div>
       </div>
 
+      <div style="margin-top:10px" class="progress" aria-hidden><i id="progBar"></i></div>
+
+      <div style="margin-top:12px">
+        <div id="extracted" style="white-space:pre-wrap;color:#cfe7e0; font-size:13.5px"></div>
+      </div>
+
+      <div id="solution" class="answer" style="margin-top:12px"></div>
+
+      <div style="margin-top:12px">
+        <strong>Source links</strong>
+        <div id="links" class="links"></div>
+      </div>
+
+      <div id="advancedNotes" class="muted" style="margin-top:10px"></div>
+
+      <div id="pdfOut" style="margin-top:14px"></div>
+
       <footer>
-        <div class="small">This is experimental (BETA). It uses client-side OCR and open-source solvers. For better results, use clear photos and single questions per upload. <span style="color:var(--accent)">No files are sent off this page by default.</span></div>
+        This is experimental. For best results, use clear photos and one question per upload.
       </footer>
     </div>
   </div>
 </div>
 
-<!-- Libraries (CDNs) -->
+<!-- Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2/dist/tesseract.min.js"></script>
 <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/algebrite/1.5.0/algebrite.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
-<!-- pdf.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 
 <script>
-/* ========== Utilities, counters, and limits ========== */
+/* ===== State, limits, and small UI helpers ===== */
 const MAX_USES_PER_DAY = 5;
 const KEY_COUNTS = 'hw-helper-counts-v1';
+const KEY_STORAGE = 'gomega-hw-openai-key';
+const MODEL_STORAGE = 'gomega-hw-model';
+const STYLE_STORAGE = 'gomega-hw-style';
 
-function todayKey(){ // store counts by date
-  const d = new Date();
-  return d.toISOString().slice(0,10);
-}
-
+function todayKey(){ return new Date().toISOString().slice(0,10); }
 function loadCounts(){
   const raw = JSON.parse(localStorage.getItem(KEY_COUNTS) || '{}');
-  const key = todayKey();
-  if(!raw.date || raw.date !== key){
-    raw.date = key;
-    raw.solveSmarter = 0;
-    raw.lookDeeper = 0;
-    raw.feedbacks = [];
-    localStorage.setItem(KEY_COUNTS, JSON.stringify(raw));
-  }
+  const k = todayKey();
+  if(raw.date !== k){ Object.assign(raw, {date:k, solveSmarter:0, lookDeeper:0, feedbacks:[]}); }
+  localStorage.setItem(KEY_COUNTS, JSON.stringify(raw));
   return raw;
 }
-function saveCounts(obj){ localStorage.setItem(KEY_COUNTS, JSON.stringify(obj)); updatePill(); }
+function saveCounts(o){ localStorage.setItem(KEY_COUNTS, JSON.stringify(o)); updatePill(); }
 function updatePill(){
   const c = loadCounts();
   const ss = Math.max(0, MAX_USES_PER_DAY - (c.solveSmarter||0));
   const ld = Math.max(0, MAX_USES_PER_DAY - (c.lookDeeper||0));
   document.getElementById('counterPill').textContent = `SS: ${ss} • LD: ${ld}`;
 }
-updatePill();
+function setStatus(s){ document.getElementById('status').textContent = s; }
+function setProgress(p){ document.getElementById('progBar').style.width = Math.max(0,Math.min(100,p)) + '%'; }
+function toast(msg, timeout=2200){
+  let t = document.querySelector('.toast');
+  if(!t){ t = document.createElement('div'); t.className='toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), timeout);
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[c]); }
 
-/* ========== DOM refs ========== */
+/* ===== Persisted controls ===== */
+const keyInput = document.getElementById('keyInput');
+const saveKeyBtn = document.getElementById('saveKeyBtn');
+const modelSel = document.getElementById('modelSel');
+const styleSel = document.getElementById('styleSel');
+
+(function initPersistent(){
+  try{
+    keyInput.value = localStorage.getItem(KEY_STORAGE) ? '••••••••' : '';
+    const m = localStorage.getItem(MODEL_STORAGE) || 'gpt-4o-mini';
+    const st = localStorage.getItem(STYLE_STORAGE) || 'concise';
+    modelSel.value = m; styleSel.value = st;
+  }catch(e){}
+})();
+saveKeyBtn.addEventListener('click', ()=>{
+  const raw = prompt('Paste your OpenAI API key (sk-...) — commas will be ignored:', '');
+  if(!raw) return;
+  const cleaned = raw.replace(/,/g,'').trim();
+  try{
+    localStorage.setItem(KEY_STORAGE, cleaned);
+    keyInput.value = '••••••••';
+    toast('API key saved locally.');
+  }catch(e){ alert('Could not save key: ' + (e.message||e)); }
+});
+modelSel.addEventListener('change', ()=> localStorage.setItem(MODEL_STORAGE, modelSel.value));
+styleSel.addEventListener('change', ()=> localStorage.setItem(STYLE_STORAGE, styleSel.value));
+
+/* ===== File selection, validation, extraction ===== */
 const filein = document.getElementById('filein');
 const btnProcess = document.getElementById('btnProcess');
+const btnFill = document.getElementById('btnFill');
 const btnClear = document.getElementById('btnClear');
 const btnUseCamera = document.getElementById('btnUseCamera');
 const dropzone = document.getElementById('dropzone');
 const extractedEl = document.getElementById('extracted');
-const statusEl = document.getElementById('status');
-const progBar = document.getElementById('progBar');
 const solutionEl = document.getElementById('solution');
 const linksEl = document.getElementById('links');
-const btnSolveSmarter = document.getElementById('btnSolveSmarter');
-const btnLookDeeper = document.getElementById('btnLookDeeper');
-const btnRight = document.getElementById('btnRight');
-const btnWrong = document.getElementById('btnWrong');
-const feedbackNote = document.getElementById('feedbackNote');
 const advancedNotes = document.getElementById('advancedNotes');
+const pdfOut = document.getElementById('pdfOut');
+const modeSel = document.getElementById('modeSel');
 
-/* ========== Helpers: UI updates ========== */
-function setStatus(s){ statusEl.textContent = s; }
-function setProgress(p){ progBar.style.width = Math.max(0,Math.min(100,p)) + '%'; }
-
-/* ========== Validation: block .exe and suspicious types ========== */
 function validateFile(file){
   const badExt = ['exe','bat','cmd','sh','js','msi'];
   const name = (file.name || '').toLowerCase();
@@ -183,400 +307,434 @@ function validateFile(file){
   return null;
 }
 
-/* ========== File handling: images, pdf, txt, docx ========== */
-async function readFile(file){
-  const validation = validateFile(file);
-  if(validation) throw new Error(validation);
-
-  if(file.type.startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(file.name || '')){
-    return { kind:'image', blob: file };
-  }
-  if(file.type === 'application/pdf' || /\.pdf$/i.test(file.name||'')){
-    return { kind:'pdf', blob: file };
-  }
-  if(file.type === 'text/plain' || /\.txt$/i.test(file.name||'')){
-    const txt = await file.text();
-    return { kind:'text', text: txt };
-  }
-  if(file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || /\.docx$/i.test(file.name||'')){
-    const arrayBuffer = await file.arrayBuffer();
-    return { kind:'docx', buffer: arrayBuffer };
-  }
-  // fallback to try reading as text
-  try {
-    const txt = await file.text();
-    return { kind:'text', text: txt };
-  } catch(e){
-    throw new Error('Unsupported file type.');
-  }
-}
-
-/* PDF text extraction (simple) using pdf.js */
+/* PDF.js text extraction */
 async function extractTextFromPDF(blob){
   const arrayBuf = await blob.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data:arrayBuf}).promise;
   let full = '';
   for(let p=1;p<=pdf.numPages;p++){
     const page = await pdf.getPage(p);
-    const txt = await page.getTextContent();
+    const txt = await page.getTextContent({normalizeWhitespace:true});
     const pageText = txt.items.map(i => i.str).join(' ');
     full += pageText + '\n\n';
   }
-  return full;
+  return full.trim();
 }
 
-/* DOCX extraction using Mammoth.js */
+/* DOCX via Mammoth */
 async function extractTextFromDOCX(arrayBuffer){
   const result = await mammoth.extractRawText({arrayBuffer});
-  return result.value || '';
+  return (result.value || '').trim();
 }
 
-/* OCR image -> text using Tesseract.js */
+/* OCR with progress */
 async function ocrImage(blob, onProgress){
   return new Promise((resolve, reject) => {
     const worker = Tesseract.createWorker({
-      logger: m => { if(m.status === 'recognizing text' && onProgress) onProgress(m.progress*100); }
+      logger: m => { if(m.status === 'recognizing text' && onProgress) onProgress(Math.round(m.progress*100)); }
     });
     (async () => {
-      await worker.load();
-      await worker.loadLanguage('eng');
-      await worker.initialize('eng');
-      const { data: { text } } = await worker.recognize(blob);
-      await worker.terminate();
-      resolve(text);
+      await worker.load(); await worker.loadLanguage('eng'); await worker.initialize('eng');
+      const { data:{ text } } = await worker.recognize(blob);
+      await worker.terminate(); resolve(text || '');
     })().catch(reject);
   });
 }
 
-/* ========== Core: analyze text and attempt to answer ========== */
-function isMathQuestion(text){
-  // quick heuristics: contains =, variables, sqrt, integrate, derivative, sin, cos, integral, solve for x, + - * / ^, and digits
-  const lowers = (text||'').toLowerCase();
-  const mathKeywords = ['solve','integrate','differentiate','derivative','integral','limit','sqrt','sin(','cos(','tan(','^','x','y','='];
-  return mathKeywords.some(k => lowers.includes(k)) || /[0-9]+\s*[\+\-\*\/\^]\s*[0-9]+/.test(text);
+async function readFile(file){
+  const v = validateFile(file);
+  if(v) throw new Error(v);
+
+  if(file.type.startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(file.name||'')){
+    return { kind:'image', blob:file };
+  }
+  if(file.type === 'application/pdf' || /\.pdf$/i.test(file.name||'')){
+    return { kind:'pdf', blob:file };
+  }
+  if(file.type === 'text/plain' || /\.txt$/i.test(file.name||'')){
+    return { kind:'text', text: await file.text() };
+  }
+  if(file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || /\.docx$/i.test(file.name||'')){
+    return { kind:'docx', buffer: await file.arrayBuffer() };
+  }
+  try{
+    return { kind:'text', text: await file.text() };
+  }catch(e){
+    throw new Error('Unsupported file type.');
+  }
 }
 
-/* Attempt to extract a succinct question from the text (naive) */
 function extractQuestionSnippet(text){
   if(!text) return '';
-  // split into lines; prefer lines that end with ? or start with question words
-  const lines = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-  for(const ln of lines){
-    if(ln.endsWith('?')) return ln;
-  }
-  // look for lines with "solve" or "find" or "what is"
-  for(const ln of lines){
-    if(/\b(solve|find|what is|calculate|integrate|differentiate)\b/i.test(ln)) return ln;
-  }
-  // fallback: first 300 chars
-  return lines.slice(0,5).join(' ').slice(0,500);
+  const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  for(const ln of lines){ if(ln.endsWith('?')) return ln; }
+  for(const ln of lines){ if(/\b(solve|find|what is|calculate|integrate|differentiate|explain)\b/i.test(ln)) return ln; }
+  return lines.slice(0,6).join(' ').slice(0,800);
 }
 
-/* Basic math solving using Algebrite and mathjs fallback */
+function isMathQuestion(text){
+  const s = (text||'').toLowerCase();
+  const kws = ['solve','integrate','differentiate','derivative','integral','limit','sqrt','sin(','cos(','tan(','^','x','y','='];
+  return kws.some(k => s.includes(k)) || /[0-9]+\s*[\+\-\*\/\^]\s*[0-9]+/.test(s);
+}
+
+function buildSearchLinks(query){
+  const q = encodeURIComponent(query||'homework question');
+  return [
+    {title:'Google', url:`https://www.google.com/search?q=${q}`},
+    {title:'WolframAlpha', url:`https://www.wolframalpha.com/input?i=${q}`},
+    {title:'YouTube', url:`https://www.youtube.com/results?search_query=${q}`},
+    {title:'Scholar', url:`https://scholar.google.com/scholar?q=${q}`}
+  ];
+}
+
+function showLinksForQuery(query){
+  linksEl.innerHTML = '';
+  buildSearchLinks(query).forEach(l=>{
+    const a = document.createElement('a'); a.href=l.url; a.target='_blank'; a.rel='noopener noreferrer'; a.textContent=l.title;
+    linksEl.appendChild(a);
+  });
+}
+
+/* ====== Local math attempt (quick win) ====== */
 function trySolveMath(text){
   try{
-    // try to find an equation like "2x+3=7" or "solve x^2-4=0"
     const snippet = text.replace(/\r?\n/g,' ').trim();
-    // If snippet contains "solve" use Algebrite's solve
     if(/\bsolve\b/i.test(snippet)){
-      // e.g., "solve 2x+3=7 for x"
-      const match = snippet.match(/solve\s+(.+?)(?:\s+for\s+([a-zA-Z]\w*))?$/i);
-      if(match){
-        const expr = match[1].trim();
-        const varname = match[2] || null;
-        if(varname){
-          const cmd = `roots(${expr})`;
-          const res = Algebrite.run(cmd);
-          return res;
-        } else {
-          const res = Algebrite.run(`roots(${expr})`);
-          return res;
-        }
+      const m = snippet.match(/solve\s+(.+?)(?:\s+for\s+([a-zA-Z]\w*))?$/i);
+      if(m){
+        const expr = m[1].trim();
+        const res = Algebrite.run(`roots(${expr})`); return res;
       }
     }
-    // if contains "=" try to isolate variable
     if(snippet.includes('=')){
-      // replace implicit multiplication like 2x -> 2*x for algebrite (simple transform)
       let normalized = snippet.replace(/([0-9])([a-zA-Z])/g,'$1*$2').replace(/([a-zA-Z])([0-9])/g,'$1*$2');
-      // attempt solve using Algebrite: "solve(equation, x)"
-      const varMatch = normalized.match(/([a-zA-Z])\b/);
-      const varname = varMatch ? varMatch[1] : 'x';
-      const cmd = `roots(${normalized})`; // roots handles polynomials nicely
-      try {
-        const res = Algebrite.run(cmd);
-        return res;
-      } catch(e){
-        // try solve
-        try {
-          const res2 = Algebrite.run(`solve(${normalized}, ${varname})`);
-          return res2;
-        } catch(e2){
-          // last resort: numeric evaluate
-          const evalRes = math.evaluate(normalized);
-          return String(evalRes);
-        }
-      }
+      const vMatch = normalized.match(/([a-zA-Z])\b/); const v = vMatch ? vMatch[1] : 'x';
+      try { return Algebrite.run(`roots(${normalized})`); } catch(e){}
+      try { return Algebrite.run(`solve(${normalized}, ${v})`); } catch(e2){}
+      try { return String(math.evaluate(normalized)); } catch(e3){}
     }
-    // fallback: try to evaluate expression directly
-    try {
-      const evalRes = math.evaluate(snippet);
-      return String(evalRes);
-    } catch(e){}
-  }catch(e){
-    return null;
-  }
+    try { return String(math.evaluate(snippet)); } catch(e){}
+  }catch(e){ return null; }
   return null;
 }
 
-/* Build search links for a query */
-function buildSearchLinks(query){
-  const encoded = encodeURIComponent(query);
-  return [
-    {title:'Google (web)', url:`https://www.google.com/search?q=${encoded}`},
-    {title:'Bing (web)', url:`https://www.bing.com/search?q=${encoded}`},
-    {title:'WolframAlpha (math)', url:`https://www.wolframalpha.com/input?i=${encoded}`},
-    {title:'Google Scholar', url:`https://scholar.google.com/scholar?q=${encoded}`},
-    {title:'Stack Exchange search', url:`https://stackexchange.com/search?q=${encoded}`},
-    {title:'DuckDuckGo', url:`https://duckduckgo.com/?q=${encoded}`}
+/* ======= Gomega Intelligence (OpenAI) ======= */
+function getKey(){
+  const stored = localStorage.getItem(KEY_STORAGE) || '';
+  return stored.replace(/,/g,'').trim(); // ignore random commas
+}
+async function gomegaAsk({text, imageBlob, model, style}){
+  const key = getKey();
+  if(!key) throw new Error('No OpenAI key saved. Click “Save” to add it.');
+  const url = 'https://api.openai.com/v1/chat/completions';
+
+  // Build messages (support vision if image)
+  const userParts = [];
+  if(text){ userParts.push({type:'text', text}); }
+  if(imageBlob){
+    const b64 = await blobToBase64(imageBlob);
+    userParts.push({type:'image_url', image_url:{url:`data:${imageBlob.type};base64,${b64}`}});
+  }
+
+  const sys = [
+    "You are Gomega Intelligence, a precise homework assistant.",
+    "Extract clear question(s), solve accurately, show steps when asked, and return JSON.",
+    "When content is from PDFs with numbered problems, return an array of {number?:string, question?:string, answer:string, steps?:string}.",
+    "Prefer concise answers unless the style requests steps."
+  ].join(' ');
+
+  const wantSteps = (style === 'full');
+  const messages = [
+    {role:'system', content:sys},
+    {role:'user', content:userParts}
   ];
+
+  const body = {
+    model: model || 'gpt-4o-mini',
+    temperature: wantSteps ? 0.5 : 0.2,
+    response_format: { type: "json_object" },
+    messages,
+    max_tokens: 1500
+  };
+
+  const res = await fetch(url, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${key}` },
+    body: JSON.stringify(body)
+  });
+  if(!res.ok){
+    const t = await res.text().catch(()=>res.statusText);
+    throw new Error('OpenAI error: '+ t);
+  }
+  const data = await res.json();
+  let content = data?.choices?.[0]?.message?.content || '{}';
+  try{ return JSON.parse(content); }catch(e){ return {answers:[{answer: content}]} }
 }
 
-/* Render links into the UI */
-function showLinksForQuery(query){
-  linksEl.innerHTML = '';
-  const ls = buildSearchLinks(query);
-  ls.forEach(l=>{
-    const a = document.createElement('a');
-    a.href = l.url;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.textContent = l.title;
-    linksEl.appendChild(a);
+function blobToBase64(blob){
+  return new Promise((resolve,reject)=>{
+    const r = new FileReader();
+    r.onload = () => resolve((r.result||'').toString().split(',').pop());
+    r.onerror = reject;
+    r.readAsDataURL(blob);
   });
 }
 
-/* ========== Main processing pipeline ========== */
+/* ===== Process pipeline ===== */
 let lastExtractedText = '';
-async function processFileWrapper(fileObj, options={smart:false,lookDeeper:false}) {
+async function processFile(file, {smart=false, forFill=false}={}){
+  setStatus('processing'); setProgress(6);
+  solutionEl.innerHTML=''; linksEl.innerHTML=''; advancedNotes.textContent=''; pdfOut.innerHTML=''; extractedEl.textContent='';
+
+  const data = await readFile(file);
+  setProgress(14);
+  let fullText = '';
+
+  if(data.kind==='image'){
+    setStatus('OCR on image'); fullText = await ocrImage(data.blob, p=>setProgress(14 + p*0.6));
+  }else if(data.kind==='pdf'){
+    setStatus('Extracting PDF text'); fullText = await extractTextFromPDF(data.blob); setProgress(45);
+  }else if(data.kind==='docx'){
+    setStatus('Extracting DOCX text'); fullText = await extractTextFromDOCX(data.buffer); setProgress(40);
+  }else if(data.kind==='text'){
+    fullText = data.text || ''; setProgress(38);
+  }
+
+  lastExtractedText = (fullText||'').trim();
+  extractedEl.textContent = lastExtractedText || '[no readable text found]';
+  const snippet = extractQuestionSnippet(lastExtractedText); setProgress(58);
+
+  // quick local math if makes sense and not forcing fill
+  if(!forFill && isMathQuestion(lastExtractedText || snippet)){
+    setStatus('local math attempt');
+    let sol = trySolveMath(snippet || lastExtractedText);
+    setProgress(72);
+    if(!sol && smart){
+      const alt = (snippet || lastExtractedText).replace(/=/g,'==');
+      try{ sol = trySolveMath(alt); }catch(e){}
+    }
+    if(sol){
+      solutionEl.innerHTML = `<pre style="white-space:pre-wrap">${escapeHtml(String(sol))}</pre>`;
+      showLinksForQuery(snippet||lastExtractedText);
+      setStatus('math answer (local)'); setProgress(100);
+      advancedNotes.textContent = 'Local solver used. You can also run Gomega Intelligence for step-by-step.';
+      return;
+    }
+  }
+
+  // Gomega Intelligence (OpenAI)
+  setStatus('asking Gomega Intelligence'); setProgress(76);
+  const model = modelSel.value;
+  const style = styleSel.value;
+  const ai = await gomegaAsk({
+    text: lastExtractedText || snippet || 'Solve:',
+    imageBlob: data.kind==='image' ? data.blob : null,
+    model, style
+  }).catch(e=>{ throw e; });
+
+  setProgress(88);
+  const answers = ai.answers || ai.items || ai.result || [];
+  if(!forFill || data.kind!=='pdf'){
+    // answers in-page
+    const out = Array.isArray(answers) ? answers : [answers];
+    const html = out.map((a,i)=> {
+      const q = a.question ? `<div style="color:#9cc5ff;margin-bottom:4px"><strong>Q${a.number||i+1}.</strong> ${escapeHtml(a.question||'')}</div>` : '';
+      const steps = a.steps && style==='full' ? `<details style="margin-top:6px"><summary>Steps</summary><pre style="white-space:pre-wrap">${escapeHtml(a.steps)}</pre></details>` : '';
+      return `<div style="padding:10px;border:1px solid rgba(255,255,255,.06);border-radius:10px;margin-bottom:10px">
+        ${q}
+        <div><strong>Answer:</strong> ${escapeHtml(a.answer || JSON.stringify(a))}</div>
+        ${steps}
+      </div>`;
+    }).join('');
+    solutionEl.innerHTML = html || `<pre>${escapeHtml(JSON.stringify(ai,null,2))}</pre>`;
+    showLinksForQuery(snippet || lastExtractedText);
+    setStatus('answers ready'); setProgress(100);
+    advancedNotes.textContent = 'Returned by Gomega Intelligence.';
+    return;
+  }
+
+  // Fill PDF mode
+  setStatus('building answered PDF'); setProgress(92);
+  const pdfBytes = await file.arrayBuffer();
+  const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes, { updateMetadata: false });
+  const form = pdfDoc.getForm ? pdfDoc.getForm() : null;
+
+  const normalizedAnswers = (Array.isArray(answers)?answers:[answers]).map((a,i)=>({
+    num: a.number || (i+1).toString(),
+    question: a.question || '',
+    answer: (typeof a.answer==='string'? a.answer : JSON.stringify(a.answer||a)),
+    steps: a.steps || ''
+  }));
+
+  let filled = false;
   try{
-    setStatus('processing');
-    setProgress(5);
-    solutionEl.innerHTML = '';
-    linksEl.innerHTML = '';
-    advancedNotes.textContent = '';
-    extractedEl.textContent = '';
-    lastExtractedText = '';
-
-    // read the file into a known kind
-    const data = await readFile(fileObj);
-    setProgress(12);
-    let fullText = '';
-
-    if(data.kind === 'image'){
-      setStatus('running OCR on image');
-      const text = await ocrImage(data.blob, p=>setProgress(12 + p*0.6));
-      fullText = text || '';
-    } else if(data.kind === 'pdf'){
-      setStatus('extracting PDF text');
-      fullText = await extractTextFromPDF(data.blob);
-      setProgress(45);
-    } else if(data.kind === 'docx'){
-      setStatus('extracting docx text');
-      fullText = await extractTextFromDOCX(data.buffer);
-      setProgress(40);
-    } else if(data.kind === 'text'){
-      fullText = data.text || '';
-      setProgress(40);
-    } else {
-      fullText = '';
+    if(form){
+      const fields = form.getFields().map(f => f.getName());
+      // naive match: if field names contain Q1, Q2, ... fill them
+      normalizedAnswers.forEach(a=>{
+        const key = (fields.find(n => n.toLowerCase().includes(('q'+a.num).toLowerCase())) || '').toString();
+        if(key){
+          try{
+            const fld = form.getTextField(key);
+            fld.setText(a.answer);
+            filled = true;
+          }catch(e){}
+        }
+      });
     }
+  }catch(e){ /* ignore */ }
 
-    // safety: trim enormous text for local processing
-    const safeText = (fullText || '').trim();
-    lastExtractedText = safeText;
-    extractedEl.textContent = safeText || '[no readable text found — try a clearer photo or upload a text/PDF/DOCX]';
-    setProgress(60);
+  if(!filled){
+    // Append an "Answer Sheet" page with nice layout
+    const page = pdfDoc.addPage();
+    const { width, height } = page.getSize();
+    const margin = 40;
+    const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+    const title = 'Gomega Intelligence — Answer Sheet';
+    page.drawText(title, { x: margin, y: height - margin - 10, size: 18, font, color: PDFLib.rgb(0.6,0.85,1) });
 
-    // extract compact question snippet
-    const snippet = extractQuestionSnippet(safeText);
-    setProgress(68);
-
-    // if it looks like math, try math solving
-    if(isMathQuestion(safeText || snippet)){
-      setStatus('attempting math solve');
-      // Solve multiple ways depending on "smart"
-      let sol = trySolveMath(snippet || safeText);
-      setProgress(85);
-      if(!sol && options.smart){
-        // more aggressive: try different forms, tidy input
-        const alt = (snippet || safeText).replace(/=/g,'=='); // trivial attempts
-        try { sol = trySolveMath(alt); } catch(e){}
+    let y = height - margin - 34;
+    normalizedAnswers.forEach(a=>{
+      const qline = (a.question ? `Q${a.num}. ${a.question}` : `Q${a.num}`);
+      y = drawWrapped(page, font, qline, margin, y, width - margin*2, 12, PDFLib.rgb(0.7,0.9,1));
+      y -= 6;
+      y = drawWrapped(page, font, `Answer: ${a.answer}`, margin+12, y, width - margin*2-12, 12, PDFLib.rgb(0.9,1,0.9));
+      if(a.steps){
+        y -= 4;
+        y = drawWrapped(page, font, `Steps: ${a.steps}`, margin+12, y, width - margin*2-12, 11.5, PDFLib.rgb(0.85,0.92,1));
       }
-      if(sol){
-        solutionEl.innerHTML = `<pre style="white-space:pre-wrap">${escapeHtml(String(sol))}</pre>`;
-        showLinksForQuery(snippet || safeText);
-        setStatus('math answer provided (local)');
-        setProgress(100);
-        advancedNotes.textContent = 'Used local symbolic solver (Algebrite) + heuristics. If this looks off, click "Look Deeper" or "Solve Smarter".';
-        return;
+      y -= 10;
+      if(y < 80){ // new page if running out of space
+        page.drawText('— continued on next page —', { x: margin, y: 30, size: 10, font, color: PDFLib.rgb(.7,.7,.8)});
+        const np = pdfDoc.addPage(); y = np.getSize().height - margin;
+        np.drawText(title+' (cont.)', { x: margin, y: y, size: 14, font, color: PDFLib.rgb(0.6,0.85,1) });
+        y -= 22;
+        // switch reference
+        page = np;
       }
-    }
+    });
+  }
 
-    // Not obviously math or math failed -> prepare search and a naive answer attempt
-    setStatus('building search & answer attempts');
-    setProgress(75);
+  const outBytes = await pdfDoc.save();
+  const blob = new Blob([outBytes], {type:'application/pdf'});
+  const url = URL.createObjectURL(blob);
+  pdfOut.innerHTML = `<a class="pill" href="${url}" download="answers.pdf">Download answered PDF</a>`;
+  setStatus(filled ? 'PDF form filled' : 'Answer Sheet added'); setProgress(100);
+  advancedNotes.textContent = filled ? 'Filled matching form fields.' : 'Original PDF had no fillable fields; added Answer Sheet at the end.';
 
-    // Naive answer attempt: try to summarize first sentence lines and detect MCQ
-    const mcMatch = safeText.match(/(?:A\)|A\.|A:)\s*(.+)\s*(?:B\)|B\.|B:)/i);
-    let naive = '';
-    if(mcMatch){
-      naive = 'Detected multiple-choice style question. I can open targeted searches for each choice.';
-    } else {
-      // produce a tiny heuristic-based "attempt" (we are client-only; do not claim external knowledge)
-      const lines = safeText.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-      naive = lines.slice(0,6).join(' ').slice(0,800) || 'No clear question text found to answer locally.';
-      naive = 'Question snippet: ' + naive;
-    }
-
-    solutionEl.innerHTML = `<pre style="white-space:pre-wrap">${escapeHtml(naive)}</pre>`;
-    showLinksForQuery(snippet || safeText || 'homework question');
-
-    setStatus('links provided (click to open sources)');
-    setProgress(100);
-    advancedNotes.textContent = options.lookDeeper ? 'Look Deeper used: added supplementary search flavors.' : '';
-  } catch(err){
-    setStatus('error');
-    setProgress(0);
-    solutionEl.innerHTML = `<div style="color:#ff9b9b">Error: ${escapeHtml(err.message || String(err))}</div>`;
+  function drawWrapped(page, font, text, x, y, maxWidth, size, color){
+    const words = String(text).split(/\s+/);
+    let line = '';
+    const lineHeight = size + 4;
+    words.forEach((w, idx)=>{
+      const test = (line ? line + ' ' : '') + w;
+      const width = font.widthOfTextAtSize(test, size);
+      if(width > maxWidth && line){
+        page.drawText(line, {x, y, size, font, color}); y -= lineHeight; line = w;
+      }else{
+        line = test;
+      }
+      if(idx === words.length-1){ page.drawText(line, {x, y, size, font, color}); y -= lineHeight; }
+    });
+    return y;
   }
 }
 
-/* ========== Button handlers & UX ========== */
+/* ===== Buttons, drag/drop, paste ===== */
 btnProcess.addEventListener('click', async ()=>{
-  const f = filein.files[0];
-  if(!f){ alert('Please choose or take a photo/file first.'); return; }
+  const f = filein.files?.[0];
+  if(!f) return alert('Choose a file first.');
   try{
-    await processFileWrapper(f, {smart:false});
-  }catch(e){ alert(e.message || e); }
+    const fill = (modeSel.value === 'fillpdf');
+    await processFile(f, {smart:false, forFill:fill});
+  }catch(e){ setStatus('error'); setProgress(0); solutionEl.innerHTML = `<div style="color:#ff9b9b">Error: ${escapeHtml(e.message||e)}</div>`; }
+});
+
+btnFill.addEventListener('click', async ()=>{
+  const f = filein.files?.[0];
+  if(!f) return alert('Upload a PDF to fill.');
+  if(!/\.pdf$/i.test(f.name||'') && f.type!=='application/pdf') return alert('Please select a PDF file.');
+  try{ await processFile(f, {smart:true, forFill:true}); }catch(e){
+    setStatus('error'); setProgress(0);
+    pdfOut.innerHTML = `<div style="color:#ff9b9b">Error: ${escapeHtml(e.message||e)}</div>`;
+  }
 });
 
 btnClear.addEventListener('click', ()=>{
-  filein.value = '';
-  extractedEl.textContent = '';
-  solutionEl.innerHTML = '';
-  linksEl.innerHTML = '';
-  setStatus('idle');
-  setProgress(0);
-  advancedNotes.textContent = '';
+  filein.value=''; extractedEl.textContent=''; solutionEl.innerHTML=''; linksEl.innerHTML='';
+  pdfOut.innerHTML=''; setStatus('idle'); setProgress(0); advancedNotes.textContent='';
 });
 
 btnUseCamera.addEventListener('click', ()=>{
-  // trigger file input with camera constraints (mobile browsers will open camera)
-  const camera = document.createElement('input');
-  camera.type = 'file';
-  camera.accept = 'image/*';
-  camera.capture = 'environment';
-  camera.onchange = ()=> {
-    if(camera.files && camera.files[0]){
-      filein.files = camera.files;
-      // auto-process for convenience
-      btnProcess.click();
-    }
-  };
-  camera.click();
+  const input = document.createElement('input');
+  input.type='file'; input.accept='image/*'; input.capture='environment';
+  input.onchange=()=>{ if(input.files?.[0]){ filein.files = input.files; } };
+  input.click();
 });
 
-/* Drag & drop */
-dropzone.addEventListener('dragover', (e)=>{ e.preventDefault(); dropzone.style.borderColor = '#1f7a60'; });
-dropzone.addEventListener('dragleave', ()=>{ dropzone.style.borderColor = ''; });
-dropzone.addEventListener('drop', (e)=>{ e.preventDefault(); dropzone.style.borderColor = ''; if(e.dataTransfer.files && e.dataTransfer.files[0]){ filein.files = e.dataTransfer.files; } });
-
-/* Solve Smarter (aggressive local solving) */
-btnSolveSmarter.addEventListener('click', async ()=>{
-  const counts = loadCounts();
-  if((counts.solveSmarter||0) >= MAX_USES_PER_DAY){
-    alert(`"Solve Smarter" limit reached for today (${MAX_USES_PER_DAY}). It resets daily.`);
-    return;
-  }
-  const f = filein.files[0];
-  if(!f){ alert('Please upload or take a photo first.'); return; }
-  counts.solveSmarter = (counts.solveSmarter||0) + 1;
-  saveCounts(counts);
-  updatePill();
-  await processFileWrapper(f, {smart:true});
+dropzone.addEventListener('dragover', e=>{ e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', e=>{
+  e.preventDefault(); dropzone.classList.remove('drag');
+  if(e.dataTransfer.files && e.dataTransfer.files[0]) filein.files = e.dataTransfer.files;
 });
 
-/* Look Deeper (opens more sources & extended heuristics) */
-btnLookDeeper.addEventListener('click', async ()=>{
-  const counts = loadCounts();
-  if((counts.lookDeeper||0) >= MAX_USES_PER_DAY){
-    alert(`"Look Deeper" limit reached for today (${MAX_USES_PER_DAY}). It resets daily.`);
-    return;
-  }
-  const f = filein.files[0];
-  if(!f){ alert('Please upload or take a photo first.'); return; }
-  counts.lookDeeper = (counts.lookDeeper||0) + 1;
-  saveCounts(counts);
-  updatePill();
-
-  // Process normally but add more link flavors (chegg, coursehero, youtube)
-  await processFileWrapper(f, {smart:false,lookDeeper:true});
-  // append extra links (some paywalled but sometimes helpful)
-  const q = encodeURIComponent(extractQuestionSnippet(lastExtractedText) || lastExtractedText || 'homework question');
-  const extra = [
-    {title:'YouTube (video explanations)', url:`https://www.youtube.com/results?search_query=${q}`},
-    {title:'CourseHero', url:`https://www.coursehero.com/search?q=${q}`},
-    {title:'Chegg', url:`https://www.chegg.com/search/${q}`},
-    {title:'Khan Academy (search)', url:`https://www.google.com/search?q=${q}+khan+academy`},
-  ];
-  extra.forEach(l=>{
-    const a = document.createElement('a'); a.href = l.url; a.target='_blank'; a.rel='noopener noreferrer'; a.textContent = l.title;
-    linksEl.appendChild(a);
-  });
-  advancedNotes.textContent = 'Look Deeper appended additional sites like YouTube, CourseHero, and Chegg (paywalled content may require login).';
-});
-
-/* Feedback buttons */
-btnRight.addEventListener('click', ()=>{
-  const counts = loadCounts();
-  counts.feedbacks = counts.feedbacks || [];
-  counts.feedbacks.push({time: new Date().toISOString(), verdict:'right', snippet: lastExtractedText.slice(0,400)});
-  saveCounts(counts);
-  feedbackNote.textContent = 'Thanks — marked as correct. Your feedback is stored locally in your browser (privacy-friendly).';
-});
-btnWrong.addEventListener('click', ()=>{
-  const counts = loadCounts();
-  counts.feedbacks = counts.feedbacks || [];
-  counts.feedbacks.push({time: new Date().toISOString(), verdict:'wrong', snippet: lastExtractedText.slice(0,400)});
-  saveCounts(counts);
-  feedbackNote.textContent = 'Thanks — marked as incorrect. Consider clicking "Look Deeper" or "Solve Smarter".';
-});
-
-/* small helper */
-function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[c]); }
-
-/* Initialize UI */
-setProgress(0);
-setStatus('idle');
-updatePill();
-
-/* Optional: auto process pasted images */
-window.addEventListener('paste', (e)=>{
-  const items = (e.clipboardData || window.clipboardData).items;
-  if(!items) return;
+window.addEventListener('paste', e=>{
+  const items = (e.clipboardData||window.clipboardData).items || [];
   for(const it of items){
     if(it.type && it.type.indexOf('image') !== -1){
       const file = it.getAsFile();
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(file);
-      filein.files = dataTransfer.files;
-      btnProcess.click();
-      break;
+      const dt = new DataTransfer(); dt.items.add(file); filein.files = dt.files;
+      toast('Image pasted. Click Process & Solve.'); break;
     }
   }
 });
 
-/* End of script */
+/* Assist buttons */
+const btnSolveSmarter = document.getElementById('btnSolveSmarter');
+const btnLookDeeper = document.getElementById('btnLookDeeper');
+btnSolveSmarter.addEventListener('click', async ()=>{
+  const counts = loadCounts();
+  if((counts.solveSmarter||0) >= MAX_USES_PER_DAY) return alert(`"Solve Smarter" limit reached for today (${MAX_USES_PER_DAY}).`);
+  const f = filein.files?.[0]; if(!f) return alert('Upload a file first.');
+  counts.solveSmarter = (counts.solveSmarter||0)+1; saveCounts(counts); updatePill();
+  await processFile(f, {smart:true, forFill:false});
+});
+btnLookDeeper.addEventListener('click', async ()=>{
+  const counts = loadCounts();
+  if((counts.lookDeeper||0) >= MAX_USES_PER_DAY) return alert(`"Look Deeper" limit reached for today (${MAX_USES_PER_DAY}).`);
+  const f = filein.files?.[0]; if(!f) return alert('Upload a file first.');
+  counts.lookDeeper = (counts.lookDeeper||0)+1; saveCounts(counts); updatePill();
+  await processFile(f, {smart:false, forFill:false});
+  const q = encodeURIComponent(extractQuestionSnippet(lastExtractedText) || lastExtractedText || 'homework question');
+  [
+    {title:'CourseHero', url:`https://www.coursehero.com/search?q=${q}`},
+    {title:'Chegg', url:`https://www.chegg.com/search/${q}`},
+    {title:'Khan Academy', url:`https://www.google.com/search?q=${q}+khan+academy`}
+  ].forEach(l=>{
+    const a = document.createElement('a'); a.href=l.url; a.target='_blank'; a.rel='noopener noreferrer'; a.textContent=l.title; linksEl.appendChild(a);
+  });
+});
+
+/* Feedback */
+const btnRight = document.getElementById('btnRight');
+const btnWrong = document.getElementById('btnWrong');
+const feedbackNote = document.getElementById('feedbackNote');
+btnRight.addEventListener('click', ()=>{
+  const c = loadCounts(); c.feedbacks.push({time:new Date().toISOString(), verdict:'right', snippet: lastExtractedText.slice(0,400)});
+  saveCounts(c); feedbackNote.textContent='Thanks — saved locally.';
+});
+btnWrong.addEventListener('click', ()=>{
+  const c = loadCounts(); c.feedbacks.push({time:new Date().toISOString(), verdict:'wrong', snippet: lastExtractedText.slice(0,400)});
+  saveCounts(c); feedbackNote.textContent='Thanks — saved locally.';
+});
+
+/* Init */
+updatePill(); setProgress(0); setStatus('idle');
 </script>
+
+<!-- Toast container -->
+<div class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 </body>
 </html>
