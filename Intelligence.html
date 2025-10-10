@@ -5,7 +5,6 @@
 <title>Gomega Intelligence — Overview & Access</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Styles -->
 <style>
   :root{
     --bg:#0f172a; --panel:#111827; --ink:#e5e7eb; --muted:#94a3b8;
@@ -74,6 +73,7 @@
             <span class="badge" id="status">Initializing…</span>
             <span class="badge" id="hint">Show your barcode to the camera.</span>
             <span class="badge info" id="reading" hidden>Reading barcode…</span>
+            <span class="badge" id="idsState" hidden>IDs: 0</span>
           </div>
         </div>
       </div>
@@ -105,8 +105,8 @@
             routes tasks, and composes helpful results.
           </p>
           <p>
-            Designed from the ground up for reliability and extensibility, Gomega Intelligence combines local signals,
-            cloud models, and policy-driven tools to deliver answers with traceable steps and transparent controls.
+            Designed for reliability and extensibility, Gomega Intelligence blends local signals, cloud models, and
+            policy-driven tools to deliver answers with traceable steps and transparent controls.
           </p>
         </div>
 
@@ -115,7 +115,7 @@
           <h2>Where It’s Used Right Now</h2>
           <ul>
             <li><strong>Gomega Browser</strong> — launch experience & guarded entry.</li>
-            <li><strong>Homework Helper (BETA)</strong> — structured explanations, hints, and guided solving.</li>
+            <li><strong>Homework Helper (BETA)</strong> — structured explanations and guided solving.</li>
             <li><strong>Gomega AI</strong> — conversational interface with smart actions.</li>
           </ul>
           <p class="callout" style="margin-top:8px">
@@ -128,14 +128,14 @@
           <div class="kicker">Access</div>
           <h2>Barcode-First Security</h2>
           <p>
-            This page uses the same camera-based barcode scanning approach as your verification page. Once a valid code is
-            detected and verified, restricted content is revealed locally. The scanner never exposes page content until
-            unlock is confirmed.
+            This page uses the same camera-based scanning approach as your verification page. After a valid code is
+            detected and matched in <code>browser/ids.csv</code>, restricted content is revealed locally. The scanner
+            never exposes page content until unlock is confirmed.
           </p>
           <ul>
-            <li>On-device camera decode.</li>
-            <li>Live polygon highlight while detecting.</li>
-            <li>“Reading barcode…” state for user feedback.</li>
+            <li>On-device camera decode with TRY_HARDER.</li>
+            <li>Live polygon highlight and “Reading barcode…” feedback.</li>
+            <li>Dismiss closes the camera and enters the experience.</li>
           </ul>
         </div>
 
@@ -209,39 +209,51 @@
       <h3 id="welcomeTitle">Welcome</h3>
       <p id="welcomeMsg">Access granted.</p>
       <div class="row" style="margin-top:10px">
-        <button class="btn" id="proceedBtn">Enter</button>
+        <button class="btn" id="dismissBtn">Dismiss</button>
         <button class="btn" id="relockBtn">Lock & Re-Scan</button>
       </div>
     </div>
   </div>
 
-<!-- Scanner Logic -->
+<script src="https://unpkg.com/@zxing/library@0.20.0"></script>
 <script>
 (function(){
+  const IDS_URL = 'browser/ids.csv'; // same-origin CSV: number,name
+
   const qs = new URLSearchParams(location.search);
-  const session = qs.get('session') || ''; // optional, used if present
+  const session = qs.get('session') || '';
 
   const statusEl = document.getElementById('status');
   const hintEl   = document.getElementById('hint');
   const descEl   = document.getElementById('desc');
   const readingEl= document.getElementById('reading');
+  const idsState = document.getElementById('idsState');
   const video    = document.getElementById('preview');
   const overlay  = document.getElementById('overlay');
   const ctx      = overlay.getContext('2d');
   const flipBtn  = document.getElementById('flip');
   const lockBtn  = document.getElementById('lock');
+  const stage    = document.getElementById('stage');
   const content  = document.getElementById('content');
 
   const welcomeOverlay = document.getElementById('welcomeOverlay');
   const welcomeTitle   = document.getElementById('welcomeTitle');
   const welcomeMsg     = document.getElementById('welcomeMsg');
-  const proceedBtn     = document.getElementById('proceedBtn');
+  const dismissBtn     = document.getElementById('dismissBtn');
   const relockBtn      = document.getElementById('relockBtn');
 
+  // Scanner robustness
   let currentDeviceId = null;
-  let lastDraw = 0;
-  let unlocked = false;
   let controlsRef = null;
+  let mediaStream = null;
+  let unlocked = false;
+  let lastDraw = 0;
+  let lastText = '';
+  let repeatCount = 0;
+  const CONFIRM_HITS = 3; // require 3 identical reads before accepting
+
+  // ID map loaded from CSV
+  const idMap = new Map();
 
   function setStatus(text, cls){
     statusEl.textContent = text;
@@ -270,35 +282,55 @@
 
   async function startCamera(preferBack=true){
     setStatus('Requesting camera…','info');
-    let stream;
+    const constraints = {
+      audio: false,
+      video: {
+        facingMode: preferBack ? { ideal:'environment' } : 'user',
+        width: { ideal: 1920 },
+        height:{ ideal: 1080 },
+        frameRate: { ideal: 30, min: 10 }
+      }
+    };
     try{
-      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode: preferBack ? {ideal:'environment'} : 'user'}});
+      mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
     }catch(e){
-      stream = await navigator.mediaDevices.getUserMedia({video:true});
+      mediaStream = await navigator.mediaDevices.getUserMedia({ video:true });
     }
-    video.srcObject = stream;
+    video.srcObject = mediaStream;
     await video.play();
     await enumerate();
+    await tuneTrackForFocus(mediaStream);
     fitCanvas();
     setStatus('Reading…','info');
   }
 
-  flipBtn.onclick = async () => {
+  async function tuneTrackForFocus(stream){
     try{
-      const stream = video.srcObject;
-      if(stream){ stream.getTracks().forEach(t=>t.stop()); }
+      const track = stream.getVideoTracks()[0];
+      const caps = track.getCapabilities ? track.getCapabilities() : {};
+      if(caps.focusMode && caps.focusMode.includes('continuous')){
+        await track.applyConstraints({ advanced:[{ focusMode:'continuous' }] });
+      }
+      if(caps.width && caps.height){
+        await track.applyConstraints({
+          width: { ideal: Math.min(1920, caps.width.max || 1920) },
+          height:{ ideal: Math.min(1080, caps.height.max || 1080) }
+        });
+      }
     }catch(e){}
+  }
+
+  flipBtn.onclick = async () => {
+    try{ stopCamera(); }catch(e){}
     const list = await navigator.mediaDevices.enumerateDevices();
     const cams = list.filter(d => d.kind==='videoinput');
     if(!cams.length){ return; }
     const idx = currentDeviceId ? Math.max(0, cams.findIndex(d=>d.deviceId===currentDeviceId)) : -1;
     const next = cams[(idx+1) % cams.length];
     currentDeviceId = next.deviceId;
-    const stream = await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact: currentDeviceId}}});
-    video.srcObject = stream; await video.play(); fitCanvas();
+    await startCamera(true);
+    await startDecoding();
   };
-
-  const reader = new ZXing.BrowserMultiFormatReader();
 
   function drawPoly(points, color, width=4){
     if(!points || !points.length) return;
@@ -339,36 +371,106 @@
     ], '#22c55e', 5);
   }
 
-  async function verifyUser(code){
-    // Tries intelligence_verify.php first; falls back to scan_submit.php?json=1
-    const body = new URLSearchParams({ code });
-    if(session) body.set('session', session);
-
-    // Candidate endpoints
-    const attempts = [
-      { url: 'intelligence_verify.php', method: 'POST', body },
-      { url: `scan_submit.php?json=1&code=${encodeURIComponent(code)}${session?`&session=${encodeURIComponent(session)}`:''}`, method: 'GET' }
-    ];
-    for(const a of attempts){
-      try{
-        const res = await fetch(a.url, a.method==='POST' ? { method:'POST', body, cache:'no-store', credentials:'include', keepalive:true } : { method:'GET', cache:'no-store', credentials:'include' });
-        if(res.ok){
-          const data = await res.json().catch(()=>null);
-          if(data && typeof data.ok !== 'undefined'){
-            return { ok: !!data.ok, name: data.name || null };
-          }
-        }
-      }catch(e){}
+  function stopCamera(){
+    if(controlsRef && controlsRef.stop) { try{ controlsRef.stop(); }catch(e){} }
+    if(controlsRef && controlsRef.reset){ try{ controlsRef.reset(); }catch(e){} }
+    controlsRef = null;
+    if(mediaStream){
+      try{ mediaStream.getTracks().forEach(t=>t.stop()); }catch(e){}
     }
-    // Couldn’t verify via server
-    return { ok: true, name: null }; // allow local unlock but mark as unverified-name
+    mediaStream = null;
+    video.srcObject = null;
   }
 
-  function showWelcome(name, verified){
+  function reLock(){
+    unlocked = false;
+    setStatus('Locked','warn');
+    hintEl.textContent = 'Show your barcode to the camera.';
+    content.classList.add('hidden');
+    lockBtn.hidden = true;
+    welcomeOverlay.classList.remove('show');
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+    readingEl.hidden = true;
+    (async()=>{ await startCamera(true); await startDecoding(); })();
+  }
+
+  lockBtn.onclick = reLock;
+  relockBtn.onclick = reLock;
+
+  // Dismiss = close camera preview and proceed to info
+  dismissBtn.onclick = () => {
+    stopCamera();
+    stage.classList.add('hidden');
+    welcomeOverlay.classList.remove('show');
+  };
+
+  // ---- CSV LOAD ----
+  async function loadIds(){
+    try{
+      const res = await fetch(IDS_URL, { cache:'no-store' });
+      if(!res.ok) throw new Error('Failed to fetch ids.csv');
+      const text = await res.text();
+      idMap.clear();
+      text.split(/\r?\n/).forEach(line => {
+        const raw = line.trim();
+        if(!raw) return;
+        // Split by first comma: number,name (names may contain commas later if you want)
+        const idx = raw.indexOf(',');
+        let code, name;
+        if(idx >= 0){
+          code = raw.slice(0, idx).trim();
+          name = raw.slice(idx+1).trim();
+        }else{
+          code = raw.trim();
+          name = '';
+        }
+        if(/^\d{6,20}$/.test(code)){
+          idMap.set(code, name || '');
+        }
+      });
+      idsState.hidden = false;
+      idsState.textContent = `IDs: ${idMap.size}`;
+    }catch(e){
+      idsState.hidden = false;
+      idsState.textContent = 'IDs: load error';
+    }
+  }
+
+  // ---- ZXing setup ----
+  const reader = new ZXing.BrowserMultiFormatReader();
+  try{
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    // Limit to formats commonly used for numeric barcodes + QR (QR often used to encode numbers too)
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+      ZXing.BarcodeFormat.QR_CODE,
+      ZXing.BarcodeFormat.CODE_128,
+      ZXing.BarcodeFormat.CODE_39,
+      ZXing.BarcodeFormat.CODE_93,
+      ZXing.BarcodeFormat.EAN_13,
+      ZXing.BarcodeFormat.EAN_8,
+      ZXing.BarcodeFormat.UPC_A,
+      ZXing.BarcodeFormat.ITF,
+      ZXing.BarcodeFormat.CODABAR
+    ]);
+    reader.setHints(hints);
+  }catch(e){}
+
+  function stableHit(txt){
+    if(txt === lastText){ repeatCount++; } else { lastText = txt; repeatCount = 1; }
+    return repeatCount >= CONFIRM_HITS;
+  }
+
+  function verifyLocally(numericCode){
+    // Only codes present in ids.csv are accepted
+    if(!/^\d{6,20}$/.test(numericCode)) return { ok:false, name:null };
+    if(!idMap.has(numericCode)) return { ok:false, name:null };
+    return { ok:true, name:idMap.get(numericCode) || null };
+  }
+
+  function showWelcome(name){
     welcomeTitle.textContent = name ? `Welcome, ${name}` : 'Welcome';
-    welcomeMsg.textContent = verified
-      ? 'Access granted to Gomega Intelligence. Your identity has been verified.'
-      : 'Access granted. Identity verified by code; no display name returned.';
+    welcomeMsg.textContent = 'Access granted to Gomega Intelligence.';
     welcomeOverlay.classList.add('show');
   }
 
@@ -381,79 +483,55 @@
     readingEl.hidden = true;
   }
 
-  function reLock(){
-    unlocked = false;
-    setStatus('Locked','warn');
-    hintEl.textContent = 'Show your barcode to the camera.';
-    content.classList.add('hidden');
-    lockBtn.hidden = true;
-    welcomeOverlay.classList.remove('show');
-    ctx.clearRect(0,0,overlay.width,overlay.height);
-    readingEl.hidden = true;
-
-    // Resume decoding
-    if(controlsRef && controlsRef.reset) {
-      controlsRef.reset();
-    }
-    // Re-attach decoding pipeline
-    startDecoding();
-  }
-
-  lockBtn.onclick = reLock;
-  relockBtn.onclick = reLock;
-  proceedBtn.onclick = () => welcomeOverlay.classList.remove('show');
-
   async function startDecoding(){
     try{
       const inputs = await reader.listVideoInputDevices();
       let deviceId = (inputs && inputs.length) ? inputs[0].deviceId : undefined;
 
-      controlsRef = reader.decodeFromVideoDevice(deviceId, 'preview', async (result, err, controls) => {
+      controlsRef = reader.decodeFromConstraints({
+        audio: false,
+        video: {
+          deviceId: deviceId ? { exact: deviceId } : undefined,
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1920 }, height: { ideal: 1080 },
+          frameRate: { ideal: 30, min: 10 }
+        }
+      }, 'preview', (result, err, controls) => {
         if(unlocked) return;
 
         if(result && result.getText){
-          // Live detection path: highlight + "Reading barcode…"
           const txt = (result.getText() || '').trim();
           const pts = (result.resultPoints || []).map(p => ({x:p.getX(), y:p.getY()}));
-          drawPoly(pts, '#60a5fa');      // blue while “reading”
+
+          // numeric-only policy
+          const isNumeric = /^\d{6,20}$/.test(txt);
+
+          // blue while reading anything decodable; only proceed if numeric
+          drawPoly(pts, isNumeric ? '#60a5fa' : '#ef4444');
           readingEl.hidden = false;
           readingEl.textContent = 'Reading barcode…';
 
-          // Validate numeric code like your scan page (6–20 digits)
-          if(/^\d{6,20}$/.test(txt)){
-            // Turn green while we verify
-            drawPoly(pts, '#22c55e');
-            setStatus('Verifying…','info');
-
-            // Verify with server
-            let verifiedName = null, verified = false;
-            try{
-              const res = await verifyUser(txt);
-              verified = !!res.ok;
-              verifiedName = res.name || null;
-            }catch(e){}
-
-            if(verified){
+          if(isNumeric && stableHit(txt)){
+            const { ok, name } = verifyLocally(txt);
+            if(ok){
               unlocked = true;
-              controls && controls.stop(); // stop scanning once unlocked
+              controls && controls.stop();
+              drawPoly(pts, '#22c55e');
+              setStatus('Verified','ok');
               unlockUI();
-              showWelcome(verifiedName, true);
+              showWelcome(name);
             }else{
               setStatus('Code not recognized','warn');
-              drawPoly(pts, '#ef4444'); // red for invalid
+              drawPoly(pts, '#ef4444');
               readingEl.hidden = true;
             }
-          }else{
-            // Invalid: red outline
-            setStatus('Invalid code detected','warn');
-            drawPoly(pts, '#ef4444');
-            readingEl.hidden = true;
+          }else if(!isNumeric){
+            setStatus('Invalid code format','warn');
           }
         }else if(err && !(err instanceof ZXing.NotFoundException)){
           setStatus('Camera decode error','warn');
           readingEl.hidden = true;
         }else if(!unlocked){
-          // No result this frame: show faint guide
           faintGuide();
         }
       });
@@ -466,8 +544,9 @@
 
   (async () => {
     descEl.textContent = 'Gomega Intelligence is loading your camera…';
-    await startCamera(true);
-    await startDecoding();
+    await loadIds();            // load browser/ids.csv first
+    await startCamera(true);    // then open camera
+    await startDecoding();      // and start decoding
   })();
 })();
 </script>
