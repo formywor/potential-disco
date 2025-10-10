@@ -21,7 +21,6 @@
   .btn{margin-top:10px;border:1px solid rgba(148,163,184,.35);background:#0b1220;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer}
   .btn:active{transform:scale(.99)}
 </style>
-<!-- ZXing for robust 1D/2D barcode scanning -->
 <script src="https://unpkg.com/@zxing/library@0.20.0"></script>
 </head>
 <body>
@@ -65,7 +64,7 @@
   let currentDeviceId = null;
   let devices = [];
   let submitted = false;
-  let drawing = false;
+  let lastDraw = 0;
 
   function setStatus(text, ok){
     statusEl.textContent = text;
@@ -75,13 +74,13 @@
   }
 
   function fitCanvas(){
-    const rect = video.getBoundingClientRect();
-    overlay.width = rect.width * devicePixelRatio;
-    overlay.height= rect.height* devicePixelRatio;
-    overlay.style.width = rect.width + 'px';
-    overlay.style.height= rect.height+ 'px';
+    const r = video.getBoundingClientRect();
+    overlay.width  = r.width * devicePixelRatio;
+    overlay.height = r.height* devicePixelRatio;
+    overlay.style.width  = r.width + 'px';
+    overlay.style.height = r.height+ 'px';
   }
-  window.addEventListener('resize', fitCanvas);
+  addEventListener('resize', fitCanvas);
 
   async function enumerate(){
     try{
@@ -93,53 +92,41 @@
 
   async function startCamera(preferBack=true){
     setStatus('Requesting camera…');
-    let constraints = { video: { facingMode: preferBack ? {ideal:'environment'} : 'user' } };
     let stream;
     try{
-      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode: preferBack ? {ideal:'environment'} : 'user'}});
     }catch(e){
-      // fallback: try any camera
       stream = await navigator.mediaDevices.getUserMedia({video:true});
     }
     video.srcObject = stream;
     await video.play();
     await enumerate();
-    // pick a concrete deviceId if possible (better perf for ZXing)
-    const tracks = stream.getVideoTracks();
-    if(tracks && tracks[0]){
-      currentDeviceId = tracks[0].getCapabilities && tracks[0].getCapabilities().deviceId
-        ? tracks[0].getCapabilities().deviceId : (tracks[0].getSettings ? tracks[0].getSettings().deviceId : null);
-    }
     fitCanvas();
     setStatus('Reading…');
   }
 
-  flipBtn.addEventListener('click', async () => {
+  flipBtn.onclick = async () => {
     try{
       const stream = video.srcObject;
       if(stream){ stream.getTracks().forEach(t=>t.stop()); }
     }catch(e){}
-    // rotate to next device
-    if(devices.length>0){
-      const idx = Math.max(0, devices.findIndex(d=>d.deviceId===currentDeviceId));
-      const next = devices[(idx+1)%devices.length];
-      currentDeviceId = next.deviceId;
-      const stream = await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact: currentDeviceId}}});
-      video.srcObject = stream; await video.play(); fitCanvas();
-    }else{
-      await startCamera(false);
-    }
-  });
+    const list = await navigator.mediaDevices.enumerateDevices();
+    const cams = list.filter(d => d.kind==='videoinput');
+    if(!cams.length){ return; }
+    const idx = currentDeviceId ? Math.max(0, cams.findIndex(d=>d.deviceId===currentDeviceId)) : -1;
+    const next = cams[(idx+1) % cams.length];
+    currentDeviceId = next.deviceId;
+    const stream = await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact: currentDeviceId}}});
+    video.srcObject = stream; await video.play(); fitCanvas();
+  };
 
-  // ZXing setup
-  const codeReader = new ZXing.BrowserMultiFormatReader();
-  let lastDrawTime = 0;
+  const reader = new ZXing.BrowserMultiFormatReader();
 
-  function drawBox(points, color){
-    if(!points || points.length===0) return;
+  function drawBox(pts, color){
+    if(!pts || !pts.length) return;
     const now = performance.now();
-    if(now - lastDrawTime < 30) return; // throttle
-    lastDrawTime = now;
+    if(now - lastDraw < 40) return;
+    lastDraw = now;
     const r = video.getBoundingClientRect();
     const sx = overlay.width / r.width;
     const sy = overlay.height/ r.height;
@@ -148,68 +135,59 @@
     ctx.lineWidth = 4;
     ctx.strokeStyle = color || '#22c55e';
     ctx.beginPath();
-    ctx.moveTo(points[0].x*sx, points[0].y*sy);
-    for (let i=1;i<points.length;i++)
-      ctx.lineTo(points[i].x*sx, points[i].y*sy);
+    ctx.moveTo(pts[0].x*sx, pts[0].y*sy);
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x*sx, pts[i].y*sy);
     ctx.closePath();
     ctx.stroke();
   }
 
-  async function submitCode(code){
+  async function pushCode(code){
     if(submitted) return;
     submitted = true;
     setStatus('Unlocking…', true);
     hintEl.textContent = 'Sending scan to launcher…';
-    // Try POST first, then GET fallback
+
+    // POST first, GET fallback
     try{
       const body = new URLSearchParams({ session, code });
-      await fetch('scan_submit.php', { method:'POST', body, credentials:'include', cache:'no-store', keepalive:true });
+      await fetch('scan_submit.php', {method:'POST', body, cache:'no-store', credentials:'include', keepalive:true});
     }catch(e){
       try{
         await fetch(`scan_submit.php?session=${encodeURIComponent(session)}&code=${encodeURIComponent(code)}&t=${Date.now()}`, {cache:'no-store', credentials:'include'});
       }catch(e2){}
     }
-    // Visual confirmation
+
     ctx.clearRect(0,0,overlay.width,overlay.height);
     drawBox([{x:20,y:20},{x:overlay.width-20,y:20},{x:overlay.width-20,y:overlay.height-20},{x:20,y:overlay.height-20}], '#22c55e');
-    setStatus('Unlocked — You can return to Gomega Launcher.', true);
-    descEl.textContent = 'Scan accepted. If the browser didn’t open automatically, it will in a moment.';
+    setStatus('Unlocked — return to Gomega Launcher', true);
+    descEl.textContent = 'Scan accepted.';
   }
 
   async function scanLoop(){
     try{
       const devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
-      // prefer currently open track device if known, else prefer back camera label
-      let deviceId = currentDeviceId;
-      if(!deviceId && devices.length){
-        const back = devices.find(d => /back|rear|environment/i.test(d.label));
-        deviceId = (back || devices[0]).deviceId;
-      }
-      await codeReader.decodeFromVideoDevice(deviceId, 'preview', (result, err, controls) => {
+      let deviceId = devices && devices.length ? devices[0].deviceId : undefined;
+      reader.decodeFromVideoDevice(deviceId, 'preview', (result, err, controls) => {
         if(result && result.getText){
           const txt = result.getText().trim();
-          // draw green box
           const pts = (result.resultPoints || []).map(p => ({x:p.getX(), y:p.getY()}));
           drawBox(pts, '#22c55e');
           if(/^\d{6,20}$/.test(txt)){
-            submitCode(txt);
+            pushCode(txt);
             controls && controls.stop();
           }else{
             setStatus('Invalid code detected', false);
           }
         }else if(err && !(err instanceof ZXing.NotFoundException)){
-          // decoding error (not just "not found")
           setStatus('Camera decode error', false);
-        }else{
-          // not found in this frame: show faint guide
-          if(!submitted){
-            ctx.clearRect(0,0,overlay.width,overlay.height);
-            ctx.strokeStyle = "rgba(255,255,255,.25)";
-            ctx.lineWidth = 2;
-            const w = overlay.width * .6, h = overlay.height * .3;
-            const x = (overlay.width - w)/2, y = (overlay.height - h)/2;
-            ctx.strokeRect(x,y,w,h);
-          }
+        }else if(!submitted){
+          // show a faint guide box
+          ctx.clearRect(0,0,overlay.width,overlay.height);
+          ctx.strokeStyle = "rgba(255,255,255,.25)";
+          ctx.lineWidth = 2;
+          const w = overlay.width*.6, h = overlay.height*.3;
+          const x = (overlay.width-w)/2, y = (overlay.height-h)/2;
+          ctx.strokeRect(x,y,w,h);
         }
       });
     }catch(e){
@@ -218,7 +196,6 @@
     }
   }
 
-  // Boot
   (async () => {
     descEl.textContent = 'Gomega Intelligence is loading your camera…';
     await startCamera(true);
