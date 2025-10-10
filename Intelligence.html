@@ -216,7 +216,7 @@
     </div><!-- /content -->
   </div>
 
-<!-- Scanner Logic (same approach as scan.html, adapted to unlock local content) -->
+<!-- Scanner Logic (same approach as scan.html, with fixed device listing) -->
 <script>
 (function(){
   const statusEl = document.getElementById('status');
@@ -331,7 +331,6 @@
     content.classList.remove('hidden');
     lockBtn.hidden = false;
 
-    // Visually de-emphasize the scanner but keep it available
     descEl.textContent = 'Access is active. You can lock content again at any time.';
     gate.classList.remove('locked');
   }
@@ -347,10 +346,11 @@
 
   async function scanLoop(){
     try{
-      const list = await ZXing.BrowserCodeReader.listVideoInputDevices();
-      let deviceId = list && list.length ? list[0].deviceId : undefined;
+      // FIX: use the INSTANCE method instead of the static call
+      const videoInputs = await reader.listVideoInputDevices();
+      let deviceId = (videoInputs && videoInputs.length) ? videoInputs[0].deviceId : undefined;
 
-      reader.decodeFromVideoDevice(deviceId, 'preview', (result, err, controls) => {
+      reader.decodeFromVideoDevice(deviceId, 'preview', (result, err/*, controls*/ ) => {
         if(unlocked) return;
 
         if(result && result.getText){
@@ -358,7 +358,7 @@
           const pts = (result.resultPoints || []).map(p => ({x:p.getX(), y:p.getY()}));
           drawBox(pts, '#22c55e');
 
-          // Accept the same numeric code format used in scan.html
+          // Accept the same numeric code format as scan.html
           if(/^\d{6,20}$/.test(txt)){
             unlockContent(txt);
           }else{
