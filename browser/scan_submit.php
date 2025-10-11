@@ -25,7 +25,7 @@ if (!preg_match('/^[A-Za-z0-9_\-]{16,64}$/', $session)) {
     exit;
 }
 
-// --- Validate code: 6-20 digits. ---
+// --- Validate code: 6-20 digits ---
 if (!preg_match('/^\d{6,20}$/', $code)) {
     http_response_code(400);
     echo "ERR invalid code";
