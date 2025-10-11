@@ -1,7 +1,0 @@
-# Ensure PHP is handled here (the handler name varies by host)
-AddHandler application/x-httpd-php .php
-# Never cache these endpoints
-<FilesMatch "^(scan_submit|scan_pull)\.php$">
-  Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
-  Header set Pragma "no-cache"
-</FilesMatch>
