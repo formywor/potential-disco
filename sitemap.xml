@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Root site -->
+  <url>
+    <loc>https://gomega.watch/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Main pages (from repo root) -->
+  <url><loc>https://gomega.watch/ai</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://gomega.watch/Intelligence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gomega.watch/browser</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://gomega.watch/ban</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://gomega.watch/codes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://gomega.watch/hw</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://gomega.watch/info</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://gomega.watch/movies</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://gomega.watch/pricing</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://gomega.watch/privacy</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://gomega.watch/proai</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://gomega.watch/refund</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://gomega.watch/terms</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://gomega.watch/test</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://gomega.watch/v16</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+
+  <!-- Browser folder (no ai page here) -->
+  <url><loc>https://gomega.watch/browser/scan</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://gomega.watch/browser/scan_pull</loc><changefreq>weekly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://gomega.watch/browser/scan_submit</loc><changefreq>weekly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://gomega.watch/browser/validate_id</loc><changefreq>weekly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://gomega.watch/browser/phpinfo</loc><changefreq>monthly</changefreq><priority>0.1</priority></url>
+</urlset>
