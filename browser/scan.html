@@ -30,6 +30,7 @@
   .welcome p{font-size:14px;color:var(--muted)}
 </style>
 
+<!-- ZXing for camera decoding -->
 <script src="https://unpkg.com/@zxing/library@0.20.0"></script>
 </head>
 <body>
@@ -44,6 +45,7 @@
             <span class="badge" id="status">Initializing…</span>
             <span class="badge" id="hint">Show your barcode to the camera.</span>
             <span class="badge info" id="reading" hidden>Reading barcode…</span>
+            <span class="badge" id="sync" hidden>Syncing…</span>
           </div>
         </div>
       </div>
@@ -73,42 +75,45 @@
 
 <script>
 (function(){
+  // ----- endpoints & session -----
   const session = new URLSearchParams(location.search).get('session') || '';
   const SUBMIT_URL = 'https://gomega.watch/browser/scan_submit.php';
-  const CONFIRM_HITS = 3;
+  const PULL_URL   = 'https://gomega.watch/browser/scan_pull.php';
 
+  // ----- elements -----
   const statusEl  = document.getElementById('status');
   const hintEl    = document.getElementById('hint');
   const descEl    = document.getElementById('desc');
   const readingEl = document.getElementById('reading');
+  const syncEl    = document.getElementById('sync');
   const video     = document.getElementById('preview');
   const overlay   = document.getElementById('overlay');
   const ctx       = overlay.getContext('2d');
   const flipBtn   = document.getElementById('flip');
   const torchBtn  = document.getElementById('torchBtn');
   const restartBtn= document.getElementById('restartBtn');
-
   const welcomeOverlay = document.getElementById('welcomeOverlay');
   const dismissBtn     = document.getElementById('dismissBtn');
 
+  // ----- state -----
+  const CONFIRM_HITS = 3;
   let reader, controlsRef = null, mediaStream = null;
   let currentDeviceId = null, preferMode = 'fhd';
   let lastDraw = 0, lastText = '', repeatCount = 0;
   let unlocked = false;
   let heartbeatTimer = null, lastVideoTime = 0, stalledTicks = 0;
 
+  // ----- UI helpers -----
   function setStatus(text, cls){
     statusEl.textContent = text;
     statusEl.className = 'badge' + (cls ? ' ' + cls : '');
   }
-
   function fitOverlay(){
     const vw = video.videoWidth || 640, vh = video.videoHeight || 360;
     overlay.width = vw; overlay.height = vh;
     overlay.style.width  = video.clientWidth + 'px';
     overlay.style.height = video.clientHeight + 'px';
   }
-
   function drawPoly(points, color, width=4){
     if(!points || !points.length) return;
     const now = performance.now();
@@ -122,7 +127,6 @@
     for(let i=1;i<points.length;i++) ctx.lineTo(points[i].x*sx, points[i].y*sy);
     ctx.closePath(); ctx.stroke();
   }
-
   function faintGuide(){
     ctx.clearRect(0,0,overlay.width,overlay.height);
     ctx.strokeStyle = "rgba(255,255,255,.25)";
@@ -131,7 +135,6 @@
     const x = (overlay.width-w)/2, y = (overlay.height-h)/2;
     ctx.strokeRect(x,y,w,h);
   }
-
   function showUnlockedUI(){
     ctx.clearRect(0,0,overlay.width,overlay.height);
     drawPoly([{x:20,y:20},{x:overlay.width-20,y:20},{x:overlay.width-20,y:overlay.height-20},{x:20,y:overlay.height-20}], '#22c55e', 5);
@@ -140,30 +143,17 @@
     welcomeOverlay.classList.add('show');
   }
 
-  async function pushToLauncher(code){
-    if(!session) return;
-    try{
-      const body = new URLSearchParams({ session, code });
-      await fetch(SUBMIT_URL, { method:'POST', body, cache:'no-store', credentials:'include', keepalive:true });
-    }catch(e){
-      try{
-        await fetch(`${SUBMIT_URL}?session=${encodeURIComponent(session)}&code=${encodeURIComponent(code)}&t=${Date.now()}`, { cache:'no-store', credentials:'include' });
-      }catch(_){}
-    }
-  }
-
+  // ----- camera plumbing -----
   async function listCameras(){
     const devs = await navigator.mediaDevices.enumerateDevices();
     return devs.filter(d=>d.kind==='videoinput');
   }
-
   async function pickBackCamera(){
     const cams = await listCameras();
     if(!cams.length) return null;
     const byLabel = cams.find(c => /back|rear|environment/i.test(c.label));
     return (byLabel || cams[0]).deviceId || null;
   }
-
   function startHeartbeat(){
     stopHeartbeat();
     lastVideoTime = video.currentTime;
@@ -178,7 +168,6 @@
     }, 1000);
   }
   function stopHeartbeat(){ if(heartbeatTimer){ clearInterval(heartbeatTimer); heartbeatTimer = null; } }
-
   async function stopCamera(){
     stopHeartbeat();
     try{ if(controlsRef && controlsRef.stop) controlsRef.stop(); }catch(e){}
@@ -187,7 +176,6 @@
     mediaStream = null;
     video.srcObject = null;
   }
-
   let restarting = false;
   async function safeRestart(){
     if(restarting || unlocked) return;
@@ -197,11 +185,9 @@
     try{ await startCamera(); await startDecoding(); }catch(e){}
     restarting = false;
   }
-
   async function startCamera(){
     setStatus('Requesting camera…','info');
     if(!currentDeviceId){ try{ currentDeviceId = await pickBackCamera(); }catch(_){ } }
-
     const bases = [
       (preferMode==='fhd') ? {width:{ideal:1920},height:{ideal:1080}} : {width:{ideal:1280},height:{ideal:720}},
       {width:{ideal:1280},height:{ideal:720}},
@@ -233,7 +219,6 @@
     await new Promise(r=>setTimeout(r,300));
     try{ await video.play(); }catch(_){}
     fitOverlay();
-
     try{
       const track = mediaStream.getVideoTracks()[0];
       const caps = track.getCapabilities?.() || {};
@@ -242,11 +227,11 @@
       flipBtn.hidden = cams.length <= 1;
       track.onended = () => safeRestart();
     }catch(e){}
-
     startHeartbeat();
     setStatus('Reading…','info');
   }
 
+  // ----- ZXing -----
   function initReader(){
     reader = new ZXing.BrowserMultiFormatReader();
     try{
@@ -260,7 +245,6 @@
       reader.setHints(hints);
     }catch(e){}
   }
-
   async function startDecoding(){
     controlsRef = reader.decodeFromConstraints({
       audio:false,
@@ -273,23 +257,19 @@
       }
     }, 'preview', (result, err, controls)=>{
       if(unlocked) return;
-
       if(result && result.getText){
         const txt = (result.getText()||'').trim();
         const pts = (result.resultPoints || []).map(p => ({x:(p.x ?? p.getX()), y:(p.y ?? p.getY())}));
         fitOverlay();
         const isDigits = /^\d{6,20}$/.test(txt);
-        drawPoly(pts, isDigits ? '#22c55e' : '#ef4444');  // green when valid-length digits
+        drawPoly(pts, isDigits ? '#22c55e' : '#ef4444');  // green = valid digits
         readingEl.hidden = false;
-
         if(isDigits){
           if(txt===lastText){ repeatCount++; } else { lastText=txt; repeatCount=1; }
           if(repeatCount >= CONFIRM_HITS){
             unlocked = true;
             try{ controls && controls.stop(); }catch(e){}
-            pushToLauncher(txt);
-            showUnlockedUI();
-            stopHeartbeat();
+            syncToLauncher(txt).then(showUnlockedUI);
           }
         }else{
           setStatus('Invalid code format','warn');
@@ -304,15 +284,70 @@
     });
   }
 
-  flipBtn.onclick = async ()=>{
+  // ----- Robust sync: POST then PULL confirm -----
+  async function syncToLauncher(code){
+    if(!session){ setStatus('Missing session','warn'); return; }
+    setStatus('Syncing with launcher…','info');
+    syncEl.hidden = false;
+
+    const params = new URLSearchParams({ session, code });
+    const pullURL = (extra=0)=> `${PULL_URL}?session=${encodeURIComponent(session)}&_=${Date.now()+extra}`;
+
+    // up to 10 rounds: POST then poll PULL for a visible echo of digits
+    for(let round=0; round<10; round++){
+      try{
+        // Primary: POST
+        await fetch(SUBMIT_URL, {
+          method:'POST',
+          body: params,
+          cache:'no-store',
+          credentials:'include',
+          keepalive:true,
+          headers:{ 'Cache-Control':'no-cache', 'Pragma':'no-cache' }
+        });
+      }catch(_){ /* fallthrough to GET */ }
+
+      // Fallback: GET-submit if POST is blocked by CORS/CDN
+      try{
+        await fetch(`${SUBMIT_URL}?session=${encodeURIComponent(session)}&code=${encodeURIComponent(code)}&t=${Date.now()}`, {
+          cache:'no-store',
+          credentials:'include',
+          headers:{ 'Cache-Control':'no-cache', 'Pragma':'no-cache' }
+        });
+      }catch(_){}
+
+      // Poll PULL to confirm
+      try{
+        const res = await fetch(pullURL(round), { cache:'no-store', credentials:'include', headers:{ 'Cache-Control':'no-cache', 'Pragma':'no-cache' }});
+        const txt = (await res.text()).trim();
+        if(/\d{6,20}/.test(txt)){ // any digits present means launcher will see it too
+          setStatus('Synced — return to launcher','ok');
+          syncEl.hidden = true;
+          return;
+        }
+      }catch(_){}
+
+      await new Promise(r=>setTimeout(r, 500)); // brief pause then retry
+    }
+
+    // Even if we didn’t confirm, we still show unlocked UI (launcher may grab on next beat)
+    setStatus('Synced (best effort) — return to launcher','ok');
+    syncEl.hidden = true;
+  }
+
+  // ----- controls -----
+  document.getElementById('restartBtn').onclick = async ()=>{
+    setStatus('Restarting camera…','info');
+    await safeRestart();
+  };
+  document.getElementById('flip').onclick = async ()=>{
     const cams = await listCameras();
     if(!cams.length) return;
     const idx = currentDeviceId ? Math.max(0, cams.findIndex(d=>d.deviceId===currentDeviceId)) : -1;
     currentDeviceId = cams[(idx+1)%cams.length].deviceId;
     await safeRestart();
   };
-
-  torchBtn.onclick = async ()=>{
+  document.getElementById('torchBtn').onclick = async ()=>{
     try{
       const track = mediaStream?.getVideoTracks?.()[0];
       if(!track) return;
@@ -322,27 +357,21 @@
       torchBtn.textContent = (!on?'Torch (On)':'Torch');
     }catch(e){}
   };
-
-  restartBtn.onclick = async ()=>{
-    setStatus('Restarting camera…','info');
-    await safeRestart();
-  };
-
-  dismissBtn.onclick = ()=>{
-    // Try to allow the tab to close if Chrome permits (often blocked if not window.open)
+  document.getElementById('dismissBtn').onclick = ()=>{
     window.open('','_self'); window.close();
-    // If blocked, at least stop camera:
-    setTimeout(()=>{ try{ video.pause(); }catch(_){}
+    setTimeout(()=>{ // if close blocked, at least stop camera
+      try{ video.pause(); }catch(_){}
       try{ mediaStream?.getTracks?.().forEach(t=>t.stop()); }catch(_){}
       welcomeOverlay.classList.remove('show');
     }, 200);
   };
 
   document.addEventListener('visibilitychange', async ()=>{
-    if(document.hidden){ stopCamera(); }
+    if(document.hidden){ await stopCamera(); }
     else if(!unlocked){ await safeRestart(); }
   });
 
+  // ----- boot -----
   (async ()=>{
     if(!session){
       setStatus('Missing session','warn');
