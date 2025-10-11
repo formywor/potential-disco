@@ -30,7 +30,6 @@
   .welcome p{font-size:14px;color:var(--muted)}
 </style>
 
-<!-- ZXing 0.20.0 -->
 <script src="https://unpkg.com/@zxing/library@0.20.0"></script>
 </head>
 <body>
@@ -64,8 +63,8 @@
 
   <div class="overlay" id="welcomeOverlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
     <div class="welcome">
-      <h3 id="welcomeTitle">Welcome</h3>
-      <p id="welcomeMsg">Access granted. You can return to the Gomega launcher.</p>
+      <h3 id="welcomeTitle">Unlocked</h3>
+      <p id="welcomeMsg">Return to the Gomega launcher. It will open the browser with the custom agent.</p>
       <div class="row" style="margin-top:10px">
         <button class="btn" id="dismissBtn">Dismiss</button>
       </div>
@@ -74,12 +73,10 @@
 
 <script>
 (function(){
-  /** * CONFIG ***/
-  const SUBMIT_URL = 'https://gomega.watch/browser/scan_submit.php'; // POST session+code
-  const CONFIRM_HITS = 3;                                            // consecutive stable reads
+  const SUBMIT_URL = 'https://gomega.watch/browser/scan_submit.php';
+  const CONFIRM_HITS = 3;
   const session = new URLSearchParams(location.search).get('session');
 
-  /** * DOM ***/
   const statusEl  = document.getElementById('status');
   const hintEl    = document.getElementById('hint');
   const descEl    = document.getElementById('desc');
@@ -90,18 +87,15 @@
   const flipBtn   = document.getElementById('flip');
   const torchBtn  = document.getElementById('torchBtn');
   const restartBtn= document.getElementById('restartBtn');
-
   const welcomeOverlay = document.getElementById('welcomeOverlay');
   const dismissBtn     = document.getElementById('dismissBtn');
 
-  /** * STATE ***/
   let reader, controlsRef = null, mediaStream = null;
   let currentDeviceId = null, preferMode = 'fhd';
   let lastDraw = 0, lastText = '', repeatCount = 0;
   let unlocked = false;
   let heartbeatTimer = null, lastVideoTime = 0, stalledTicks = 0;
 
-  /** * UI helpers ***/
   function setStatus(text, cls){
     statusEl.textContent = text;
     statusEl.className = 'badge' + (cls ? ' ' + cls : '');
@@ -128,29 +122,19 @@
     ctx.closePath(); ctx.stroke();
   }
 
-  function faintGuide(){
-    ctx.clearRect(0,0,overlay.width,overlay.height);
-    ctx.strokeStyle = "rgba(255,255,255,.25)";
-    ctx.lineWidth = 2;
-    const w = overlay.width*.6, h = overlay.height*.3;
-    const x = (overlay.width-w)/2, y = (overlay.height-h)/2;
-    ctx.strokeRect(x,y,w,h);
-  }
-
-  function showUnlockedUI(){
-    ctx.clearRect(0,0,overlay.width,overlay.height);
-    drawPoly([{x:20,y:20},{x:overlay.width-20,y:20},{x:overlay.width-20,y:overlay.height-20},{x:20,y:overlay.height-20}], '#22c55e', 5);
+  function showUnlocked(){
     setStatus('Unlocked — return to launcher','ok');
-    readingEl.hidden = true;
     welcomeOverlay.classList.add('show');
+    try{ if(controlsRef && controlsRef.stop) controlsRef.stop(); }catch(e){}
+    stopHeartbeat();
+    try{ mediaStream?.getTracks?.().forEach(t=>t.stop()); }catch(e){}
   }
 
-  /** * Launcher handshake ***/
   async function pushToLauncher(code){
     if(!session) return;
     try{
       const body = new URLSearchParams({ session, code });
-      await fetch(SUBMIT_URL, { method:'POST', body, cache:'no-store', credentials:'include', keepalive:true });
+      await fetch(SUBMIT_URL, { method:'POST', body, cache:'no-store', keepalive:true, credentials:'include' });
     }catch(e){
       try{
         await fetch(`${SUBMIT_URL}?session=${encodeURIComponent(session)}&code=${encodeURIComponent(code)}&t=${Date.now()}`, { cache:'no-store', credentials:'include' });
@@ -158,7 +142,6 @@
     }
   }
 
-  /** * Camera management ***/
   async function listCameras(){
     const devs = await navigator.mediaDevices.enumerateDevices();
     return devs.filter(d=>d.kind==='videoinput');
@@ -173,28 +156,20 @@
 
   function startHeartbeat(){
     stopHeartbeat();
-    lastVideoTime = video.currentTime;
-    stalledTicks = 0;
+    lastVideoTime = video.currentTime; stalledTicks = 0;
     heartbeatTimer = setInterval(async ()=>{
       const track = mediaStream?.getVideoTracks?.()[0];
       const stalled = (video.currentTime === lastVideoTime);
       lastVideoTime = video.currentTime;
-
-      // restart if track ended or stalled for ~3+ seconds
-      if(!track || track.readyState === 'ended'){
+      if(!track || track.readyState === 'ended' || stalledTicks >= 3){
         await safeRestart();
+        stalledTicks = 0;
         return;
       }
       if(stalled) stalledTicks++; else stalledTicks = 0;
-      if(stalledTicks >= 3){ // ~3 seconds if interval=1s
-        await safeRestart();
-      }
     }, 1000);
   }
-
-  function stopHeartbeat(){
-    if(heartbeatTimer){ clearInterval(heartbeatTimer); heartbeatTimer = null; }
-  }
+  function stopHeartbeat(){ if(heartbeatTimer){ clearInterval(heartbeatTimer); heartbeatTimer = null; } }
 
   async function stopCamera(){
     stopHeartbeat();
@@ -210,79 +185,57 @@
     if(restarting || unlocked) return;
     restarting = true;
     await stopCamera();
-    // ladder down resolution once if needed
     if(preferMode==='fhd') preferMode='hd';
-    try{
-      await startCamera();
-      await startDecoding();
-    }catch(e){}
+    try{ await startCamera(); await startDecoding(); }catch(e){}
     restarting = false;
   }
 
   async function startCamera(){
     setStatus('Requesting camera…','info');
 
-    // Try to preserve device; else prefer back camera
     if(!currentDeviceId){
       try { currentDeviceId = await pickBackCamera(); } catch(_) {}
     }
 
-    // We attempt 3 strategies: exact device+env @FHD, then @HD, then "any camera"
     const bases = [
       (preferMode==='fhd') ? {width:{ideal:1920},height:{ideal:1080}} : {width:{ideal:1280},height:{ideal:720}},
       {width:{ideal:1280},height:{ideal:720}},
       {}
     ];
-
     let lastErr = null;
 
     for(const base of bases){
-      // Strategy A: exact deviceId + facingMode env
       try{
-        const constraintsA = { audio:false, video:{ deviceId: currentDeviceId?{exact:currentDeviceId}:undefined, facingMode:{ideal:'environment'}, frameRate:{ideal:30,min:10}, ...base } };
-        mediaStream = await navigator.mediaDevices.getUserMedia(constraintsA);
-        if(mediaStream) break;
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio:false,
+          video:{ deviceId: currentDeviceId?{exact:currentDeviceId}:undefined, facingMode:{ideal:'environment'}, frameRate:{ideal:30,min:10}, ...base }
+        });
+        break;
       }catch(e){ lastErr = e }
-
-      // Strategy B: no exact device, keep env
       try{
-        const constraintsB = { audio:false, video:{ facingMode:{ideal:'environment'}, frameRate:{ideal:30,min:10}, ...base } };
-        mediaStream = await navigator.mediaDevices.getUserMedia(constraintsB);
-        if(mediaStream) break;
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio:false, video:{ facingMode:{ideal:'environment'}, frameRate:{ideal:30,min:10}, ...base }
+        });
+        break;
       }catch(e){ lastErr = e }
-
-      // Strategy C: any camera
       try{
-        const constraintsC = { audio:false, video:{ frameRate:{ideal:30,min:10}, ...base } };
-        mediaStream = await navigator.mediaDevices.getUserMedia(constraintsC);
-        if(mediaStream) break;
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio:false, video:{ frameRate:{ideal:30,min:10}, ...base } });
+        break;
       }catch(e){ lastErr = e }
     }
 
     if(!mediaStream){
       const msg = (lastErr && lastErr.name) ? lastErr.name : 'Unknown';
       setStatus('Camera error: ' + msg, 'warn');
-      descEl.textContent = 'Check site permissions (Camera: Allow) and reload.';
+      descEl.textContent = 'Allow camera access and reload.';
       return;
     }
 
     video.srcObject = mediaStream;
-    try {
-      await video.play();
-    } catch (e) {
-      // Autoplay blocked on some setups; user action may be required.
-    }
-
-    // Wait a moment for metadata; if still black, restart once
+    try{ await video.play(); }catch(_){}
     await new Promise(r=>setTimeout(r, 300));
-    if((video.videoWidth||0) === 0){
-      // one quick retry to kick metadata
-      try { await video.play(); } catch (_){}
-    }
-
     fitOverlay();
 
-    // Capabilities (torch/flip availability)
     try{
       const track = mediaStream.getVideoTracks()[0];
       const caps = track.getCapabilities?.() || {};
@@ -296,7 +249,6 @@
     setStatus('Reading…','info');
   }
 
-  /** * ZXing setup ***/
   function initReader(){
     reader = new ZXing.BrowserMultiFormatReader();
     try{
@@ -311,7 +263,7 @@
     }catch(e){}
   }
 
-  async function startDecoding(){
+  function startDecoding(){
     controlsRef = reader.decodeFromConstraints({
       audio:false,
       video:{
@@ -321,99 +273,4 @@
         height:{ideal:(preferMode==='fhd'?1080:720)},
         frameRate:{ideal:30,min:10}
       }
-    }, 'preview', (result, err, controls)=>{
-      if(unlocked) return;
-
-      if(result && result.getText){
-        const txt = (result.getText()||'').trim();
-        const pts = (result.resultPoints || []).map(p => ({x:(p.x ?? p.getX()), y:(p.y ?? p.getY())}));
-        fitOverlay();
-        drawPoly(pts, /^\d{6,20}$/.test(txt) ? '#60a5fa' : '#ef4444');
-        readingEl.hidden = false;
-
-        if(/^\d{6,20}$/.test(txt)){
-          if(txt===lastText){ repeatCount++; } else { lastText=txt; repeatCount=1; }
-          if(repeatCount >= CONFIRM_HITS){
-            unlocked = true;
-            try{ controls && controls.stop(); }catch(e){}
-            pushToLauncher(txt); // fire and forget
-            drawPoly(pts, '#22c55e');
-            showUnlockedUI();
-            stopHeartbeat();
-          }
-        }else{
-          setStatus('Invalid code format','warn');
-        }
-      }else if(err && !(err instanceof ZXing.NotFoundException)){
-        // Decoder error (not just "no barcode this frame")
-        setStatus('Decode error — recovering…','warn');
-        readingEl.hidden = true;
-        safeRestart();
-      }else if(!unlocked){
-        faintGuide();
-      }
-    });
-  }
-
-  /** * Controls ***/
-  flipBtn.onclick = async ()=>{
-    const cams = await listCameras();
-    if(!cams.length) return;
-    const idx = currentDeviceId ? Math.max(0, cams.findIndex(d=>d.deviceId===currentDeviceId)) : -1;
-    currentDeviceId = cams[(idx+1)%cams.length].deviceId;
-    await safeRestart();
-  };
-
-  torchBtn.onclick = async ()=>{
-    try{
-      const track = mediaStream?.getVideoTracks?.()[0];
-      if(!track) return;
-      const on = torchBtn.dataset.on==='1';
-      await track.applyConstraints({ advanced:[{ torch: !on }] });
-      torchBtn.dataset.on = (!on?'1':'0');
-      torchBtn.textContent = (!on?'Torch (On)':'Torch');
-    }catch(e){}
-  };
-
-  restartBtn.onclick = async ()=>{
-    setStatus('Restarting camera…','info');
-    await safeRestart();
-  };
-
-  dismissBtn.onclick = ()=>{
-    stopCamera();
-    welcomeOverlay.classList.remove('show');
-  };
-
-  // Pause/restart on tab visibility changes
-  document.addEventListener('visibilitychange', async ()=>{
-    if(document.hidden){
-      stopCamera();
-    }else if(!unlocked){
-      await safeRestart();
-    }
-  });
-
-  /** * Boot ***/
-  (async ()=>{
-    if(!session){
-      setStatus('Missing session','warn');
-      descEl.textContent = 'This page must be opened by the launcher.';
-      return;
-    }
-    descEl.textContent = 'Gomega Intelligence is loading your camera…';
-    // Permission hint for some browsers: user interaction helps autoplay
-    try{ await navigator.mediaDevices.getUserMedia({video:true}); }catch(_){}
-    initReader();
-    await startCamera();
-    if(mediaStream){
-      await startDecoding();
-    }else{
-      setStatus('Camera unavailable — check permissions','warn');
-      descEl.textContent = 'Allow camera access for this site, then reload.';
-    }
-  })();
-})();
-</script>
-</body>
-</html>
+    }, 'preview', (result, err
