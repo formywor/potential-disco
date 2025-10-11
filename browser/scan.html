@@ -63,7 +63,7 @@
   <div class="overlay" id="welcomeOverlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
     <div class="welcome">
       <h3 id="welcomeTitle">Welcome</h3>
-      <p id="welcomeMsg">Access granted.</p>
+      <p id="welcomeMsg">Access granted. You can return to the Gomega launcher.</p>
       <div class="row" style="margin-top:10px">
         <button class="btn" id="dismissBtn">Dismiss</button>
       </div>
@@ -72,28 +72,24 @@
 
 <script>
 (function(){
-  // Config
-  const SUBMIT_URL = 'scan_submit.php';   // server listener the HTA polls via scan_pull.php
-  const CONFIRM_HITS = 3;                 // require N identical reads in a row
+  // ABSOLUTE endpoint so there’s no relative path mismatch
+  const SUBMIT_URL = 'https://gomega.watch/browser/scan_submit.php';
+  const CONFIRM_HITS = 3;
   const session = new URLSearchParams(location.search).get('session');
 
-  // DOM
   const statusEl  = document.getElementById('status');
   const hintEl    = document.getElementById('hint');
   const descEl    = document.getElementById('desc');
   const readingEl = document.getElementById('reading');
-
-  const video   = document.getElementById('preview');
-  const overlay = document.getElementById('overlay');
-  const ctx     = overlay.getContext('2d');
-
-  const flipBtn  = document.getElementById('flip');
-  const torchBtn = document.getElementById('torchBtn');
+  const video     = document.getElementById('preview');
+  const overlay   = document.getElementById('overlay');
+  const ctx       = overlay.getContext('2d');
+  const flipBtn   = document.getElementById('flip');
+  const torchBtn  = document.getElementById('torchBtn');
 
   const welcomeOverlay = document.getElementById('welcomeOverlay');
   const dismissBtn     = document.getElementById('dismissBtn');
 
-  // State
   let reader, controlsRef = null, mediaStream = null;
   let currentDeviceId = null, preferMode = 'fhd';
   let lastDraw = 0, lastText = '', repeatCount = 0;
@@ -135,7 +131,7 @@
   }
 
   async function pushToLauncher(code){
-    // POST first, GET fallback
+    if(!session) return;
     try{
       const body = new URLSearchParams({ session, code });
       await fetch(SUBMIT_URL, { method:'POST', body, cache:'no-store', credentials:'include', keepalive:true });
@@ -146,18 +142,15 @@
     }
   }
 
-  function showUnlockedUI(nameText){
+  function showUnlockedUI(){
     ctx.clearRect(0,0,overlay.width,overlay.height);
-    // full green frame
     drawPoly([{x:20,y:20},{x:overlay.width-20,y:20},{x:overlay.width-20,y:overlay.height-20},{x:20,y:overlay.height-20}], '#22c55e', 5);
-    setStatus('Unlocked — return to Gomega Launcher','ok');
+    setStatus('Unlocked — return to launcher','ok');
     readingEl.hidden = true;
-    if(nameText) document.getElementById('welcomeTitle').textContent = `Welcome, ${nameText}`;
     welcomeOverlay.classList.add('show');
   }
 
   dismissBtn.onclick = ()=>{
-    // stop camera after unlock
     try{
       if(controlsRef && controlsRef.stop) controlsRef.stop();
       mediaStream?.getTracks?.().forEach(t=>t.stop());
@@ -191,14 +184,13 @@
     await video.play();
     fitOverlay();
 
-    // Capabilities
     try{
       const track = mediaStream.getVideoTracks()[0];
       const caps = track.getCapabilities?.() || {};
       torchBtn.hidden = !caps.torch;
-      if((await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput').length>1){
-        document.getElementById('flip').hidden = false;
-      }
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      const cams = devs.filter(d=>d.kind==='videoinput');
+      flipBtn.hidden = cams.length <= 1;
       track.onended = () => safeRestart();
     }catch(e){}
 
@@ -209,10 +201,8 @@
   async function safeRestart(){
     if(restarting) return;
     restarting = true;
-    try{
-      if(controlsRef && controlsRef.stop) controlsRef.stop();
-      mediaStream?.getTracks?.().forEach(t=>t.stop());
-    }catch(e){}
+    try{ if(controlsRef && controlsRef.stop) controlsRef.stop() }catch(e){}
+    try{ mediaStream?.getTracks?.().forEach(t=>t.stop()) }catch(e){}
     try{
       if(preferMode==='fhd') preferMode='hd';
       await startCamera();
@@ -241,7 +231,8 @@
       video:{
         deviceId: currentDeviceId ? {exact: currentDeviceId} : undefined,
         facingMode:{ideal:'environment'},
-        width:{ideal:(preferMode==='fhd'?1920:1280)}, height:{ideal:(preferMode==='fhd'?1080:720)},
+        width:{ideal:(preferMode==='fhd'?1920:1280)},
+        height:{ideal:(preferMode==='fhd'?1080:720)},
         frameRate:{ideal:30,min:10}
       }
     }, 'preview', (result, err, controls)=>{
@@ -255,28 +246,28 @@
         readingEl.hidden = false;
 
         if(/^\d{6,20}$/.test(txt)){
-          if(txt===lastText){ repeatCount++; } else { lastText=txt; repeatCount=1; }
-          if(repeatCount>=CONFIRM_HITS){
+          if(txt===lastText) { repeatCount = repeatCount + 1 } else { lastText = txt : repeatCount = 1 }
+          if(repeatCount >= CONFIRM_HITS){
             unlocked = true;
-            try{ controls && controls.stop(); }catch(e){}
-            // Always notify launcher; do NOT gate on local lists
+            try{ controls && controls.stop() }catch(e){}
             if(session) pushToLauncher(txt);
             drawPoly(pts, '#22c55e');
-            showUnlockedUI(/* optional name text if you have */);
+            showUnlockedUI();
           }
-        }else{
+        } else {
           setStatus('Invalid code format','warn');
         }
-      }else if(err && !(err instanceof ZXing.NotFoundException)){
-        setStatus('Camera decode error','warn'); readingEl.hidden = true;
-        if(preferMode==='fhd'){ preferMode='hd'; safeRestart(); }
-      }else if(!unlocked){
+      } else if(err && !(err instanceof ZXing.NotFoundException)){
+        setStatus('Camera decode error','warn');
+        readingEl.hidden = true;
+        if(preferMode==='fhd'){ preferMode='hd' : safeRestart() }
+      } else if(!unlocked){
         faintGuide();
       }
     });
   }
 
-  document.getElementById('flip').onclick = async ()=>{
+  flipBtn.onclick = async ()=>{
     const devs = await navigator.mediaDevices.enumerateDevices();
     const cams = devs.filter(d=>d.kind==='videoinput');
     if(!cams.length) return;
@@ -291,12 +282,11 @@
       if(!track) return;
       const on = torchBtn.dataset.on==='1';
       await track.applyConstraints({ advanced:[{ torch: !on }] });
-      torchBtn.dataset.on = (!on?'1':'0');
-      torchBtn.textContent = (!on?'Torch (On)':'Torch');
+      torchBtn.dataset.on = (!on ? '1' : '0');
+      torchBtn.textContent = (!on ? 'Torch (On)' : 'Torch');
     }catch(e){}
   };
 
-  // Boot
   (async ()=>{
     if(!session){
       setStatus('Missing session','warn');
