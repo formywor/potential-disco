@@ -1,301 +1,314 @@
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <title>Gomega Browser Launcher — V17</title>
-  <HTA:APPLICATION
-    ID="GomegaBrowser" APPLICATIONNAME="Gomega Browser"
-    BORDER="dialog" CAPTION="yes" SHOWINTASKBAR="yes"
-    SINGLEINSTANCE="yes" SYSMENU="yes" SCROLL="no" WINDOWSTATE="normal">
+<meta charset="utf-8">
+<title>Gomega Intelligence — Overview & Access</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    html,body{height:100%;margin:0}
-    body{font-family:Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 40%,#0ea5e9 100%);color:#e5e7eb;display:flex;align-items:center;justify-content:center}
-    .card{width:640px;max-width:92vw;background:rgba(30,41,59,.6);border:1px solid rgba(148,163,184,.25);border-radius:16px;padding:24px 28px;backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
-    .title{font-size:22px;font-weight:700;margin:0 0 6px}
-    .subtitle{font-size:12px;color:#94a3b8;margin:0}
-    .row{display:flex;align-items:center;gap:10px;margin-top:12px}
-    .spinner{width:14px;height:14px;border:2px solid rgba(226,232,240,.35);border-top-color:#e5e7eb;border-radius:50%;animation:spin 1s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-  </style>
+<style>
+  :root{--bg:#0f172a;--panel:#111827;--ink:#e5e7eb;--muted:#94a3b8;--accent:#22c55e;--accent2:#0ea5e9;--warn:#ef4444;--info:#60a5fa;--border:rgba(148,163,184,.25)}
+  html,body{height:100%;margin:0;background:linear-gradient(135deg,#0f172a 0%,#1f2937 40%,#0ea5e9 100%);font-family:Segoe UI,Arial,sans-serif;color:var(--ink)}
+  .wrap{max-width:1100px;margin:0 auto;padding:24px}
+  .card{background:rgba(17,24,39,.72);border:1px solid var(--border);border-radius:16px;padding:16px 16px 20px;backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
+  .header{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .logo{width:44px;height:44px;border-radius:12px;background:conic-gradient(from 0deg,#22c55e 0 25%,#0ea5e9 0 50%,#7c3aed 0 75%,#22c55e)}
+  h1{margin:0;font-size:22px}
+  p{margin:4px 0;color:var(--muted);font-size:14px}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#0b1220;border:1px solid var(--border);font-size:12px}
+  .ok{color:var(--accent)} .warn{color:var(--warn)} .info{color:var(--info)}
+  #stage{position:relative;display:flex;justify-content:center;align-items:center;margin-top:12px}
+  video{width:100%;max-width:980px;border-radius:14px;background:#000;aspect-ratio:16/9;object-fit:cover}
+  canvas{position:absolute;inset:0;width:100%;max-width:980px;height:100%;border-radius:14px;pointer-events:none}
+  .row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .btn{border:1px solid rgba(148,163,184,.35);background:#0b1220;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer}
+  .btn:active{transform:scale(.99)}
+  .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.5);backdrop-filter:blur(6px);z-index:50}
+  .overlay.show{display:flex}
+  .welcome{width:min(640px,92vw);border-radius:18px;padding:20px;background:rgba(17,24,39,.9);border:1px solid var(--border);box-shadow:0 12px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04)}
+  .welcome h3{margin:0 0 8px;font-size:22px}
+  .welcome p{font-size:14px;color:var(--muted)}
+</style>
 
-<script language="VBScript">
-Option Explicit
-
-' ===== Version =====
-Dim g_version, g_versionCheckURL
-g_version = "17"
-g_versionCheckURL = "https://gomega.watch/browser/version.txt"
-
-' ===== Chrome paths =====
-Dim g_chromePaths
-g_chromePaths = Array( _
-  "C:\Program Files\Google\Chrome\Application\chrome.exe", _
-  "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" _
-)
-
-' ===== Custom UA (from V7) =====
-Dim g_r_customUA, g_customUA
-g_r_customUA = StrReverse("Mozilla/5.0 (X11; CrOS aarch64 13099.85.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.110 Safari/537.36 - Google Search")
-g_customUA   = StrReverse(g_r_customUA)
-
-' ===== Endpoints =====
-Dim SCAN_HTML, PULL_API, VALIDATE_API
-SCAN_HTML    = "https://gomega.watch/browser/scan.html"
-PULL_API     = "https://gomega.watch/browser/scan_pull.php"
-VALIDATE_API = "https://gomega.watch/browser/validate_id.php"
-
-' ===== Objects =====
-Dim g_fso, g_shell, g_chrome
-Set g_fso   = CreateObject("Scripting.FileSystemObject")
-Set g_shell = CreateObject("WScript.Shell")
-
-Sub SetStatus(t)
-  On Error Resume Next
-  document.getElementById("status").innerText = t
-  On Error GoTo 0
-End Sub
-
-Function DQ(s): DQ = Replace(s, """", """""") : End Function
-
-Function FirstExistingPath(arr)
-  Dim i
-  For i = 0 To UBound(arr)
-    If g_fso.FileExists(arr(i)) Then FirstExistingPath = arr(i) : Exit Function
-  Next
-  FirstExistingPath = ""
-End Function
-
-Function CleanText(t)
-  Dim s : s = CStr(t)
-  If Len(s) > 0 Then If AscW(Left(s,1)) = 65279 Then s = Mid(s,2)
-  CleanText = Trim(s)
-End Function
-
-Function AddCb(u)
-  If InStr(u,"?")>0 Then AddCb = u & "&_cb=" & CLng(Timer*1000) Else AddCb = u & "?_cb=" & CLng(Timer*1000)
-End Function
-
-Function HttpGet(u)
-  Dim r : r = HttpGet_Server(u) : If r = "" Then r = HttpGet_XML(u) : If r = "" Then r = HttpGet_WinHttp(u)
-  HttpGet = r
-End Function
-
-Function HttpGet_Server(u)
-  On Error Resume Next
-  Dim x, s : Set x = CreateObject("MSXML2.ServerXMLHTTP.6.0")
-  If TypeName(x)="Empty" Or TypeName(x)="Nothing" Then HttpGet_Server="" : Exit Function
-  x.setTimeouts 5000,5000,8000,10000
-  x.open "GET", AddCb(u), False
-  x.setRequestHeader "Cache-Control","no-cache"
-  x.setRequestHeader "Accept","text/plain,*/*"
-  x.setRequestHeader "User-Agent","GomegaV17"
-  x.send
-  s = "" : If Err.Number=0 Then If x.Status=200 Then s = CStr(x.responseText)
-  Set x = Nothing : On Error GoTo 0
-  HttpGet_Server = CleanText(s)
-End Function
-
-Function HttpGet_XML(u)
-  On Error Resume Next
-  Dim x, s : Set x = CreateObject("MSXML2.XMLHTTP")
-  If TypeName(x)="Empty" Or TypeName(x)="Nothing" Then HttpGet_XML="" : Exit Function
-  x.open "GET", AddCb(u), False
-  x.setRequestHeader "Cache-Control","no-cache"
-  x.setRequestHeader "Accept","text/plain,*/*"
-  x.setRequestHeader "User-Agent","GomegaV17"
-  x.send
-  s = "" : If Err.Number=0 And x.readyState=4 And x.status=200 Then s = CStr(x.responseText)
-  Set x = Nothing : On Error GoTo 0
-  HttpGet_XML = CleanText(s)
-End Function
-
-Function HttpGet_WinHttp(u)
-  On Error Resume Next
-  Dim w, s : Set w = CreateObject("WinHttp.WinHttpRequest.5.1")
-  If TypeName(w)="Empty" Or TypeName(w)="Nothing" Then HttpGet_WinHttp="" : Exit Function
-  w.Open "GET", AddCb(u), False
-  w.SetRequestHeader "Cache-Control","no-cache"
-  w.SetRequestHeader "Accept","text/plain,*/*"
-  w.SetRequestHeader "User-Agent","GomegaV17"
-  w.Send
-  s = "" : If Err.Number=0 And w.Status=200 Then s = CStr(w.ResponseText)
-  Set w = Nothing : On Error GoTo 0
-  HttpGet_WinHttp = CleanText(s)
-End Function
-
-Function SegNum(seg)
-  Dim i, ch, ds : ds = ""
-  For i=1 To Len(seg) : ch = Mid(seg,i,1) : If ch>="0" And ch<="9" Then ds = ds & ch Else Exit For : Next
-  If ds="" Then SegNum=0 Else SegNum=CLng(ds)
-End Function
-
-Function NormalizeVersion(s)
-  Dim i, ch, out
-  s = CleanText(s) : s = Replace(s,"V","") : s = Replace(s,"v","")
-  out = "" : For i=1 To Len(s) : ch = Mid(s,i,1) : If (ch>="0" And ch<="9") Or ch="." Then out = out & ch : Next
-  If out="" Then out = s
-  NormalizeVersion = Trim(out)
-End Function
-
-Function CompareVersions(v1, v2)
-  Dim a,b,i,n,x,y
-  a = Split(Trim(CStr(v1)),".") : b = Split(Trim(CStr(v2)),".")
-  n = UBound(a) : If UBound(b) > n Then n = UBound(b)
-  For i=0 To n
-    If i<=UBound(a) Then x = SegNum(a(i)) Else x = 0
-    If i<=UBound(b) Then y = SegNum(b(i)) Else y = 0
-    If x>y Then CompareVersions = 1 : Exit Function
-    If x<y Then CompareVersions = -1 : Exit Function
-  Next
-  CompareVersions = 0
-End Function
-
-Function IsAllDigits(s)
-  Dim i, ch
-  If Len(s) < 6 Or Len(s) > 20 Then IsAllDigits=False : Exit Function
-  For i=1 To Len(s) : ch = Mid(s,i,1) : If ch<"0" Or ch>"9" Then IsAllDigits=False : Exit Function : Next
-  IsAllDigits=True
-End Function
-
-Sub SleepSeconds(sec)
-  On Error Resume Next
-  g_shell.Run "cmd /c ping -n " & (sec+1) & " 127.0.0.1>NUL", 0, True
-  On Error GoTo 0
-End Sub
-
-Function RandomHex(n)
-  Dim i, s, v : Randomize : s = ""
-  For i=1 To n : v = Int(Rnd()*16) : s = s & Hex(v) : Next
-  RandomHex = s
-End Function
-
-Function ChromeIsRunning()
-  On Error Resume Next
-  Dim p, out : Set p = g_shell.Exec("cmd /c tasklist /FI ""IMAGENAME eq chrome.exe"" /NH | find /I ""chrome.exe""")
-  out = "" : If Not p Is Nothing Then out = LCase(p.StdOut.ReadAll)
-  On Error GoTo 0
-  ChromeIsRunning = (InStr(out,"chrome.exe")>0)
-End Function
-
-' ----- Openers -----
-Sub OpenGoogleOnce()
-  Dim cmd
-  If ChromeIsRunning() Then
-    cmd = """" & g_chrome & """ --new-tab ""https://www.google.com"""
-  Else
-    cmd = """" & g_chrome & """ --new-window ""https://www.google.com"""
-  End If
-  On Error Resume Next : g_shell.Run cmd, 1, False : On Error GoTo 0
-End Sub
-
-Sub OpenScanTab(sessionId)
-  Dim url, cmd : url = SCAN_HTML & "?session=" & sessionId
-  cmd = """" & g_chrome & """ --new-tab """ & url & """"
-  On Error Resume Next : g_shell.Run cmd, 1, False : On Error GoTo 0
-End Sub
-
-Sub OpenGoogleWithUA()
-  Dim profDir, cmd
-  profDir = g_shell.ExpandEnvironmentStrings("%TEMP%") & "\GomegaUA_" & RandomHex(6)
-  On Error Resume Next : If Not g_fso.FolderExists(profDir) Then g_fso.CreateFolder profDir : On Error GoTo 0
-  cmd = """" & g_chrome & """ --user-data-dir=""" & profDir & _
-        """ --new-window --no-first-run --no-default-browser-check " & _
-        "--user-agent=""" & DQ(g_customUA) & """ ""https://www.google.com"""
-  On Error Resume Next : g_shell.Run cmd, 1, False : On Error GoTo 0
-End Sub
-
-' ----- Scan + verify with persistent nudging -----
-Function WaitForScan()
-  Dim sessionId, resp, url, i, tick
-  sessionId = RandomHex(24)
-
-  SetStatus "Opening Google…"
-  OpenGoogleOnce
-
-  SetStatus "Opening ID verification tab…"
-  ' Initial nudges (helps right-after-relaunch)
-  For i = 1 To 6
-    OpenScanTab sessionId
-    SleepSeconds 1
-    url = PULL_API & "?session=" & sessionId & "&_=" & CLng(Timer*1000)
-    resp = HttpGet(url)
-    If IsAllDigits(resp) Then WaitForScan = resp : Exit Function
-  Next
-
-  ' Keep polling; every 5s nudge the scan tab again
-  SetStatus "Waiting for scan…"
-  tick = 0
-  Do
-    url = PULL_API & "?session=" & sessionId & "&_=" & CLng(Timer*1000)
-    resp = HttpGet(url)
-    If IsAllDigits(resp) Then WaitForScan = resp : Exit Function
-    SleepSeconds 1
-    tick = tick + 1
-    If (tick Mod 5) = 0 Then OpenScanTab sessionId
-  Loop
-End Function
-
-Function ValidateOnlineName(code)
-  Dim txt : txt = HttpGet(VALIDATE_API & "?code=" & code & "&_=" & CLng(Timer*1000))
-  txt = CleanText(txt)
-  If UCase(Left(txt,2)) = "OK" Then
-    ValidateOnlineName = Trim(Mid(txt,3))
-  Else
-    ValidateOnlineName = ""
-  End If
-End Function
-
-' ===== MAIN =====
-Sub Initialize()
-  Dim href, filePath, tf, fileContents, remoteV
-
-  ' Integrity
-  href = document.location.href
-  If Left(href,8)="file:///" Then
-    filePath = Mid(href,9)
-  ElseIf Left(href,7)="file://" Then
-    filePath = Mid(href,8)
-  Else
-    filePath = href
-  End If
-  filePath = Replace(filePath,"/","\") : filePath = Replace(filePath,"%20"," ")
-  On Error Resume Next
-  If g_fso.FileExists(filePath) Then Set tf = g_fso.OpenTextFile(filePath,1,False) : fileContents = tf.ReadAll : tf.Close Else fileContents = ""
-  On Error GoTo 0
-  If fileContents = "" Then MsgBox "Integrity check failed.", vbCritical, "Gomega" : Exit Sub
-
-  SetStatus "Checking version…"
-  remoteV = HttpGet(g_versionCheckURL)
-  If remoteV = "" Then MsgBox "Version check failed.", vbExclamation, "Gomega" : Exit Sub
-  If CompareVersions(NormalizeVersion(remoteV), NormalizeVersion(g_version)) <> 0 Then
-    MsgBox "Version mismatch — download the new one." & vbCrLf & _
-           "Installed: v" & g_version & vbCrLf & _
-           "Remote: v" & NormalizeVersion(remoteV), vbExclamation, "Gomega"
-    Exit Sub
-  End If
-
-  g_chrome = FirstExistingPath(g_chromePaths)
-  If g_chrome = "" Then MsgBox "Google Chrome not found.", vbExclamation, "Gomega" : Exit Sub
-
-  Dim code, name
-  code = WaitForScan()
-
-  SetStatus "Verifying…"
-  name = ValidateOnlineName(code) ' optional welcome name
-  If name = "" Then name = "User"
-
-  SetStatus "Unlocked — Welcome " & name & ". Opening with UA…"
-  OpenGoogleWithUA
-  MsgBox "Unlocked — Welcome " & name & ".", vbInformation, "Gomega"
-End Sub
-
-Sub Window_OnLoad(): Initialize: End Sub
-</script>
+<script src="https://unpkg.com/@zxing/library@0.20.0"></script>
 </head>
 <body>
-  <div class="card">
-    <div class="title">Gomega Browser — V17</div>
-    <div class="subtitle" id="status">Starting…</div>
-    <div class="row"><div class="spinner"></div><div>Don’t close this window.</div></div>
+  <div class="wrap">
+    <div class="card">
+      <div class="header">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Gomega Intelligence — Secure Overview</h1>
+          <p id="desc">Loading camera for barcode access…</p>
+          <div class="badges">
+            <span class="badge" id="status">Initializing…</span>
+            <span class="badge" id="hint">Show your barcode to the camera.</span>
+            <span class="badge info" id="reading" hidden>Reading barcode…</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="stage">
+        <video id="preview" autoplay playsinline muted></video>
+        <canvas id="overlay"></canvas>
+      </div>
+
+      <div class="row">
+        <button class="btn" id="flip" hidden>Switch Camera</button>
+        <button class="btn" id="torchBtn" hidden>Torch</button>
+      </div>
+    </div>
   </div>
+
+  <div class="overlay" id="welcomeOverlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+    <div class="welcome">
+      <h3 id="welcomeTitle">Welcome</h3>
+      <p id="welcomeMsg">Access granted.</p>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="dismissBtn">Dismiss</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  // Config
+  const SUBMIT_URL = 'scan_submit.php';   // server listener the HTA polls via scan_pull.php
+  const CONFIRM_HITS = 3;                 // require N identical reads in a row
+  const session = new URLSearchParams(location.search).get('session');
+
+  // DOM
+  const statusEl  = document.getElementById('status');
+  const hintEl    = document.getElementById('hint');
+  const descEl    = document.getElementById('desc');
+  const readingEl = document.getElementById('reading');
+
+  const video   = document.getElementById('preview');
+  const overlay = document.getElementById('overlay');
+  const ctx     = overlay.getContext('2d');
+
+  const flipBtn  = document.getElementById('flip');
+  const torchBtn = document.getElementById('torchBtn');
+
+  const welcomeOverlay = document.getElementById('welcomeOverlay');
+  const dismissBtn     = document.getElementById('dismissBtn');
+
+  // State
+  let reader, controlsRef = null, mediaStream = null;
+  let currentDeviceId = null, preferMode = 'fhd';
+  let lastDraw = 0, lastText = '', repeatCount = 0;
+  let unlocked = false;
+
+  function setStatus(text, cls){
+    statusEl.textContent = text;
+    statusEl.className = 'badge' + (cls ? ' ' + cls : '');
+  }
+
+  function fitOverlay(){
+    const vw = video.videoWidth || 640, vh = video.videoHeight || 360;
+    overlay.width = vw; overlay.height = vh;
+    overlay.style.width  = video.clientWidth + 'px';
+    overlay.style.height = video.clientHeight + 'px';
+  }
+
+  function drawPoly(points, color, width=4){
+    if(!points || !points.length) return;
+    const now = performance.now();
+    if(now - lastDraw < 50) return;
+    lastDraw = now;
+    const sx = overlay.width  / (video.videoWidth  || overlay.width);
+    const sy = overlay.height / (video.videoHeight || overlay.height);
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+    ctx.lineWidth = width; ctx.strokeStyle = color;
+    ctx.beginPath(); ctx.moveTo(points[0].x*sx, points[0].y*sy);
+    for(let i=1;i<points.length;i++) ctx.lineTo(points[i].x*sx, points[i].y*sy);
+    ctx.closePath(); ctx.stroke();
+  }
+
+  function faintGuide(){
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+    ctx.strokeStyle = "rgba(255,255,255,.25)";
+    ctx.lineWidth = 2;
+    const w = overlay.width*.6, h = overlay.height*.3;
+    const x = (overlay.width-w)/2, y = (overlay.height-h)/2;
+    ctx.strokeRect(x,y,w,h);
+  }
+
+  async function pushToLauncher(code){
+    // POST first, GET fallback
+    try{
+      const body = new URLSearchParams({ session, code });
+      await fetch(SUBMIT_URL, { method:'POST', body, cache:'no-store', credentials:'include', keepalive:true });
+    }catch(e){
+      try{
+        await fetch(`${SUBMIT_URL}?session=${encodeURIComponent(session)}&code=${encodeURIComponent(code)}&t=${Date.now()}`, { cache:'no-store', credentials:'include' });
+      }catch(_){}
+    }
+  }
+
+  function showUnlockedUI(nameText){
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+    // full green frame
+    drawPoly([{x:20,y:20},{x:overlay.width-20,y:20},{x:overlay.width-20,y:overlay.height-20},{x:20,y:overlay.height-20}], '#22c55e', 5);
+    setStatus('Unlocked — return to Gomega Launcher','ok');
+    readingEl.hidden = true;
+    if(nameText) document.getElementById('welcomeTitle').textContent = `Welcome, ${nameText}`;
+    welcomeOverlay.classList.add('show');
+  }
+
+  dismissBtn.onclick = ()=>{
+    // stop camera after unlock
+    try{
+      if(controlsRef && controlsRef.stop) controlsRef.stop();
+      mediaStream?.getTracks?.().forEach(t=>t.stop());
+    }catch(e){}
+    welcomeOverlay.classList.remove('show');
+  };
+
+  async function pickBackCamera(){
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    const cams = devs.filter(d=>d.kind==='videoinput');
+    if(!cams.length) return null;
+    const byLabel = cams.find(c => /back|rear|environment/i.test(c.label));
+    return (byLabel || cams[0]).deviceId || null;
+  }
+
+  async function startCamera(){
+    setStatus('Requesting camera…','info');
+    currentDeviceId = currentDeviceId || await pickBackCamera();
+
+    const base = (preferMode==='fhd') ? {width:{ideal:1920},height:{ideal:1080}} : {width:{ideal:1280},height:{ideal:720}};
+    const constraints = { audio:false, video:{ deviceId: currentDeviceId?{exact:currentDeviceId}:undefined, facingMode:{ideal:'environment'}, frameRate:{ideal:30,min:10}, ...base } };
+
+    try{
+      mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+    }catch(e){
+      delete constraints.video.deviceId;
+      mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+    }
+
+    video.srcObject = mediaStream;
+    await video.play();
+    fitOverlay();
+
+    // Capabilities
+    try{
+      const track = mediaStream.getVideoTracks()[0];
+      const caps = track.getCapabilities?.() || {};
+      torchBtn.hidden = !caps.torch;
+      if((await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput').length>1){
+        document.getElementById('flip').hidden = false;
+      }
+      track.onended = () => safeRestart();
+    }catch(e){}
+
+    setStatus('Reading…','info');
+  }
+
+  let restarting = false;
+  async function safeRestart(){
+    if(restarting) return;
+    restarting = true;
+    try{
+      if(controlsRef && controlsRef.stop) controlsRef.stop();
+      mediaStream?.getTracks?.().forEach(t=>t.stop());
+    }catch(e){}
+    try{
+      if(preferMode==='fhd') preferMode='hd';
+      await startCamera();
+      await startDecoding();
+    }catch(e){}
+    restarting = false;
+  }
+
+  function initReader(){
+    reader = new ZXing.BrowserMultiFormatReader();
+    try{
+      const hints = new Map();
+      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+        ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39, ZXing.BarcodeFormat.CODE_93,
+        ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.UPC_A,
+        ZXing.BarcodeFormat.ITF, ZXing.BarcodeFormat.CODABAR, ZXing.BarcodeFormat.QR_CODE
+      ]);
+      reader.setHints(hints);
+    }catch(e){}
+  }
+
+  async function startDecoding(){
+    controlsRef = reader.decodeFromConstraints({
+      audio:false,
+      video:{
+        deviceId: currentDeviceId ? {exact: currentDeviceId} : undefined,
+        facingMode:{ideal:'environment'},
+        width:{ideal:(preferMode==='fhd'?1920:1280)}, height:{ideal:(preferMode==='fhd'?1080:720)},
+        frameRate:{ideal:30,min:10}
+      }
+    }, 'preview', (result, err, controls)=>{
+      if(unlocked) return;
+
+      if(result && result.getText){
+        const txt = (result.getText()||'').trim();
+        const pts = (result.resultPoints || []).map(p => ({x:(p.x ?? p.getX()), y:(p.y ?? p.getY())}));
+        fitOverlay();
+        drawPoly(pts, /^\d{6,20}$/.test(txt) ? '#60a5fa' : '#ef4444');
+        readingEl.hidden = false;
+
+        if(/^\d{6,20}$/.test(txt)){
+          if(txt===lastText){ repeatCount++; } else { lastText=txt; repeatCount=1; }
+          if(repeatCount>=CONFIRM_HITS){
+            unlocked = true;
+            try{ controls && controls.stop(); }catch(e){}
+            // Always notify launcher; do NOT gate on local lists
+            if(session) pushToLauncher(txt);
+            drawPoly(pts, '#22c55e');
+            showUnlockedUI(/* optional name text if you have */);
+          }
+        }else{
+          setStatus('Invalid code format','warn');
+        }
+      }else if(err && !(err instanceof ZXing.NotFoundException)){
+        setStatus('Camera decode error','warn'); readingEl.hidden = true;
+        if(preferMode==='fhd'){ preferMode='hd'; safeRestart(); }
+      }else if(!unlocked){
+        faintGuide();
+      }
+    });
+  }
+
+  document.getElementById('flip').onclick = async ()=>{
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    const cams = devs.filter(d=>d.kind==='videoinput');
+    if(!cams.length) return;
+    const idx = currentDeviceId ? Math.max(0, cams.findIndex(d=>d.deviceId===currentDeviceId)) : -1;
+    currentDeviceId = cams[(idx+1)%cams.length].deviceId;
+    safeRestart();
+  };
+
+  torchBtn.onclick = async ()=>{
+    try{
+      const track = mediaStream?.getVideoTracks?.()[0];
+      if(!track) return;
+      const on = torchBtn.dataset.on==='1';
+      await track.applyConstraints({ advanced:[{ torch: !on }] });
+      torchBtn.dataset.on = (!on?'1':'0');
+      torchBtn.textContent = (!on?'Torch (On)':'Torch');
+    }catch(e){}
+  };
+
+  // Boot
+  (async ()=>{
+    if(!session){
+      setStatus('Missing session','warn');
+      descEl.textContent = 'This page must be opened by the launcher.';
+      return;
+    }
+    descEl.textContent = 'Gomega Intelligence is loading your camera…';
+    initReader();
+    await startCamera();
+    await startDecoding();
+  })();
+})();
+</script>
 </body>
 </html>
