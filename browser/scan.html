@@ -2,32 +2,77 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Gomega — ID Verification</title>
+<title>Gomega Intelligence — Overview & Access</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-  :root{--bg:#0f172a;--panel:#111827;--ink:#e5e7eb;--muted:#94a3b8;--accent:#22c55e;--warn:#ef4444}
+  :root{
+    --bg:#0f172a; --panel:#111827; --ink:#e5e7eb; --muted:#94a3b8;
+    --accent:#22c55e; --accent2:#0ea5e9; --warn:#ef4444; --info:#60a5fa;
+    --border:rgba(148,163,184,.25)
+  }
   html,body{height:100%;margin:0;background:linear-gradient(135deg,#0f172a 0%,#1f2937 40%,#0ea5e9 100%);font-family:Segoe UI,Arial,sans-serif;color:var(--ink)}
-  .wrap{max-width:920px;margin:0 auto;padding:24px}
-  .card{background:rgba(17,24,39,.7);border:1px solid rgba(148,163,184,.25);border-radius:16px;padding:16px 16px 20px;backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
-  h1{margin:0 0 4px;font-size:20px}
-  p{margin:4px 0;color:var(--muted);font-size:13px}
+  a{color:#7dd3fc;text-decoration:none}
+  .wrap{max-width:1100px;margin:0 auto;padding:24px}
+  .card{background:rgba(17,24,39,.72);border:1px solid var(--border);border-radius:16px;padding:16px 16px 20px;backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
+  .header{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .logo{width:44px;height:44px;border-radius:12px;background:conic-gradient(from 0deg,#22c55e 0 25%,#0ea5e9 0 50%,#7c3aed 0 75%,#22c55e)}
+  h1{margin:0;font-size:22px}
+  p{margin:4px 0;color:var(--muted);font-size:14px}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#0b1220;border:1px solid var(--border);font-size:12px}
+  .ok{color:var(--accent)} .warn{color:var(--warn)} .info{color:var(--info)}
   #stage{position:relative;display:flex;justify-content:center;align-items:center;margin-top:12px}
-  video{width:100%;max-width:820px;border-radius:12px;background:#000;aspect-ratio:16/9;object-fit:cover}
-  canvas{position:absolute;inset:0;width:100%;max-width:820px;height:100%;border-radius:12px;pointer-events:none}
-  .row{display:flex;align-items:center;gap:10px;margin-top:10px}
-  .badge{display:inline-block;padding:4px 10px;border-radius:999px;background:#0b1220;border:1px solid rgba(148,163,184,.25);font-size:12px}
-  .ok{color:var(--accent)}
-  .warn{color:var(--warn)}
-  .btn{margin-top:10px;border:1px solid rgba(148,163,184,.35);background:#0b1220;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer}
+  video{width:100%;max-width:980px;border-radius:14px;background:#000;aspect-ratio:16/9;object-fit:cover}
+  canvas{position:absolute;inset:0;width:100%;max-width:980px;height:100%;border-radius:14px;pointer-events:none}
+  .row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .btn{border:1px solid rgba(148,163,184,.35);background:#0b1220;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer}
   .btn:active{transform:scale(.99)}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);margin:18px 0}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .tile{grid-column:span 12;background:rgba(2,6,23,.6);border:1px solid var(--border);border-radius:16px;padding:16px}
+  @media(min-width:900px){
+    .tile.span-6{grid-column:span 6}
+    .tile.span-4{grid-column:span 4}
+    .tile.span-8{grid-column:span 8}
+  }
+  .kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#cbd5e1;margin-bottom:6px}
+  h2{margin:0 0 6px;font-size:18px}
+  ul{margin:8px 0 0 18px;color:var(--muted);font-size:14px}
+  .callout{border-left:3px solid var(--accent);background:rgba(34,197,94,.06);padding:12px;border-radius:12px}
+  .foot{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px}
+  .linkbtn{display:inline-flex;align-items:center;gap:8px;background:rgba(125,211,252,.08);border:1px solid rgba(125,211,252,.3);padding:10px 12px;border-radius:12px}
+  .hidden{display:none !important}
+
+  /* Welcome overlay */
+  .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.5);backdrop-filter:blur(6px);z-index:50}
+  .overlay.show{display:flex}
+  .welcome{width:min(640px,92vw);border-radius:18px;padding:20px;background:rgba(17,24,39,.9);border:1px solid var(--border);box-shadow:0 12px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04)}
+  .welcome h3{margin:0 0 8px;font-size:22px}
+  .welcome p{font-size:14px;color:var(--muted)}
+  input[type="range"]{accent-color:#7dd3fc}
 </style>
+
+<!-- ZXing: decoding engine -->
 <script src="https://unpkg.com/@zxing/library@0.20.0"></script>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
-      <h1>Gomega — ID Verification</h1>
-      <p id="desc">Loading camera…</p>
+    <!-- Access / Scanner Card -->
+    <div class="card" id="gate">
+      <div class="header">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Gomega Intelligence — Secure Overview</h1>
+          <p id="desc">Loading camera for barcode access…</p>
+          <div class="badges">
+            <span class="badge" id="status">Initializing…</span>
+            <span class="badge" id="hint">Show your barcode to the camera.</span>
+            <span class="badge info" id="reading" hidden>Reading barcode…</span>
+            <span class="badge" id="idsState" hidden>IDs: 0</span>
+          </div>
+        </div>
+      </div>
 
       <div id="stage">
         <video id="preview" autoplay playsinline muted></video>
@@ -35,171 +80,534 @@
       </div>
 
       <div class="row">
-        <span class="badge" id="status">Initializing…</span>
-        <span class="badge" id="hint">Show your barcode to the camera.</span>
+        <button class="btn" id="flip" hidden>Switch Camera</button>
+        <button class="btn" id="torchBtn" hidden>Torch</button>
+        <input id="zoomRange" type="range" min="1" max="1" step="0.1" value="1" style="width:180px;display:none" />
+        <button class="btn" id="captureBtn">Capture Photo</button>
+        <label class="btn" for="uploadInput">Upload Image</label>
+        <input id="uploadInput" type="file" accept="image/*" style="display:none" />
+        <button class="btn" id="lock" hidden>Lock & Re-Scan</button>
       </div>
+    </div>
 
-      <button class="btn" id="flip" style="display:none">Switch Camera</button>
+    <!-- CONTENT (hidden until unlocked) -->
+    <div id="content" class="hidden">
+      <div class="divider"></div>
+
+      <div class="grid">
+        <div class="tile span-8">
+          <div class="kicker">About</div>
+          <h2>What is Gomega Intelligence?</h2>
+          <p>
+            Gomega Intelligence is the core decision and understanding engine that powers the Gomega ecosystem…
+          </p>
+        </div>
+
+        <div class="tile span-4">
+          <div class="kicker">Status</div>
+          <h2>Where It’s Used Right Now</h2>
+          <ul>
+            <li><strong>Gomega Browser</strong> — launch experience & guarded entry.</li>
+            <li><strong>Homework Helper (BETA)</strong> — structured explanations and guided solving.</li>
+            <li><strong>Gomega AI</strong> — conversational interface with smart actions.</li>
+          </ul>
+        </div>
+
+        <div class="tile span-6">
+          <div class="kicker">Access</div>
+          <h2>Barcode-First Security</h2>
+          <ul>
+            <li>On-device camera decode with TRY_HARDER.</li>
+            <li>Live polygon highlight and “Reading barcode…” feedback.</li>
+            <li>Dismiss closes the camera and enters the experience.</li>
+          </ul>
+        </div>
+
+        <div class="tile span-6">
+          <div class="kicker">Principles</div>
+          <h2>Design Pillars</h2>
+          <ul>
+            <li><strong>Helpful</strong></li>
+            <li><strong>Transparent</strong></li>
+            <li><strong>Guarded</strong></li>
+            <li><strong>Extensible</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div><!-- /content -->
+  </div>
+
+  <!-- Welcome Overlay -->
+  <div class="overlay" id="welcomeOverlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+    <div class="welcome">
+      <h3 id="welcomeTitle">Welcome</h3>
+      <p id="welcomeMsg">Access granted.</p>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="dismissBtn">Dismiss</button>
+        <button class="btn" id="relockBtn">Lock & Re-Scan</button>
+      </div>
     </div>
   </div>
 
 <script>
 (function(){
+  // ---- Config ----
+  const IDS_URL = 'browser/ids.csv';     // optional local allowlist: "number,name"
+  const SUBMIT_URL = 'scan_submit.php';  // endpoint to notify HTA poller
+  const CONFIRM_HITS = 3;                // require N consecutive identical reads
+
+  // ---- DOM ----
   const qs = new URLSearchParams(location.search);
   const session = qs.get('session');
-  const statusEl = document.getElementById('status');
-  const hintEl   = document.getElementById('hint');
-  const descEl   = document.getElementById('desc');
-  const video    = document.getElementById('preview');
-  const overlay  = document.getElementById('overlay');
-  const ctx      = overlay.getContext('2d');
-  const flipBtn  = document.getElementById('flip');
 
-  if(!session){
-    statusEl.textContent = 'Missing session'; statusEl.classList.add('warn');
-    descEl.textContent = 'This page must be opened by the launcher.';
-    return;
-  }
+  const statusEl   = document.getElementById('status');
+  const hintEl     = document.getElementById('hint');
+  const descEl     = document.getElementById('desc');
+  const readingEl  = document.getElementById('reading');
+  const idsState   = document.getElementById('idsState');
 
-  let currentDeviceId = null;
-  let devices = [];
-  let submitted = false;
-  let lastDraw = 0;
+  const video      = document.getElementById('preview');
+  const overlay    = document.getElementById('overlay');
+  const ctx        = overlay.getContext('2d');
+  const stage      = document.getElementById('stage');
 
-  function setStatus(text, ok){
+  const flipBtn    = document.getElementById('flip');
+  const torchBtn   = document.getElementById('torchBtn');
+  const zoomRange  = document.getElementById('zoomRange');
+  const captureBtn = document.getElementById('captureBtn');
+  const uploadIn   = document.getElementById('uploadInput');
+
+  const content    = document.getElementById('content');
+  const lockBtn    = document.getElementById('lock');
+
+  const welcomeOverlay = document.getElementById('welcomeOverlay');
+  const welcomeTitle   = document.getElementById('welcomeTitle');
+  const welcomeMsg     = document.getElementById('welcomeMsg');
+  const dismissBtn     = document.getElementById('dismissBtn');
+  const relockBtn      = document.getElementById('relockBtn');
+
+  // ---- State ----
+  const idMap = new Map();
+  let reader, controlsRef = null, mediaStream = null;
+  let currentDeviceId = null, preferMode = 'fhd'; // fhd -> hd ladder
+  let unlocked = false;
+  let lastDraw = 0, lastText = '', repeatCount = 0;
+  let heartbeat = null;
+
+  // ---- UI helpers ----
+  function setStatus(text, cls){
     statusEl.textContent = text;
-    statusEl.classList.remove('ok','warn');
-    if(ok === true) statusEl.classList.add('ok');
-    if(ok === false) statusEl.classList.add('warn');
+    statusEl.className = 'badge' + (cls ? ' ' + cls : '');
   }
 
-  function fitCanvas(){
-    const r = video.getBoundingClientRect();
-    overlay.width  = r.width * devicePixelRatio;
-    overlay.height = r.height* devicePixelRatio;
-    overlay.style.width  = r.width + 'px';
-    overlay.style.height = r.height+ 'px';
-  }
-  addEventListener('resize', fitCanvas);
-
-  async function enumerate(){
-    try{
-      const list = await navigator.mediaDevices.enumerateDevices();
-      devices = list.filter(d => d.kind === 'videoinput');
-      if(devices.length > 1) flipBtn.style.display = '';
-    }catch(e){}
+  function fitCanvasIntrinsic(){
+    const vw = video.videoWidth || 640;
+    const vh = video.videoHeight || 360;
+    overlay.width = Math.max(1, vw);
+    overlay.height= Math.max(1, vh);
+    overlay.style.width  = video.clientWidth + 'px';
+    overlay.style.height = video.clientHeight + 'px';
   }
 
-  async function startCamera(preferBack=true){
-    setStatus('Requesting camera…');
-    let stream;
-    try{
-      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode: preferBack ? {ideal:'environment'} : 'user'}});
-    }catch(e){
-      stream = await navigator.mediaDevices.getUserMedia({video:true});
-    }
-    video.srcObject = stream;
-    await video.play();
-    await enumerate();
-    fitCanvas();
-    setStatus('Reading…');
-  }
-
-  flipBtn.onclick = async () => {
-    try{
-      const stream = video.srcObject;
-      if(stream){ stream.getTracks().forEach(t=>t.stop()); }
-    }catch(e){}
-    const list = await navigator.mediaDevices.enumerateDevices();
-    const cams = list.filter(d => d.kind==='videoinput');
-    if(!cams.length){ return; }
-    const idx = currentDeviceId ? Math.max(0, cams.findIndex(d=>d.deviceId===currentDeviceId)) : -1;
-    const next = cams[(idx+1) % cams.length];
-    currentDeviceId = next.deviceId;
-    const stream = await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact: currentDeviceId}}});
-    video.srcObject = stream; await video.play(); fitCanvas();
-  };
-
-  const reader = new ZXing.BrowserMultiFormatReader();
-
-  function drawBox(pts, color){
-    if(!pts || !pts.length) return;
+  function drawPoly(points, color, width=4){
+    if(!points || !points.length) return;
     const now = performance.now();
-    if(now - lastDraw < 40) return;
+    if(now - lastDraw < 50) return; // throttle
     lastDraw = now;
-    const r = video.getBoundingClientRect();
-    const sx = overlay.width / r.width;
-    const sy = overlay.height/ r.height;
+
+    const sx = overlay.width  / (video.videoWidth  || overlay.width);
+    const sy = overlay.height / (video.videoHeight || overlay.height);
 
     ctx.clearRect(0,0,overlay.width,overlay.height);
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = color || '#22c55e';
+    ctx.lineWidth = width;
+    ctx.strokeStyle = color;
     ctx.beginPath();
-    ctx.moveTo(pts[0].x*sx, pts[0].y*sy);
-    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x*sx, pts[i].y*sy);
+    ctx.moveTo(points[0].x*sx, points[0].y*sy);
+    for(let i=1;i<points.length;i++) ctx.lineTo(points[i].x*sx, points[i].y*sy);
     ctx.closePath();
     ctx.stroke();
   }
 
-  async function pushCode(code){
-    if(submitted) return;
-    submitted = true;
-    setStatus('Unlocking…', true);
-    hintEl.textContent = 'Sending scan to launcher…';
+  function faintGuide(){
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+    ctx.strokeStyle = "rgba(255,255,255,.25)";
+    ctx.lineWidth = 2;
+    const w = overlay.width*.6, h = overlay.height*.3;
+    const x = (overlay.width-w)/2, y = (overlay.height-h)/2;
+    ctx.strokeRect(x,y,w,h);
+  }
 
-    // POST first, GET fallback
+  function outlineUnlocked(){
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+    drawPoly([{x:20,y:20},{x:overlay.width-20,y:20},{x:overlay.width-20,y:overlay.height-20},{x:20,y:overlay.height-20}], '#22c55e', 5);
+  }
+
+  // ---- CSV allowlist (optional) ----
+  async function loadIds(){
+    try{
+      const res = await fetch(IDS_URL, { cache:'no-store' });
+      const text = await res.text();
+      idMap.clear();
+      text.split(/\r?\n/).forEach(line=>{
+        const raw = line.trim();
+        if(!raw) return;
+        const idx = raw.indexOf(',');
+        const code = (idx>=0 ? raw.slice(0,idx) : raw).trim();
+        const name = (idx>=0 ? raw.slice(idx+1) : '').trim();
+        if(/^\d{6,20}$/.test(code)) idMap.set(code, name || '');
+      });
+      idsState.hidden = false;
+      idsState.textContent = `IDs: ${idMap.size}`;
+    }catch(e){
+      idsState.hidden = false;
+      idsState.textContent = 'IDs: load error';
+    }
+  }
+
+  // ---- Devices / camera ----
+  async function pickBackCamera(){
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    const cams = devs.filter(d=>d.kind==='videoinput');
+    if(!cams.length) return null;
+    const byLabel = cams.find(c => /back|rear|environment/i.test(c.label));
+    return (byLabel || cams[0]).deviceId || null;
+  }
+
+  async function startCamera(){
+    setStatus('Requesting camera…','info');
+    currentDeviceId = currentDeviceId || await pickBackCamera();
+
+    const base = (preferMode === 'fhd')
+      ? { width:{ideal:1920}, height:{ideal:1080} }
+      : { width:{ideal:1280}, height:{ideal:720} };
+
+    const constraints = {
+      audio:false,
+      video:{
+        deviceId: currentDeviceId ? {exact: currentDeviceId} : undefined,
+        facingMode:{ideal:'environment'},
+        frameRate:{ideal:30, min:10},
+        ...base
+      }
+    };
+
+    try{
+      mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+    }catch(e){
+      // fallback: remove exact device
+      delete constraints.video.deviceId;
+      mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+    }
+
+    video.srcObject = mediaStream;
+    await video.play();
+    fitCanvasIntrinsic();
+
+    // Capabilities: torch/zoom/focus
+    try{
+      const track = mediaStream.getVideoTracks()[0];
+      const caps = track.getCapabilities?.() || {};
+      torchBtn.hidden = !caps.torch;
+      if(caps.zoom){
+        zoomRange.min = caps.zoom.min ?? 1;
+        zoomRange.max = caps.zoom.max ?? 5;
+        zoomRange.step= caps.zoom.step ?? 0.1;
+        zoomRange.value= caps.zoom.min ?? 1;
+        zoomRange.style.display = 'inline-block';
+      }else{
+        zoomRange.style.display = 'none';
+      }
+      if(caps.focusMode && caps.focusMode.includes('continuous')){
+        await track.applyConstraints({ advanced:[{ focusMode:'continuous' }] });
+      }
+      track.onended = () => safeRestartCamera();
+    }catch(e){}
+
+    // show flip if >1 camera
+    const cams = (await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+    flipBtn.hidden = cams.length <= 1;
+
+    startHeartbeat();
+    setStatus('Reading…','info');
+  }
+
+  function stopCamera(){
+    stopHeartbeat();
+    if(controlsRef && controlsRef.stop){ try{ controlsRef.stop(); }catch(e){} }
+    if(controlsRef && controlsRef.reset){ try{ controlsRef.reset(); }catch(e){} }
+    controlsRef = null;
+    mediaStream?.getTracks?.().forEach(t=>{ try{ t.stop(); }catch(e){} });
+    mediaStream = null;
+    video.srcObject = null;
+  }
+
+  let restarting = false;
+  async function safeRestartCamera(){
+    if(restarting) return;
+    restarting = true;
+    try{
+      stopCamera();
+      if(preferMode === 'fhd') preferMode = 'hd';
+      await startCamera();
+      await startDecoding();
+    }catch(e){
+      preferMode = 'hd';
+      try{
+        await startCamera();
+        await startDecoding();
+      }catch(_){}
+    }finally{
+      restarting = false;
+    }
+  }
+
+  function startHeartbeat(){
+    stopHeartbeat();
+    heartbeat = setInterval(()=>{
+      const track = mediaStream?.getVideoTracks?.()[0];
+      if(!track || track.readyState === 'ended' || video.readyState === 0){
+        safeRestartCamera();
+      }
+    }, 2000);
+  }
+  function stopHeartbeat(){
+    if(heartbeat){ clearInterval(heartbeat); heartbeat = null; }
+  }
+
+  // ---- ZXing init (NO listVideoInputDevices) ----
+  function initReader(){
+    reader = new ZXing.BrowserMultiFormatReader();
+    try{
+      const hints = new Map();
+      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+        ZXing.BarcodeFormat.QR_CODE,
+        ZXing.BarcodeFormat.CODE_128,
+        ZXing.BarcodeFormat.CODE_39,
+        ZXing.BarcodeFormat.CODE_93,
+        ZXing.BarcodeFormat.EAN_13,
+        ZXing.BarcodeFormat.EAN_8,
+        ZXing.BarcodeFormat.UPC_A,
+        ZXing.BarcodeFormat.ITF,
+        ZXing.BarcodeFormat.CODABAR
+      ]);
+      reader.setHints(hints);
+    }catch(e){}
+  }
+
+  // Prefer decodeFromConstraints — but DO NOT call any non-existent static helpers
+  async function startDecoding(){
+    controlsRef = reader.decodeFromConstraints({
+      audio:false,
+      video:{
+        deviceId: currentDeviceId ? {exact: currentDeviceId} : undefined,
+        facingMode:{ideal:'environment'},
+        width:{ideal:(preferMode==='fhd'?1920:1280)},
+        height:{ideal:(preferMode==='fhd'?1080:720)},
+        frameRate:{ideal:30,min:10}
+      }
+    }, 'preview', (result, err, controls) => {
+      if(unlocked) return;
+
+      if(result && result.getText){
+        const txt = (result.getText() || '').trim();
+        // result points (support both shapes)
+        const pts = (result.resultPoints
+                      || (result.getResultPoints && result.getResultPoints())
+                      || [])
+                    .map(p => ({x:p.x ?? (p.getX && p.getX()), y:p.y ?? (p.getY && p.getY())}));
+
+        fitCanvasIntrinsic(); // ensure overlay matches intrinsic size
+        drawPoly(pts, /^\d{6,20}$/.test(txt) ? '#60a5fa' : '#ef4444');
+        readingEl.hidden = false;
+        readingEl.textContent = 'Reading barcode…';
+
+        if(/^\d{6,20}$/.test(txt)){
+          if(txt === lastText){ repeatCount++; } else { lastText = txt; repeatCount = 1; }
+          if(repeatCount >= CONFIRM_HITS){
+            handleConfirmedCode(txt, pts, controls);
+          }
+        }else{
+          setStatus('Invalid code format','warn');
+        }
+      }else if(err && !(err instanceof ZXing.NotFoundException)){
+        setStatus('Camera decode error','warn');
+        readingEl.hidden = true;
+        if(preferMode === 'fhd'){ preferMode = 'hd'; safeRestartCamera(); }
+      }else if(!unlocked){
+        faintGuide();
+      }
+    });
+  }
+
+  // ---- Allowlist check (optional local UX) ----
+  function verifyLocally(code){
+    if(!/^\d{6,20}$/.test(code)) return { ok:false, name:null };
+    if(!idMap.has(code)) return { ok:false, name:null };
+    return { ok:true, name:idMap.get(code) || null };
+  }
+
+  // ---- Submit to HTA poller ----
+  async function pushToLauncher(session, code){
+    // POST first, GET fallback — matches HTA's scan_pull.php polling
     try{
       const body = new URLSearchParams({ session, code });
-      await fetch('scan_submit.php', {method:'POST', body, cache:'no-store', credentials:'include', keepalive:true});
+      await fetch(SUBMIT_URL, { method:'POST', body, cache:'no-store', credentials:'include', keepalive:true });
     }catch(e){
       try{
-        await fetch(`scan_submit.php?session=${encodeURIComponent(session)}&code=${encodeURIComponent(code)}&t=${Date.now()}`, {cache:'no-store', credentials:'include'});
-      }catch(e2){}
+        await fetch(`${SUBMIT_URL}?session=${encodeURIComponent(session)}&code=${encodeURIComponent(code)}&t=${Date.now()}`, { cache:'no-store', credentials:'include' });
+      }catch(_){}
     }
-
-    ctx.clearRect(0,0,overlay.width,overlay.height);
-    drawBox([{x:20,y:20},{x:overlay.width-20,y:20},{x:overlay.width-20,y:overlay.height-20},{x:20,y:overlay.height-20}], '#22c55e');
-    setStatus('Unlocked — return to Gomega Launcher', true);
-    descEl.textContent = 'Scan accepted.';
   }
 
-  async function scanLoop(){
+  function showWelcome(name){
+    welcomeTitle.textContent = name ? `Welcome, ${name}` : 'Welcome';
+    welcomeMsg.textContent   = 'Access granted to Gomega Intelligence.';
+    welcomeOverlay.classList.add('show');
+  }
+
+  function unlockUI(){
+    setStatus('Unlocked — content revealed','ok');
+    hintEl.textContent = 'Access granted.';
+    outlineUnlocked();
+    content.classList.remove('hidden');
+    lockBtn.hidden = false;
+    readingEl.hidden = true;
+  }
+
+  async function handleConfirmedCode(code, pts, controls){
+    // Always notify launcher
+    if(session){ pushToLauncher(session, code); }
+
+    // Optional local gate (keep for UX; remove if you don’t want local CSV check)
+    const { ok, name } = verifyLocally(code);
+    if(ok){
+      unlocked = true;
+      try{ controls && controls.stop(); }catch(e){}
+      drawPoly(pts, '#22c55e');
+      unlockUI();
+      showWelcome(name);
+    }else{
+      // If not in local CSV, still indicate success to launcher.
+      // You can change this behavior; for now we visually accept only if CSV has it.
+      setStatus('Code not recognized (local list)','warn');
+    }
+  }
+
+  // ---- Image decoding (optional) ----
+  async function decodeFromImageBitmap(bitmap){
+    const cnv = document.createElement('canvas');
+    cnv.width = bitmap.width; cnv.height = bitmap.height;
+    cnv.getContext('2d').drawImage(bitmap, 0, 0);
+    const img = new Image();
+    img.src = cnv.toDataURL('image/png');
+    await img.decode();
     try{
-      const devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
-      let deviceId = devices && devices.length ? devices[0].deviceId : undefined;
-      reader.decodeFromVideoDevice(deviceId, 'preview', (result, err, controls) => {
-        if(result && result.getText){
-          const txt = result.getText().trim();
-          const pts = (result.resultPoints || []).map(p => ({x:p.getX(), y:p.getY()}));
-          drawBox(pts, '#22c55e');
-          if(/^\d{6,20}$/.test(txt)){
-            pushCode(txt);
-            controls && controls.stop();
-          }else{
-            setStatus('Invalid code detected', false);
-          }
-        }else if(err && !(err instanceof ZXing.NotFoundException)){
-          setStatus('Camera decode error', false);
-        }else if(!submitted){
-          // show a faint guide box
-          ctx.clearRect(0,0,overlay.width,overlay.height);
-          ctx.strokeStyle = "rgba(255,255,255,.25)";
-          ctx.lineWidth = 2;
-          const w = overlay.width*.6, h = overlay.height*.3;
-          const x = (overlay.width-w)/2, y = (overlay.height-h)/2;
-          ctx.strokeRect(x,y,w,h);
-        }
-      });
+      const result = await reader.decodeFromImage(img);
+      return result.getText ? String(result.getText()).trim() : '';
     }catch(e){
-      setStatus('Failed to start scanner', false);
-      hintEl.textContent = (e && e.message) ? e.message : 'Check camera permissions.';
+      return '';
     }
   }
 
-  (async () => {
+  captureBtn.addEventListener('click', async ()=>{
+    try{
+      if(!video.srcObject) return;
+      const bmp = await createImageBitmap(video);
+      const txt = await decodeFromImageBitmap(bmp);
+      if(txt){ manualHandle(txt); } else { setStatus('No code found in photo','warn'); }
+    }catch(e){ setStatus('Capture failed','warn'); }
+  });
+
+  uploadIn.addEventListener('change', async (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    try{
+      const bmp = await createImageBitmap(file);
+      const txt = await decodeFromImageBitmap(bmp);
+      if(txt){ manualHandle(txt); } else { setStatus('No code found in image','warn'); }
+    }catch(err){ setStatus('Image load failed','warn'); }
+    finally{ e.target.value = ''; }
+  });
+
+  function manualHandle(txt){
+    if(/^\d{6,20}$/.test(txt)){
+      handleConfirmedCode(txt, [{x:20,y:20},{x:overlay.width-20,y:20},{x:overlay.width-20,y:overlay.height-20},{x:20,y:overlay.height-20}], controlsRef);
+    }else{
+      setStatus('Invalid code format','warn');
+    }
+  }
+
+  // ---- Controls ----
+  flipBtn.onclick = async () => {
+    try{
+      const list = await navigator.mediaDevices.enumerateDevices();
+      const cams = list.filter(d => d.kind==='videoinput');
+      if(!cams.length) return;
+      const idx = currentDeviceId ? Math.max(0, cams.findIndex(d=>d.deviceId===currentDeviceId)) : -1;
+      const next = cams[(idx+1)%cams.length];
+      currentDeviceId = next.deviceId;
+      await safeRestartCamera();
+    }catch(e){}
+  };
+
+  torchBtn.onclick = async ()=>{
+    try{
+      const track = mediaStream?.getVideoTracks?.()[0];
+      if(!track) return;
+      const on = torchBtn.dataset.on === '1';
+      await track.applyConstraints({ advanced:[{ torch: !on }] });
+      torchBtn.dataset.on = (!on ? '1' : '0');
+      torchBtn.textContent = (!on ? 'Torch (On)' : 'Torch');
+    }catch(e){}
+  };
+
+  zoomRange.addEventListener('input', async (e)=>{
+    try{
+      const track = mediaStream?.getVideoTracks?.()[0];
+      if(!track) return;
+      await track.applyConstraints({ advanced:[{ zoom: Number(e.target.value) }] });
+    }catch(e){}
+  });
+
+  lockBtn.onclick = async ()=>{
+    unlocked = false;
+    setStatus('Locked','warn');
+    hintEl.textContent = 'Show your barcode to the camera.';
+    content.classList.add('hidden');
+    lockBtn.hidden = true;
+    welcomeOverlay.classList.remove('show');
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+    readingEl.hidden = true;
+    stage.classList.remove('hidden');
+    await safeRestartCamera();
+  };
+
+  dismissBtn.onclick = ()=>{
+    stopCamera();
+    stage.classList.add('hidden');
+    welcomeOverlay.classList.remove('show');
+  };
+  relockBtn.onclick = ()=> lockBtn.onclick();
+
+  // Pause camera when tab hidden; resume when visible
+  document.addEventListener('visibilitychange', async ()=>{
+    if(document.hidden){ stopCamera(); }
+    else if(!unlocked){ await safeRestartCamera(); }
+  });
+
+  // ---- Boot ----
+  (async ()=>{
+    if(!session){
+      setStatus('Missing session','warn');
+      descEl.textContent = 'This page must be opened by the launcher.';
+      return;
+    }
     descEl.textContent = 'Gomega Intelligence is loading your camera…';
-    await startCamera(true);
-    await scanLoop();
+    await loadIds();      // optional local list
+    initReader();         // ZXing (no listVideoInputDevices usage)
+    await startCamera();  // show preview
+    await startDecoding(); // start reading
   })();
 })();
 </script>
