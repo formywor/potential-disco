@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ScriptNova — Breaking News</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#060e19; --bg2:#0a1526; --card:#0c1729; --ink:#eaf2fa;
+    --muted:#9fb0c3; --accent:#7dd3fc; --accent2:#34d399; --danger:#ef4444; --warn:#f59e0b;
+    --ring:rgba(125,211,252,.4);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial,Helvetica,sans-serif; color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 20% -10%, #11213a 0%, transparent 60%),
+      radial-gradient(900px 600px at 90% 10%, #0b2842 0%, transparent 55%),
+      linear-gradient(180deg, var(--bg), var(--bg2));
+    background-attachment: fixed;
+  }
+
+  /* Header */
+  header{position:sticky;top:0;z-index:30;background:linear-gradient(180deg, rgba(6,14,25,.95), rgba(6,14,25,.65));backdrop-filter: blur(8px);border-bottom:1px solid rgba(125,211,252,.2)}
+  .bar{max-width:1200px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;gap:14px}
+  .logo{font-weight:800;font-size:1.15rem;letter-spacing:.2px}
+  .badge{border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:4px 10px;color:#cfe6ff;font-size:.85rem}
+  .clock{margin-left:auto;color:#cfe6ff;font-variant-numeric:tabular-nums;font-weight:600;opacity:.9}
+
+  /* Ticker */
+  .ticker-wrap{overflow:hidden;border-bottom:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,#0c1b2e,#0b1626)}
+  .ticker{display:flex;gap:40px;white-space:nowrap;animation:ticker 35s linear infinite}
+  .ticker-item{padding:10px 18px;color:#d8ecff}
+  .ticker-item .dot{display:inline-block;width:8px;height:8px;border-radius:999px;background:var(--accent2);margin-right:8px;box-shadow:0 0 12px rgba(52,211,153,.8)}
+  @keyframes ticker{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+
+  .wrap{max-width:1200px;margin:0 auto;padding:22px 18px}
+  .grid{display:grid;grid-template-columns:1fr;gap:16px}
+  @media(min-width:980px){.grid{grid-template-columns:1.2fr .8fr}}
+
+  /* Cards */
+  .panel{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px}
+  h2{margin:0 0 10px 0;color:#dbeafe}
+  .sub{color:var(--muted);font-size:.9rem;margin-top:-2px}
+
+  .news-list{display:grid;gap:12px}
+  .news-card{
+    border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
+    border-radius:14px;padding:14px 14px 12px;display:grid;gap:8px;position:relative;overflow:hidden
+  }
+  .news-card::after{
+    content:"";position:absolute;inset:auto -20% 0; height:2px;
+    background:linear-gradient(90deg,transparent,rgba(125,211,252,.45),transparent);
+    transform:translateY(4px);opacity:.6
+  }
+  .headline{font-weight:700}
+  .meta{display:flex;gap:10px;align-items:center;font-size:.85rem;color:#b9c7d6}
+  .pill{border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:2px 8px;font-weight:600}
+  .pill.live{border-color:rgba(239,68,68,.5);color:#fecaca;position:relative}
+  .pill.live::before{
+    content:"";width:8px;height:8px;border-radius:999px;background:var(--danger);
+    display:inline-block;margin-right:6px;box-shadow:0 0 12px rgba(239,68,68,.9);animation:pulse 1.4s ease-in-out infinite
+  }
+  @keyframes pulse{0%,100%{transform:scale(.9);opacity:.8}50%{transform:scale(1.2);opacity:1}}
+  .pill.upcoming{border-color:rgba(245,158,11,.5);color:#fde68a}
+  .pill.past{border-color:rgba(156,163,175,.4);color:#cbd5e1}
+
+  .enter{animation:enter .5s ease both}
+  @keyframes enter{
+    0%{transform:translateY(12px) scale(.98);opacity:0}
+    100%{transform:translateY(0) scale(1);opacity:1}
+  }
+
+  .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0 6px}
+  .search{
+    flex:1;background:#07101c;border:1px solid rgba(255,255,255,.12);color:var(--ink);border-radius:12px;padding:10px 12px;outline:none
+  }
+  .btn{
+    border:1px solid rgba(255,255,255,.2);background:linear-gradient(180deg,#1a2b44,#13243b);
+    color:white;border-radius:12px;padding:10px 12px;font-weight:700;cursor:pointer
+  }
+  .btn:focus{box-shadow:0 0 0 4px var(--ring);outline:none}
+
+  /* Admin (hidden unless ?admin=1) */
+  .admin{display:none}
+  .admin.visible{display:block}
+  .row{display:grid;gap:10px}
+  @media(min-width:860px){.row{grid-template-columns:1fr 1fr}}
+  label{font-weight:600}
+  input,select,textarea{
+    width:100%;background:#07101c;color:var(--ink);border:1px solid rgba(255,255,255,.12);
+    border-radius:10px;padding:10px 12px;outline:none
+  }
+  textarea{min-height:100px;resize:vertical}
+  .muted{color:var(--muted)}
+  .hr{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);margin:14px 0}
+  .empty{color:#9fb0c3;font-style:italic}
+  .tiny{font-size:.8rem;color:#9ab0c9}
+</style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <div class="logo">🗞️ <strong>ScriptNova</strong> Breaking News</div>
+      <span class="badge">Live Desk</span>
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+    <div class="ticker-wrap">
+      <div class="ticker" id="ticker"></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="grid">
+      <!-- LEFT: Breaking + Upcoming -->
+      <div class="panel">
+        <h2>Breaking Now</h2>
+        <div class="sub">Live stories currently active.</div>
+
+        <div class="toolbar">
+          <input id="searchInput" class="search" placeholder="Search headlines…" />
+          <button class="btn" id="clearSearch" title="Clear">Clear</button>
+        </div>
+
+        <div id="breakingList" class="news-list"></div>
+
+        <div class="hr"></div>
+
+        <h2>Upcoming</h2>
+        <div class="sub">Announcements and plans on deck.</div>
+        <div id="upcomingList" class="news-list"></div>
+      </div>
+
+      <!-- RIGHT: Past -->
+      <aside class="panel">
+        <h2>Past News</h2>
+        <div class="sub">Resolved or archived headlines.</div>
+        <div id="pastList" class="news-list"></div>
+
+        <p class="tiny">Tip: Admins can retire a live story to the Past list (open this page with <span class="tiny mono">?admin=1</span>).</p>
+      </aside>
+    </section>
+
+    <!-- Admin panel (local only) -->
+    <section id="adminPanel" class="panel admin">
+      <h2>Newsroom Admin</h2>
+      <div class="sub">Add a headline or move a live item to Past. Changes persist in your browser via <code>localStorage</code>.</div>
+      <div class="hr"></div>
+
+      <form id="adminForm">
+        <div class="row">
+          <div>
+            <label for="headline">Headline</label>
+            <input id="headline" required placeholder="Write a concise headline…" />
+          </div>
+          <div>
+            <label for="status">Status</label>
+            <select id="status">
+              <option value="breaking">Breaking</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="past">Past</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="source">Source/Desk (optional)</label>
+            <input id="source" placeholder="e.g., ScriptNova Admin Desk" />
+          </div>
+          <div>
+            <label for="tag">Tag (optional)</label>
+            <input id="tag" placeholder="e.g., Compliance, Product, Security" />
+          </div>
+        </div>
+        <div>
+          <label for="details">Details (optional)</label>
+          <textarea id="details" placeholder="One or two sentences with context…"></textarea>
+        </div>
+        <div class="row">
+          <button class="btn" type="submit">Add / Update</button>
+          <button class="btn" type="button" id="resetLocal">Reset to Defaults</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+<script>
+/* =================== Data & Persistence =================== */
+const STORAGE_KEY = "scriptnova_news_v1";
+
+const defaultNews = [
+  // Breaking (LIVE)
+  {
+    id: cryptoRandomId(),
+    status: "breaking",
+    headline: "ScriptNova administrator David Y approved Short Pump Middle School for the opt-out agreement.",
+    details: "The opt-out request for Short Pump Middle School has been reviewed and formally approved.",
+    source: "Compliance Desk",
+    tag: "Policy",
+    ts: Date.now()
+  },
+  // Upcoming
+  {
+    id: cryptoRandomId(),
+    status: "upcoming",
+    headline: "Gomega Owner David Y plans to make Gomega Browser unlockable by ID badges.",
+    details: "Concept under review—anticipated pilot includes badge scanning to unlock browser features.",
+    source: "Product Roadmap",
+    tag: "Gomega",
+    ts: Date.now() + 1000
+  }
+];
+
+function loadNews(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return [...defaultNews];
+  try { return JSON.parse(raw); } catch { return [...defaultNews]; }
+}
+function saveNews(items){ localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+let news = loadNews();
+
+/* =================== Utilities =================== */
+function cryptoRandomId(){
+  const a = (crypto && crypto.getRandomValues) ? crypto.getRandomValues(new Uint32Array(2)) : [Math.random()*1e9|0, Math.random()*1e9|0];
+  return "n" + a[0].toString(36) + a[1].toString(36);
+}
+function fmtTime(ts){
+  const d = new Date(ts);
+  return d.toLocaleString(undefined, {year:'numeric', month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'});
+}
+function $(sel){ return document.querySelector(sel); }
+function el(tag, cls){ const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+
+/* =================== Renderers =================== */
+const breakingList = $("#breakingList");
+const pastList = $("#pastList");
+const upcomingList = $("#upcomingList");
+const ticker = $("#ticker");
+
+function renderAll(filter=""){
+  // Clear lists
+  breakingList.innerHTML = "";
+  pastList.innerHTML = "";
+  upcomingList.innerHTML = "";
+  ticker.innerHTML = "";
+
+  const q = filter.trim().toLowerCase();
+
+  const breaking = news.filter(n=>n.status==="breaking");
+  const past = news.filter(n=>n.status==="past");
+  const upcoming = news.filter(n=>n.status==="upcoming");
+
+  // Sorts
+  breaking.sort((a,b)=>b.ts-a.ts);
+  upcoming.sort((a,b)=>b.ts-a.ts);
+  past.sort((a,b)=>b.ts-a.ts);
+
+  // Ticker shows live + upcoming
+  [...breaking, ...upcoming].forEach(item=>{
+    if (q && !matches(item,q)) return;
+    const ti = el("div","ticker-item");
+    ti.innerHTML = `<span class="dot"></span>${item.headline}`;
+    ticker.appendChild(ti);
+  });
+
+  // Breaking cards
+  if (!breaking.length) breakingList.innerHTML = `<div class="empty">No live headlines right now.</div>`;
+  breaking.forEach(item=>{
+    if (q && !matches(item,q)) return;
+    breakingList.appendChild(newsCard(item, "live"));
+  });
+
+  // Upcoming cards
+  if (!upcoming.length) upcomingList.innerHTML = `<div class="empty">No upcoming items announced.</div>`;
+  upcoming.forEach(item=>{
+    if (q && !matches(item,q)) return;
+    upcomingList.appendChild(newsCard(item, "upcoming"));
+  });
+
+  // Past cards
+  if (!past.length) pastList.innerHTML = `<div class="empty">No archived headlines yet.</div>`;
+  past.forEach(item=>{
+    if (q && !matches(item,q)) return;
+    pastList.appendChild(newsCard(item, "past"));
+  });
+}
+
+function matches(item,q){
+  return (item.headline||"").toLowerCase().includes(q)
+      || (item.details||"").toLowerCase().includes(q)
+      || (item.source||"").toLowerCase().includes(q)
+      || (item.tag||"").toLowerCase().includes(q);
+}
+
+function newsCard(item, kind){
+  const card = el("div","news-card enter");
+  const kLabel = kind==="live" ? "LIVE" : kind==="upcoming" ? "UPCOMING" : "PAST";
+
+  const meta = el("div","meta");
+  const pill = el("span","pill " + (kind==="live"?"live":kind==="upcoming"?"upcoming":"past"));
+  pill.textContent = kLabel;
+
+  const src = el("span","tiny");
+  src.textContent = item.source ? `• ${item.source}` : "";
+
+  const tag = el("span","tiny");
+  tag.textContent = item.tag ? `• ${item.tag}` : "";
+
+  const time = el("span","tiny");
+  time.textContent = `• ${fmtTime(item.ts)}`;
+
+  meta.append(pill, src, tag, time);
+
+  const h = el("div","headline");
+  h.textContent = item.headline;
+
+  const d = el("div","muted");
+  d.textContent = item.details || "";
+
+  card.append(h, meta, d);
+
+  // Admin controls (only visible when admin panel visible)
+  if (adminVisible()){
+    const actions = el("div","meta");
+    const retire = el("button","btn");
+    retire.textContent = kind==="live" ? "Move to Past" : "Delete";
+    retire.style.marginTop = "6px";
+    retire.addEventListener("click", ()=>{
+      if (kind==="live"){
+        item.status = "past";
+        item.ts = Date.now();
+      }else{
+        news = news.filter(n=>n.id!==item.id);
+      }
+      saveNews(news); renderAll($("#searchInput").value);
+    });
+    actions.appendChild(retire);
+    card.appendChild(actions);
+  }
+
+  return card;
+}
+
+/* =================== Search & Clock =================== */
+const searchInput = $("#searchInput");
+const clearSearch = $("#clearSearch");
+
+searchInput.addEventListener("input", e => renderAll(e.target.value));
+clearSearch.addEventListener("click", ()=>{ searchInput.value=""; renderAll(""); });
+
+function tickClock(){
+  const now = new Date();
+  $("#clock").textContent = now.toLocaleTimeString();
+}
+setInterval(tickClock, 1000); tickClock();
+
+/* =================== Admin Panel =================== */
+const adminPanel = $("#adminPanel");
+const adminForm = $("#adminForm");
+
+function adminVisible(){ return adminPanel.classList.contains("visible"); }
+(function initAdmin(){
+  const params = new URLSearchParams(location.search);
+  if (params.get("admin")==="1"){ adminPanel.classList.add("visible"); }
+})();
+
+adminForm?.addEventListener("submit", e=>{
+  e.preventDefault();
+  const headline = $("#headline").value.trim();
+  const status = $("#status").value;
+  const source = $("#source").value.trim();
+  const tag = $("#tag").value.trim();
+  const details = $("#details").value.trim();
+
+  if (!headline){ alert("Headline required"); return; }
+
+  // If headline already exists, update it; else add
+  const existing = news.find(n=>n.headline.toLowerCase()===headline.toLowerCase());
+  if (existing){
+    existing.status = status;
+    existing.source = source; existing.tag = tag; existing.details = details;
+    existing.ts = Date.now();
+  }else{
+    news.unshift({ id: cryptoRandomId(), status, headline, details, source, tag, ts: Date.now() });
+  }
+  saveNews(news);
+  adminForm.reset();
+  renderAll($("#searchInput").value);
+});
+
+$("#resetLocal")?.addEventListener("click", ()=>{
+  if (!confirm("Reset local news to defaults? This cannot be undone.")) return;
+  news = [...defaultNews];
+  saveNews(news);
+  renderAll($("#searchInput").value);
+});
+
+/* =================== Boot =================== */
+renderAll("");
+
+/* Improve entrance stagger */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if (e.isIntersecting) e.target.classList.add("enter");
+  });
+},{threshold:.1});
+setTimeout(()=>{
+  document.querySelectorAll(".news-card").forEach(el=>io.observe(el));
+}, 50);
+</script>
+</body>
+</html>
