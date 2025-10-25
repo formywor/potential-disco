@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AegisMod • Moderator Bot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="theme-color" content="#0b1220" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg:#0b1220;       /* deep navy */
+      --panel:#121a2b;    /* card bg */
+      --muted:#8aa0c5;    /* text secondary */
+      --text:#e7efff;     /* text primary */
+      --brand:#4da3ff;    /* accent */
+      --brand-2:#7f5eff;  /* accent 2 */
+      --ok:#2ecc71;
+      --warn:#f39c12;
+      --danger:#e74c3c;
+      --ring: 0 0 0 2px color-mix(in srgb, var(--brand) 55%, transparent);
+      --shadow: 0 10px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.02);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 800px at 20% -10%, rgba(127,94,255,.10), transparent 60%),
+        radial-gradient(1000px 700px at 80% 0%, rgba(77,163,255,.10), transparent 60%),
+        var(--bg);
+      color:var(--text);
+      line-height:1.5;
+    }
+    a{ color: var(--brand); text-decoration: none; }
+    a:hover{ text-decoration: underline; }
+
+    .wrap{
+      max-width: 1100px;
+      margin-inline: auto;
+      padding: 28px 20px 64px;
+    }
+
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:16px; border-radius:18px; background: color-mix(in srgb, var(--panel) 80%, transparent);
+      backdrop-filter: blur(6px); box-shadow: var(--shadow);
+    }
+    .logo{
+      display:flex; align-items:center; gap:14px;
+    }
+    .shield{
+      width:46px; height:46px; border-radius:12px;
+      background:
+        radial-gradient(120% 120% at 30% 10%, rgba(255,255,255,.25), transparent 60%),
+        linear-gradient(140deg, var(--brand), var(--brand-2));
+      box-shadow: 0 6px 18px rgba(79,163,255,.35), inset 0 0 0 2px rgba(255,255,255,.08);
+      position:relative;
+    }
+    .shield:after{
+      content:""; position:absolute; inset:8px; border-radius:10px;
+      border:2px solid rgba(255,255,255,.18);
+      box-shadow: inset 0 0 24px rgba(255,255,255,.08);
+    }
+    h1{
+      font-size: clamp(20px, 2.2vw, 28px); margin:0;
+      font-weight:800; letter-spacing:.2px;
+    }
+    .tag{ color:var(--muted); font-weight:600; font-size:14px; margin-top:2px; }
+
+    .cta-row{
+      display:flex; flex-wrap:wrap; gap:10px;
+    }
+    .btn{
+      appearance:none; border:0; cursor:pointer; text-decoration:none;
+      padding:12px 16px; border-radius:12px; font-weight:700; letter-spacing:.2px;
+      background:var(--panel); color:var(--text); box-shadow: var(--shadow);
+      display:inline-flex; align-items:center; gap:10px;
+      transition: transform .07s ease, box-shadow .15s ease, background .15s ease;
+      will-change: transform;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn:focus-visible{ outline:none; box-shadow: var(--ring); }
+    .btn.primary{
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    }
+    .btn.ghost{ background: color-mix(in srgb, var(--panel) 90%, transparent); }
+    .btn.warn{ background: color-mix(in srgb, var(--warn) 25%, var(--panel)); }
+    .btn .sub{ font-weight:600; opacity:.9; font-size:.92em; }
+
+    main{
+      display:grid; grid-template-columns: 1.1fr .9fr; gap:22px; margin-top:22px;
+    }
+    @media (max-width: 980px){
+      main{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background: color-mix(in srgb, var(--panel) 88%, transparent);
+      border-radius:18px; padding:20px; box-shadow: var(--shadow);
+    }
+    .card h2{ margin:2px 0 10px; font-size:20px; }
+    .muted{ color: var(--muted); }
+    .kpis{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:8px; }
+    .kpi{ background: rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.05); padding:12px; border-radius:14px; }
+    .kpi strong{ display:block; font-size:18px; }
+    .pill{ padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.08); }
+    .ok{ color:var(--ok); border-color: color-mix(in srgb, var(--ok) 35%, transparent); }
+    .danger{ color:var(--danger); border-color: color-mix(in srgb, var(--danger) 35%, transparent); }
+
+    .list{
+      display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; margin-top:10px;
+    }
+    @media (max-width: 700px){ .list{ grid-template-columns: 1fr; } }
+    .cmd{
+      background: rgba(255,255,255,.02);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px; padding:12px 14px;
+    }
+    code{
+      background: rgba(255,255,255,.06); padding:2px 6px; border-radius:8px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    footer{ margin-top:30px; color: var(--muted); text-align:center; font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">
+        <div class="shield" aria-hidden="true"></div>
+        <div>
+          <h1>AegisMod</h1>
+          <div class="tag">Future-grade moderation for Discord</div>
+        </div>
+      </div>
+      <div class="cta-row">
+        <a id="inviteBtn" class="btn primary" href="#">➕ Add to Server</a>
+        <a class="btn ghost" href="https://discord.gg/pWG4pBdc2j" target="_blank" rel="noopener">🛟 Support</a>
+        <a class="btn" id="loginBtn" href="#">🔐 <span class="sub">Sign in with Discord</span></a>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>Why AegisMod?</h2>
+        <p class="muted">
+          Instant moderation with image scam detection (OpenAI Vision), anti-link filters, raid & flood control,
+          alt-account screening, and a clean dashboard (coming soon).
+        </p>
+
+        <div class="kpis">
+          <div class="kpi"><strong>19</strong><span class="muted">slash commands</span></div>
+          <div class="kpi"><strong>Dual</strong><span class="muted">/ &amp; ! commands</span></div>
+          <div class="kpi"><strong>AI</strong><span class="muted">scam image filter</span></div>
+        </div>
+
+        <div style="margin-top:14px" class="muted">
+          Dashboard preview: <a href="https://gomega.watch/bot" target="_blank" rel="noopener">gomega.watch/bot</a>
+          (sign in with Discord).
+        </div>
+      </section>
+
+      <aside class="card">
+        <h2>Bot Status</h2>
+        <p class="muted" id="statusText">Checking…</p>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <span id="aliveChip" class="pill">API: …</span>
+          <span id="guildChip" class="pill">Guilds: …</span>
+        </div>
+        <p class="muted" style="margin-top:12px; font-size:13px;">
+          Tip: expose a lightweight JSON at <code>/api/status</code> from your Replit to fill these.
+        </p>
+      </aside>
+    </main>
+
+    <section class="card" style="margin-top:22px;">
+      <h2>Commands</h2>
+      <p class="muted">Slash + prefix mirror. Admin-only moderation unless noted.</p>
+      <div class="list" id="cmdList">
+        <!-- Populated by JS below -->
+      </div>
+    </section>
+
+    <footer>
+      © <span id="yy"></span> AegisMod. Not affiliated with Discord Inc.
+    </footer>
+  </div>
+
+  <script>
+    // ===== CONFIG (replace!) =====
+    const CLIENT_ID = "YOUR_CLIENT_ID"; // e.g., 123456789012345678
+    const REDIRECT_URI = "YOUR_REDIRECT_URI"; // e.g., https://your-repl-name.username.repl.co/oauth/callback
+    const PERMISSIONS_INT = "0"; // Optional: e.g., 2151156672 — adjust later in the Dev Portal
+
+    // ===== OAuth URLs =====
+    const scopesBot = ["bot","applications.commands"];
+    const scopesLogin = ["identify","guilds"]; // extend as needed
+    const enc = encodeURIComponent;
+
+    const inviteUrl =
+      `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}` +
+      `&permissions=${PERMISSIONS_INT}&scope=${enc(scopesBot.join(" "))}&response_type=code&redirect_uri=${enc(REDIRECT_URI)}`;
+
+    const loginUrl =
+      `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}` +
+      `&redirect_uri=${enc(REDIRECT_URI)}&response_type=code&scope=${enc(scopesLogin.join(" "))}`;
+
+    document.getElementById("inviteBtn").href = inviteUrl;
+    document.getElementById("loginBtn").href  = loginUrl;
+
+    // Footer year
+    document.getElementById("yy").textContent = new Date().getFullYear();
+
+    // Commands (19 slash entries; prefix mirror implied)
+    const commands = [
+      {name:"/kick", desc:"Kick a member."},
+      {name:"/ban", desc:"Ban a member."},
+      {name:"/unban", desc:"Unban by ID or name#discrim."},
+      {name:"/softban", desc:"Ban then unban to clear messages."},
+      {name:"/timeout", desc:"Timeout a member (minutes)."},
+      {name:"/purge", desc:"Bulk delete recent messages."},
+      {name:"/slowmode", desc:"Set channel slowmode."},
+      {name:"/lock", desc:"Lock channel for @everyone."},
+      {name:"/unlock", desc:"Unlock channel."},
+      {name:"/nick", desc:"Change a member nickname."},
+      {name:"/say", desc:"Make the bot say a message."},
+      {name:"/warn", desc:"Warn a member (stored in memory)."},
+      {name:"/infractions", desc:"Show warnings for a member."},
+      {name:"/clearwarns", desc:"Clear a member’s warnings."},
+      {name:"/setmodlog", desc:"Set moderation log channel."},
+      {name:"/sync", desc:"Force re-sync application commands."},
+      {name:"/commands", desc:"List slash & prefix commands (admin only)."},
+      {name:"/support", desc:"Get the support server invite (public)."},
+      {name:"/dashboard", desc:"Open the dashboard (public)."}
+    ];
+
+    const list = document.getElementById("cmdList");
+    for (const c of commands){
+      const el = document.createElement("div");
+      el.className = "cmd";
+      el.innerHTML = `<div><strong>${c.name}</strong><div class="muted" style="margin-top:4px;">${c.desc}</div></div>`;
+      list.appendChild(el);
+    }
+
+    // Optional: status pings (expects your backend to serve /api/status json)
+    async function pingStatus(){
+      const txt = document.getElementById("statusText");
+      const alive = document.getElementById("aliveChip");
+      const guild = document.getElementById("guildChip");
+      try{
+        const r = await fetch("/api/status", {cache:"no-store"});
+        if(!r.ok) throw new Error("HTTP "+r.status);
+        const j = await r.json();
+        txt.textContent = j.message || "Online";
+        alive.textContent = "API: " + (j.alive ? "alive" : "unknown");
+        alive.className = "pill " + (j.alive ? "ok" : "danger");
+        guild.textContent = "Guilds: " + (j.guilds ?? "—");
+      }catch(e){
+        txt.textContent = "Backend status unavailable";
+        alive.textContent = "API: unknown";
+        alive.className = "pill danger";
+        guild.textContent = "Guilds: —";
+      }
+    }
+    pingStatus();
+    setInterval(pingStatus, 15000);
+  </script>
+</body>
+</html>
