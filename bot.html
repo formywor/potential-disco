@@ -169,26 +169,26 @@
             <div class="hint">Saved per-server.</div>
           </div>
 
-            <div class="item">
-              <h3>Timeout Defaults</h3>
-              <div class="inline">
-                <label for="timeoutMins">Minutes:</label>
-                <input id="timeoutMins" type="text" placeholder="e.g. 30" value="30" style="width:120px">
-                <button class="btn small" id="saveTimeout">Save</button>
-              </div>
-              <div class="hint">Used when applying timeouts from the dashboard.</div>
+          <div class="item">
+            <h3>Timeout Defaults</h3>
+            <div class="inline">
+              <label for="timeoutMins">Minutes:</label>
+              <input id="timeoutMins" type="text" placeholder="e.g. 30" value="30" style="width:120px">
+              <button class="btn small" id="saveTimeout">Save</button>
             </div>
+            <div class="hint">Used when applying timeouts from the dashboard.</div>
+          </div>
 
-            <div class="item" style="grid-column:1 / -1">
-              <div class="inline">
-                <h3 style="margin-right:8px">Banned Users</h3>
-                <button class="btn small" id="refreshBans">Refresh</button>
-              </div>
-              <div id="banList" class="list">
-                <div class="empty">No data yet. Select a server and press Refresh.</div>
-              </div>
-              <div class="hint">Shows users currently banned in the selected server (via bot backend).</div>
+          <div class="item" style="grid-column:1 / -1">
+            <div class="inline">
+              <h3 style="margin-right:8px">Banned Users</h3>
+              <button class="btn small" id="refreshBans">Refresh</button>
             </div>
+            <div id="banList" class="list">
+              <div class="empty">No data yet. Select a server and press Refresh.</div>
+            </div>
+            <div class="hint">Shows users currently banned in the selected server (via backend).</div>
+          </div>
         </div>
       </div>
 
@@ -204,7 +204,7 @@
             <div class="sep"></div>
             <h3>Flood Control</h3>
             <label class="switch"><input id="floodControl" type="checkbox" checked><span class="toggle"></span>Rate-limit spammy senders</label>
-            <div class="hint">Mirrors your bot config (message window & attachment thresholds).</div>
+            <div class="hint">Mirrors your bot config.</div>
           </div>
           <div class="item">
             <h3>AI Image Scam Detection</h3>
@@ -224,12 +224,12 @@
               <button class="btn small" id="activatePlus">Activate</button>
               <span id="plusState" class="pill">Status: Inactive</span>
             </div>
-            <div class="hint">Plus unlocks advanced features for this server. Codes can be revoked.</div>
+            <div class="hint">Plus unlocks advanced features. Codes can be revoked at any time.</div>
           </div>
-          <div class="item" id="plusFeature1">
+          <div class="item" id="plusFeature1" class="locked">
             <h3>Aggressive AI Image Scanning <span class="pill">Plus</span></h3>
             <label class="switch"><input id="plusAggressive" type="checkbox" disabled><span class="toggle"></span>Use stricter AI model & heuristics</label>
-            <div class="hint">When enabled, suspicious images are removed even if confidence is moderate.</div>
+            <div class="hint">Removes suspicious images even with moderate confidence.</div>
           </div>
         </div>
       </div>
@@ -239,32 +239,18 @@
 </div>
 
 <script>
-/** ===== REQUIRED CONFIG — CHANGE THESE ===== **/
-const API_BASE     = "https://aegismod-site.divedyacoub1.repl.co/oauth/callback"; // Replit bot backend base URL
-const CLIENT_ID    = "1431696199517475079"; // your Discord App client id
-const PERMISSIONS_INT = "0"; // optional; set your bot invite permissions integer
-/** ========================================= **/
+/** ===== REQUIRED CONFIG — CHANGE THIS ===== **/
+const API_BASE  = "https://api.gomega.watch"; // your backend domain
+/** ======================================== **/
 
+const $ = (sel) => document.querySelector(sel);
 const enc = encodeURIComponent;
-const REDIRECT_URI = `${API_BASE}/oauth/callback`; // must be in Developer Portal Redirects
 
-// Scopes
-const scopesLogin = ["identify","guilds"];
-const scopesBot   = ["bot","applications.commands"];
+// Button: invite (optional, you can set a specific permissions int in backend too)
+document.getElementById("inviteBtn").href = `${API_BASE}/invite`;
 
-// URLs
-const inviteUrl =
-  `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}` +
-  `&permissions=${PERMISSIONS_INT}&scope=${enc(scopesBot.join(" "))}` +
-  `&response_type=code&redirect_uri=${enc(REDIRECT_URI)}`;
-
-const loginUrl =
-  `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}` +
-  `&redirect_uri=${enc(REDIRECT_URI)}&response_type=code&scope=${enc(scopesLogin.join(" "))}`;
-
-// Hook up buttons
-document.getElementById("inviteBtn").href = inviteUrl;
-document.getElementById("loginBtn").href  = loginUrl;
+// Button: login via backend (so cookie/session is set on api domain)
+document.getElementById("loginBtn").href  = `${API_BASE}/oauth/login?return=${enc(location.href)}`;
 
 /** ====== State ====== */
 let user = null;
@@ -274,14 +260,13 @@ let selectedGuild = null;
 let plusActive = false;
 
 /** ====== Helpers ====== */
-const $ = (sel) => document.querySelector(sel);
 function guildIconURL(g){
   return g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64` : null;
 }
 function guildInitials(name){ return (name||"?").split(/\s+/).map(s=>s[0]).join("").slice(0,3).toUpperCase(); }
 function el(tag, props={}, children=[]){ const n = document.createElement(tag); Object.assign(n, props); for(const c of children) n.append(c); return n; }
 
-// API helpers
+// API helpers (always same-origin with API_BASE; credentials include cookies)
 async function apiGET(path){
   const r = await fetch(`${API_BASE}${path}`, {credentials:"include"});
   if(!r.ok) throw new Error("HTTP "+r.status);
@@ -338,7 +323,7 @@ async function selectGuild(g){
   updateServerSwitcherMenu();
 }
 
-/** ====== Change Server button ====== */
+/** ====== Change Server ====== */
 function updateServerSwitcherMenu(){
   const btn = $("#changeServerBtn");
   btn.onclick = () => {
@@ -351,7 +336,7 @@ function updateServerSwitcherMenu(){
   };
 }
 
-/** ====== Tabs ====== */
+/** ====== Tabs & Search ====== */
 for (const t of document.querySelectorAll(".tab")){
   t.addEventListener("click", ()=>{
     document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
@@ -363,7 +348,7 @@ for (const t of document.querySelectorAll(".tab")){
 }
 $("#searchInput").addEventListener("input", e=>renderGuildList(e.target.value));
 
-/** ====== Settings Save ====== */
+/** ====== Save examples ====== */
 $("#saveTimeout").onclick = async ()=>{
   if(!selectedGuild) return alert("Select a server first.");
   const minutes = ($("#timeoutMins").value||"").trim();
@@ -380,28 +365,17 @@ for (const id of ["modActions","blockLinks","scamPhrases","floodControl","aiVisi
 }
 
 async function loadSettings(){
-  if(!selectedGuild) return;
-  try{
-    // optional: if you later add GET /api/guild/:id/settings to the backend, hydrate here.
-    // const s = await apiGET(`/api/guild/${selectedGuild.id}/settings`);
-    // document.getElementById("modActions").checked   = !!s.modActions ?? true;
-    // document.getElementById("blockLinks").checked   = !!s.blockLinks ?? true;
-    // document.getElementById("scamPhrases").checked  = !!s.scamPhrases ?? true;
-    // document.getElementById("floodControl").checked = !!s.floodControl ?? true;
-    // document.getElementById("aiVision").checked     = !!s.aiVision ?? true;
-  }catch{}
+  // Optional: hydrate from backend when you add GET settings
 }
 
 /** ====== Banned Users ====== */
 $("#refreshBans").onclick = loadBans;
-
 async function loadBans(){
   const box = $("#banList");
   box.innerHTML = '<div class="empty">Loading…</div>';
   if(!selectedGuild){ box.innerHTML = '<div class="empty">Select a server.</div>'; return; }
   try{
-    // Requires backend endpoint GET /api/guild/:id/bans that proxies bot.guild.bans()
-    const data = await apiGET(`/api/guild/${selectedGuild.id}/bans`); // [{user:{id,username,discriminator,avatar}, reason}]
+    const data = await apiGET(`/api/guild/${selectedGuild.id}/bans`);
     if(!data || !data.length){ box.innerHTML = '<div class="empty">No bans in this server.</div>'; return; }
 
     box.innerHTML = "";
@@ -419,7 +393,7 @@ async function loadBans(){
       box.append(row);
     }
   }catch(e){
-    box.innerHTML = '<div class="empty">Could not load bans. Make sure your backend exposes <span class="mono">GET /api/guild/:id/bans</span>.</div>';
+    box.innerHTML = '<div class="empty">Could not load bans. Check backend <span class="mono">GET /api/guild/:id/bans</span>.</div>';
   }
 }
 
@@ -451,13 +425,19 @@ $("#activatePlus").onclick = async ()=>{
 
 /** ====== bootstrap ====== */
 async function init(){
+  // If Discord redirected back here with ?ok=1, strip it (optional)
+  const url = new URL(location.href);
+  if(url.searchParams.get("ok")==="1"){
+    url.searchParams.delete("ok"); history.replaceState({}, "", url.toString());
+  }
+
   // Identity
   try{
     user = await apiGET("/api/me"); // {id, username, avatar,...}
     document.getElementById("loginBtn").textContent = "👤 " + (user.global_name || user.username);
     document.getElementById("loginBtn").classList.add("ghost");
   }catch{
-    // Not signed in; user will use the Sign in button
+    // Not signed in yet
     return;
   }
   // Owned guilds
