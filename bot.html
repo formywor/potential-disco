@@ -2,275 +2,449 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>AegisMod • Moderator Bot</title>
+  <title>AegisMod • Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark light" />
   <meta name="theme-color" content="#0b1220" />
-
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
-
   <style>
     :root{
-      --bg:#0b1220;       /* deep navy */
-      --panel:#121a2b;    /* card bg */
-      --muted:#8aa0c5;    /* text secondary */
-      --text:#e7efff;     /* text primary */
-      --brand:#4da3ff;    /* accent */
-      --brand-2:#7f5eff;  /* accent 2 */
-      --ok:#2ecc71;
-      --warn:#f39c12;
-      --danger:#e74c3c;
-      --ring: 0 0 0 2px color-mix(in srgb, var(--brand) 55%, transparent);
+      --bg:#0b1220; --panel:#121a2b; --muted:#8aa0c5; --text:#e7efff;
+      --brand:#4da3ff; --brand-2:#7f5eff; --ok:#2ecc71; --warn:#f39c12; --danger:#e74c3c;
+      --border: rgba(255,255,255,.08);
       --shadow: 0 10px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.02);
     }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
-      margin:0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif; color:var(--text);
       background:
         radial-gradient(1200px 800px at 20% -10%, rgba(127,94,255,.10), transparent 60%),
         radial-gradient(1000px 700px at 80% 0%, rgba(77,163,255,.10), transparent 60%),
         var(--bg);
-      color:var(--text);
-      line-height:1.5;
     }
-    a{ color: var(--brand); text-decoration: none; }
-    a:hover{ text-decoration: underline; }
-
-    .wrap{
-      max-width: 1100px;
-      margin-inline: auto;
-      padding: 28px 20px 64px;
+    a{color:var(--brand); text-decoration:none}
+    a:hover{text-decoration:underline}
+    .app{
+      display:grid; grid-template-columns: 260px 1fr; gap:16px; padding:16px; min-height:100%;
     }
-
+    @media (max-width: 980px){ .app{ grid-template-columns: 1fr; } }
     header{
-      display:flex; align-items:center; justify-content:space-between; gap:16px;
-      padding:16px; border-radius:18px; background: color-mix(in srgb, var(--panel) 80%, transparent);
-      backdrop-filter: blur(6px); box-shadow: var(--shadow);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      background: color-mix(in srgb, var(--panel) 88%, transparent);
+      padding:12px 14px; border-radius:14px; box-shadow: var(--shadow);
     }
-    .logo{
-      display:flex; align-items:center; gap:14px;
-    }
+    .logo{display:flex; align-items:center; gap:12px}
     .shield{
-      width:46px; height:46px; border-radius:12px;
+      width:40px;height:40px;border-radius:10px;
       background:
         radial-gradient(120% 120% at 30% 10%, rgba(255,255,255,.25), transparent 60%),
         linear-gradient(140deg, var(--brand), var(--brand-2));
       box-shadow: 0 6px 18px rgba(79,163,255,.35), inset 0 0 0 2px rgba(255,255,255,.08);
       position:relative;
     }
-    .shield:after{
-      content:""; position:absolute; inset:8px; border-radius:10px;
-      border:2px solid rgba(255,255,255,.18);
-      box-shadow: inset 0 0 24px rgba(255,255,255,.08);
-    }
-    h1{
-      font-size: clamp(20px, 2.2vw, 28px); margin:0;
-      font-weight:800; letter-spacing:.2px;
-    }
-    .tag{ color:var(--muted); font-weight:600; font-size:14px; margin-top:2px; }
-
-    .cta-row{
-      display:flex; flex-wrap:wrap; gap:10px;
-    }
+    .shield:after{content:""; position:absolute; inset:7px; border-radius:8px; border:2px solid rgba(255,255,255,.18)}
+    h1{font-size:18px; margin:0; letter-spacing:.2px}
     .btn{
-      appearance:none; border:0; cursor:pointer; text-decoration:none;
-      padding:12px 16px; border-radius:12px; font-weight:700; letter-spacing:.2px;
-      background:var(--panel); color:var(--text); box-shadow: var(--shadow);
-      display:inline-flex; align-items:center; gap:10px;
-      transition: transform .07s ease, box-shadow .15s ease, background .15s ease;
-      will-change: transform;
+      appearance:none; border:1px solid var(--border); background: color-mix(in srgb, var(--panel) 92%, transparent);
+      color:var(--text); padding:10px 12px; border-radius:10px; font-weight:700; cursor:pointer;
+      display:inline-flex; align-items:center; gap:8px; text-decoration:none;
     }
-    .btn:hover{ transform: translateY(-1px); }
-    .btn:focus-visible{ outline:none; box-shadow: var(--ring); }
-    .btn.primary{
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
-    }
-    .btn.ghost{ background: color-mix(in srgb, var(--panel) 90%, transparent); }
-    .btn.warn{ background: color-mix(in srgb, var(--warn) 25%, var(--panel)); }
-    .btn .sub{ font-weight:600; opacity:.9; font-size:.92em; }
+    .btn.primary{ background: linear-gradient(135deg, var(--brand), var(--brand-2)); border:none }
+    .btn.ghost{ background: transparent }
+    .btn.small{ padding:6px 8px; font-weight:600 }
+    .pill{padding:2px 8px; border-radius:999px; border:1px solid var(--border); font-size:12px}
+    .ok{color:var(--ok); border-color: color-mix(in srgb, var(--ok) 35%, transparent)}
+    .danger{color:var(--danger); border-color: color-mix(in srgb, var(--danger) 35%, transparent)}
 
-    main{
-      display:grid; grid-template-columns: 1.1fr .9fr; gap:22px; margin-top:22px;
+    .sidebar{
+      display:flex; flex-direction:column; gap:12px;
     }
-    @media (max-width: 980px){
-      main{ grid-template-columns: 1fr; }
-    }
-
     .card{
       background: color-mix(in srgb, var(--panel) 88%, transparent);
-      border-radius:18px; padding:20px; box-shadow: var(--shadow);
+      border-radius:14px; padding:12px; box-shadow: var(--shadow);
     }
-    .card h2{ margin:2px 0 10px; font-size:20px; }
-    .muted{ color: var(--muted); }
-    .kpis{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:8px; }
-    .kpi{ background: rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.05); padding:12px; border-radius:14px; }
-    .kpi strong{ display:block; font-size:18px; }
-    .pill{ padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.08); }
-    .ok{ color:var(--ok); border-color: color-mix(in srgb, var(--ok) 35%, transparent); }
-    .danger{ color:var(--danger); border-color: color-mix(in srgb, var(--danger) 35%, transparent); }
-
-    .list{
-      display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; margin-top:10px;
+    .search{ display:flex; gap:8px; }
+    input[type="text"], input[type="search"]{
+      width:100%; background: rgba(255,255,255,.06); border:1px solid var(--border);
+      color:var(--text); padding:10px 12px; border-radius:10px; outline:none;
     }
-    @media (max-width: 700px){ .list{ grid-template-columns: 1fr; } }
-    .cmd{
-      background: rgba(255,255,255,.02);
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:14px; padding:12px 14px;
+    .servers{ display:flex; flex-direction:column; gap:6px; max-height: calc(100vh - 240px); overflow:auto; }
+    .server{
+      display:flex; align-items:center; gap:10px; padding:8px; border-radius:10px;
+      border:1px solid transparent; cursor:pointer;
     }
-    code{
-      background: rgba(255,255,255,.06); padding:2px 6px; border-radius:8px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    .server:hover{ background: rgba(255,255,255,.03); border-color: var(--border) }
+    .avatar{
+      width:28px;height:28px;border-radius:6px;background:#1d2842; display:grid; place-items:center; font-size:12px; color:#cfe0ff;
+      border:1px solid var(--border);
     }
-
-    footer{ margin-top:30px; color: var(--muted); text-align:center; font-size:14px; }
+    .server .name{ flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+    .server .botin{ font-size:11px; }
+    .layout{
+      display:flex; flex-direction:column; gap:12px; min-width:0;
+    }
+    .toolbar{
+      display:flex; gap:8px; align-items:center; justify-content:space-between;
+    }
+    .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .tabs{ display:flex; gap:8px; flex-wrap:wrap; }
+    .tab{ padding:10px 12px; border-radius:10px; font-weight:700; border:1px solid var(--border); cursor:pointer; background:rgba(255,255,255,.03) }
+    .tab.active{ background: linear-gradient(135deg, var(--brand), var(--brand-2)); border:none }
+    .panel{ display:none; gap:12px; }
+    .panel.active{ display:block }
+    .grid{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:12px; }
+    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
+    .item{ background: rgba(255,255,255,.02); border:1px solid var(--border); padding:14px; border-radius:12px; }
+    .item h3{ margin:0 0 8px; font-size:16px }
+    label.switch{
+      display:inline-flex; align-items:center; gap:10px; cursor:pointer; user-select:none;
+    }
+    .switch input{ display:none }
+    .toggle{
+      width:44px;height:26px; border-radius:999px; background:#2a3556; position:relative; border:1px solid var(--border);
+    }
+    .toggle::after{
+      content:""; position:absolute; top:2px; left:2px; width:20px;height:20px; background:#fff; border-radius:999px; transition:left .18s ease;
+    }
+    .switch input:checked + .toggle{ background: linear-gradient(135deg, var(--brand), var(--brand-2)); border:none }
+    .switch input:checked + .toggle::after{ left:22px }
+    .hint{ color:var(--muted); font-size:13px; margin-top:6px }
+    .locked{ opacity:.55; filter:saturate(.6) }
+    .inline{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+    .sep{ height:1px; background:var(--border); margin:12px 0 }
+    .right{ margin-left:auto }
+    .empty{ color:var(--muted); padding:20px 10px }
   </style>
 </head>
 <body>
-  <div class="wrap">
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
     <header>
       <div class="logo">
         <div class="shield" aria-hidden="true"></div>
         <div>
-          <h1>AegisMod</h1>
-          <div class="tag">Future-grade moderation for Discord</div>
+          <h1>AegisMod Dashboard</h1>
+          <div style="font-size:12px;color:var(--muted)">future-grade moderation</div>
         </div>
       </div>
-      <div class="cta-row">
-        <a id="inviteBtn" class="btn primary" href="#">➕ Add to Server</a>
-        <a class="btn ghost" href="https://discord.gg/pWG4pBdc2j" target="_blank" rel="noopener">🛟 Support</a>
-        <a class="btn" id="loginBtn" href="#">🔐 <span class="sub">Sign in with Discord</span></a>
-      </div>
+      <a id="loginBtn" class="btn">🔐 Sign in</a>
     </header>
 
-    <main>
-      <section class="card">
-        <h2>Why AegisMod?</h2>
-        <p class="muted">
-          Instant moderation with image scam detection (OpenAI Vision), anti-link filters, raid & flood control,
-          alt-account screening, and a clean dashboard (coming soon).
-        </p>
-
-        <div class="kpis">
-          <div class="kpi"><strong>19</strong><span class="muted">slash commands</span></div>
-          <div class="kpi"><strong>Dual</strong><span class="muted">/ &amp; ! commands</span></div>
-          <div class="kpi"><strong>AI</strong><span class="muted">scam image filter</span></div>
-        </div>
-
-        <div style="margin-top:14px" class="muted">
-          Dashboard preview: <a href="https://gomega.watch/bot" target="_blank" rel="noopener">gomega.watch/bot</a>
-          (sign in with Discord).
-        </div>
-      </section>
-
-      <aside class="card">
-        <h2>Bot Status</h2>
-        <p class="muted" id="statusText">Checking…</p>
-        <div style="display:flex; gap:10px; margin-top:10px;">
-          <span id="aliveChip" class="pill">API: …</span>
-          <span id="guildChip" class="pill">Guilds: …</span>
-        </div>
-        <p class="muted" style="margin-top:12px; font-size:13px;">
-          Tip: expose a lightweight JSON at <code>/api/status</code> from your Replit to fill these.
-        </p>
-      </aside>
-    </main>
-
-    <section class="card" style="margin-top:22px;">
-      <h2>Commands</h2>
-      <p class="muted">Slash + prefix mirror. Admin-only moderation unless noted.</p>
-      <div class="list" id="cmdList">
-        <!-- Populated by JS below -->
+    <div class="card">
+      <div class="search">
+        <input id="searchInput" type="search" placeholder="Search your servers…" />
       </div>
-    </section>
-
-    <footer>
-      © <span id="yy"></span> AegisMod. Not affiliated with Discord Inc.
-    </footer>
+      <div id="serverList" class="servers">
+        <div class="empty">Sign in to load your servers.</div>
+      </div>
+    </div>
   </div>
 
-  <script>
-    // ===== CONFIG (replace!) =====
-    const CLIENT_ID = "YOUR_CLIENT_ID"; // e.g., 123456789012345678
-    const REDIRECT_URI = "YOUR_REDIRECT_URI"; // e.g., https://your-repl-name.username.repl.co/oauth/callback
-    const PERMISSIONS_INT = "0"; // Optional: e.g., 2151156672 — adjust later in the Dev Portal
+  <!-- MAIN -->
+  <div class="layout">
+    <div class="card toolbar">
+      <div class="row">
+        <span id="currentGuildName" class="pill">No server selected</span>
+        <span id="planPill" class="pill">Plan: Basic</span>
+      </div>
+      <div class="row">
+        <a class="btn ghost" target="_blank" rel="noopener" href="https://discord.gg/pWG4pBdc2j">🛟 Support</a>
+        <a class="btn" id="changeServerBtn">🔁 Change Server</a>
+        <a class="btn primary" id="inviteBtn" target="_blank" rel="noopener">➕ Add to Server</a>
+      </div>
+    </div>
 
-    // ===== OAuth URLs =====
-    const scopesBot = ["bot","applications.commands"];
-    const scopesLogin = ["identify","guilds"]; // extend as needed
-    const enc = encodeURIComponent;
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" data-tab="moderation">Moderation</div>
+        <div class="tab" data-tab="filters">Filters</div>
+        <div class="tab" data-tab="plus">Plus</div>
+      </div>
+      <!-- MODERATION -->
+      <div id="panel-moderation" class="panel active">
+        <div class="grid">
+          <div class="item">
+            <h3>Kick / Ban Controls</h3>
+            <div class="hint">Admin-only via bot commands. This toggle enables dashboard access (coming soon).</div>
+            <label class="switch"><input id="modActions" type="checkbox"><span class="toggle"></span>Allow dashboard actions</label>
+            <div class="hint">Saves per-server.</div>
+          </div>
+          <div class="item">
+            <h3>Timeout Defaults</h3>
+            <div class="inline">
+              <label for="timeoutMins">Minutes:</label>
+              <input id="timeoutMins" type="text" placeholder="e.g. 30" style="width:120px">
+              <button class="btn small" id="saveTimeout">Save</button>
+            </div>
+            <div class="hint">Used when applying timeouts from the dashboard.</div>
+          </div>
+        </div>
+      </div>
+      <!-- FILTERS -->
+      <div id="panel-filters" class="panel">
+        <div class="grid">
+          <div class="item">
+            <h3>Blocked Links</h3>
+            <label class="switch"><input id="blockLinks" type="checkbox"><span class="toggle"></span>Remove suspicious/blacklisted links</label>
+            <div class="sep"></div>
+            <h3>Scam Phrases</h3>
+            <label class="switch"><input id="scamPhrases" type="checkbox"><span class="toggle"></span>Delete common scam / phishing text</label>
+            <div class="sep"></div>
+            <h3>Flood Control</h3>
+            <label class="switch"><input id="floodControl" type="checkbox"><span class="toggle"></span>Rate-limit spammy senders</label>
+            <div class="hint">Mirrors your bot config (message window & attachment thresholds).</div>
+          </div>
+          <div class="item">
+            <h3>AI Image Scam Detection</h3>
+            <label class="switch"><input id="aiVision" type="checkbox"><span class="toggle"></span>Enable base AI image scanning</label>
+            <div class="hint">Blocks images likely to be Nitro/Steam/crypto scams.</div>
+          </div>
+        </div>
+      </div>
+      <!-- PLUS -->
+      <div id="panel-plus" class="panel">
+        <div class="grid">
+          <div class="item" id="plusGate">
+            <h3>Activate Plus</h3>
+            <div class="inline">
+              <input id="plusCode" type="text" placeholder="Enter Plus code" style="width:260px">
+              <button class="btn small" id="activatePlus">Activate</button>
+              <span id="plusState" class="pill">Status: Inactive</span>
+            </div>
+            <div class="hint">Plus unlocks advanced features for this server. Codes can be revoked.</div>
+          </div>
+          <div class="item" id="plusFeature1" class="locked">
+            <h3>Aggressive AI Image Scanning <span class="pill">Plus</span></h3>
+            <label class="switch"><input id="plusAggressive" type="checkbox" disabled><span class="toggle"></span>Use stricter AI model & heuristics</label>
+            <div class="hint">When enabled, suspicious images are removed even if confidence is moderate.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    const inviteUrl =
-      `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}` +
-      `&permissions=${PERMISSIONS_INT}&scope=${enc(scopesBot.join(" "))}&response_type=code&redirect_uri=${enc(REDIRECT_URI)}`;
+<script>
+/** ===== REQUIRED CONFIG (replace) ===== **/
+const CLIENT_ID   = "YOUR_CLIENT_ID";
+const REDIRECT_URI= "YOUR_REDIRECT_URI"; // e.g., https://your-repl.yourname.repl.co/oauth/callback
+const PERMISSIONS_INT = "0"; // optional; set your permissions int later
+/** ==================================== **/
 
-    const loginUrl =
-      `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}` +
-      `&redirect_uri=${enc(REDIRECT_URI)}&response_type=code&scope=${enc(scopesLogin.join(" "))}`;
+const enc = encodeURIComponent;
+const scopesLogin = ["identify","guilds"];
+const scopesBot   = ["bot","applications.commands"];
 
-    document.getElementById("inviteBtn").href = inviteUrl;
-    document.getElementById("loginBtn").href  = loginUrl;
+const inviteUrl =
+  `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}` +
+  `&permissions=${PERMISSIONS_INT}&scope=${enc(scopesBot.join(" "))}&response_type=code&redirect_uri=${enc(REDIRECT_URI)}`;
 
-    // Footer year
-    document.getElementById("yy").textContent = new Date().getFullYear();
+const loginUrl =
+  `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}` +
+  `&redirect_uri=${enc(REDIRECT_URI)}&response_type=code&scope=${enc(scopesLogin.join(" "))}`;
 
-    // Commands (19 slash entries; prefix mirror implied)
-    const commands = [
-      {name:"/kick", desc:"Kick a member."},
-      {name:"/ban", desc:"Ban a member."},
-      {name:"/unban", desc:"Unban by ID or name#discrim."},
-      {name:"/softban", desc:"Ban then unban to clear messages."},
-      {name:"/timeout", desc:"Timeout a member (minutes)."},
-      {name:"/purge", desc:"Bulk delete recent messages."},
-      {name:"/slowmode", desc:"Set channel slowmode."},
-      {name:"/lock", desc:"Lock channel for @everyone."},
-      {name:"/unlock", desc:"Unlock channel."},
-      {name:"/nick", desc:"Change a member nickname."},
-      {name:"/say", desc:"Make the bot say a message."},
-      {name:"/warn", desc:"Warn a member (stored in memory)."},
-      {name:"/infractions", desc:"Show warnings for a member."},
-      {name:"/clearwarns", desc:"Clear a member’s warnings."},
-      {name:"/setmodlog", desc:"Set moderation log channel."},
-      {name:"/sync", desc:"Force re-sync application commands."},
-      {name:"/commands", desc:"List slash & prefix commands (admin only)."},
-      {name:"/support", desc:"Get the support server invite (public)."},
-      {name:"/dashboard", desc:"Open the dashboard (public)."}
-    ];
+document.getElementById("inviteBtn").href = inviteUrl;
+document.getElementById("loginBtn").href  = loginUrl;
 
-    const list = document.getElementById("cmdList");
-    for (const c of commands){
-      const el = document.createElement("div");
-      el.className = "cmd";
-      el.innerHTML = `<div><strong>${c.name}</strong><div class="muted" style="margin-top:4px;">${c.desc}</div></div>`;
-      list.appendChild(el);
+/** ====== State ====== */
+let user = null;
+let ownedGuilds = [];   // [{id,name,icon,owner:true}]
+let botGuildIds = new Set(); // ids where bot is present
+let selectedGuild = null;
+let plusActive = false;
+
+/** ====== Helpers ====== */
+const $ = (sel) => document.querySelector(sel);
+function guildIconURL(g){ 
+  return g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64` : null;
+}
+function guildInitials(name){
+  return (name||"?").split(/\s+/).map(s=>s[0]).join("").slice(0,3).toUpperCase();
+}
+function el(tag, props={}, children=[]){
+  const n = document.createElement(tag);
+  Object.assign(n, props);
+  for(const c of children) n.append(c);
+  return n;
+}
+
+/** ====== UI: sidebar list ====== */
+function renderGuildList(filter=""){
+  const list = $("#serverList");
+  list.innerHTML = "";
+  const term = filter.trim().toLowerCase();
+
+  const data = ownedGuilds
+    .filter(g=>!term || (g.name||"").toLowerCase().includes(term))
+    .sort((a,b)=> (+(botGuildIds.has(b.id)) - +(botGuildIds.has(a.id))) || a.name.localeCompare(b.name));
+
+  if(!data.length){
+    list.innerHTML = '<div class="empty">No servers found.</div>';
+    return;
+  }
+  for(const g of data){
+    const inBot = botGuildIds.has(g.id);
+    const row = el("div",{className:"server", onclick:()=>selectGuild(g)});
+    const av = el("div",{className:"avatar"});
+    const icon = guildIconURL(g);
+    if(icon){ av.style.backgroundImage = `url(${icon})`; av.style.backgroundSize="cover"; av.textContent="" }
+    else { av.textContent = guildInitials(g.name) }
+
+    row.append(
+      av,
+      el("div",{className:"name", textContent:g.name || g.id}),
+      el("span",{className:"botin pill " + (inBot?"ok":"danger"), textContent: inBot? "Bot in" : "Not in" })
+    );
+    list.append(row);
+  }
+}
+
+/** ====== select current guild ====== */
+async function selectGuild(g){
+  selectedGuild = g;
+  $("#currentGuildName").textContent = g.name || g.id;
+
+  // load plus state
+  await refreshPlusStatus();
+
+  // load settings (if you persist them in backend)
+  // const s = await apiGET(`/api/guild/${g.id}/settings`);
+  // hydrateFromSettings(s);
+
+  // top-right server switcher visibility
+  updateServerSwitcherMenu();
+}
+
+/** ====== top-right Change Server menu ====== */
+function updateServerSwitcherMenu(){
+  const btn = $("#changeServerBtn");
+  btn.onclick = () => {
+    // quick inline chooser
+    const onlyOwnedAndHasBot = ownedGuilds.filter(g=>botGuildIds.has(g.id));
+    const names = onlyOwnedAndHasBot.map(g=>g.name).join("\n");
+    const pick = prompt("Type the exact server name to switch:\n\n" + names);
+    const target = onlyOwnedAndHasBot.find(g=>g.name === pick);
+    if(target) selectGuild(target);
+  };
+}
+
+/** ====== Tabs ====== */
+for (const t of document.querySelectorAll(".tab")){
+  t.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    const id = `panel-${t.dataset.tab}`;
+    document.getElementById(id).classList.add("active");
+  });
+}
+
+/** ====== Search box ====== */
+$("#searchInput").addEventListener("input", e=>renderGuildList(e.target.value));
+
+/** ====== Save examples ====== */
+$("#saveTimeout").onclick = async ()=>{
+  if(!selectedGuild) return alert("Select a server first.");
+  const minutes = ($("#timeoutMins").value||"").trim();
+  await apiPOST(`/api/guild/${selectedGuild.id}/settings`, {timeoutMinutes: minutes});
+  alert("Saved.");
+};
+for (const id of ["modActions","blockLinks","scamPhrases","floodControl","aiVision","plusAggressive"]){
+  const node = document.getElementById(id);
+  node.addEventListener("change", async ()=>{
+    if(!selectedGuild) return;
+    const payload = { [id]: node.checked };
+    await apiPOST(`/api/guild/${selectedGuild.id}/settings`, payload);
+  });
+}
+
+/** ====== PLUS ====== */
+async function refreshPlusStatus(){
+  if(!selectedGuild) return;
+  try{
+    const res = await apiGET(`/api/plus/status?guildId=${enc(selectedGuild.id)}`);
+    plusActive = !!(res && res.active);
+  }catch{ plusActive = false; }
+  $("#planPill").textContent = "Plan: " + (plusActive ? "Plus" : "Basic");
+  $("#plusState").textContent = "Status: " + (plusActive ? "Active" : "Inactive");
+
+  // lock/unlock Plus feature UI
+  const lockable = document.getElementById("plusAggressive");
+  lockable.disabled = !plusActive;
+  document.getElementById("plusFeature1").classList.toggle("locked", !plusActive);
+}
+
+$("#activatePlus").onclick = async ()=>{
+  if(!selectedGuild) return alert("Select a server first.");
+  const code = ($("#plusCode").value||"").trim();
+  if(!code) return;
+  try{
+    const r = await apiPOST("/api/plus/validate", {guildId: selectedGuild.id, code});
+    if(r && r.active){
+      await refreshPlusStatus();
+      alert("Plus activated for this server.");
+    }else{
+      alert("Invalid or inactive code.");
     }
+  }catch(e){
+    alert("Could not validate code right now.");
+  }
+};
 
-    // Optional: status pings (expects your backend to serve /api/status json)
-    async function pingStatus(){
-      const txt = document.getElementById("statusText");
-      const alive = document.getElementById("aliveChip");
-      const guild = document.getElementById("guildChip");
-      try{
-        const r = await fetch("/api/status", {cache:"no-store"});
-        if(!r.ok) throw new Error("HTTP "+r.status);
-        const j = await r.json();
-        txt.textContent = j.message || "Online";
-        alive.textContent = "API: " + (j.alive ? "alive" : "unknown");
-        alive.className = "pill " + (j.alive ? "ok" : "danger");
-        guild.textContent = "Guilds: " + (j.guilds ?? "—");
-      }catch(e){
-        txt.textContent = "Backend status unavailable";
-        alive.textContent = "API: unknown";
-        alive.className = "pill danger";
-        guild.textContent = "Guilds: —";
-      }
-    }
-    pingStatus();
-    setInterval(pingStatus, 15000);
-  </script>
+/** ====== API helpers (your backend) ====== */
+async function apiGET(path){
+  const r = await fetch(path, {credentials:"include"});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  return r.json();
+}
+async function apiPOST(path, body){
+  const r = await fetch(path, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    credentials:"include",
+    body: JSON.stringify(body||{})
+  });
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  return r.json();
+}
+
+/** ====== bootstrap ====== */
+async function init(){
+  // Load identity; if not signed in, show login button
+  try{
+    user = await apiGET("/api/me"); // {id, username, avatar,...}
+    document.getElementById("loginBtn").textContent = "👤 " + (user.global_name || user.username);
+    document.getElementById("loginBtn").classList.add("ghost");
+  }catch{
+    // not signed in
+    return;
+  }
+  // Owned guilds
+  try{
+    const all = await apiGET("/api/user/guilds"); // array of user guilds
+    ownedGuilds = (all||[]).filter(g=>g.owner === true);
+  }catch{ ownedGuilds = []; }
+
+  // Bot guilds
+  try{
+    const ids = await apiGET("/api/bot/guilds"); // {ids:[...]}
+    botGuildIds = new Set(ids.ids || []);
+  }catch{
+    botGuildIds = new Set();
+  }
+
+  renderGuildList();
+
+  // auto-select the first guild you own that the bot is in (if any)
+  const first = ownedGuilds.find(g=>botGuildIds.has(g.id)) || ownedGuilds[0];
+  if(first) selectGuild(first);
+}
+
+init();
+</script>
 </body>
 </html>
