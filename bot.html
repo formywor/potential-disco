@@ -27,10 +27,8 @@
     }
     a{color:var(--brand); text-decoration:none}
     a:hover{text-decoration:underline}
-    .app{
-      display:grid; grid-template-columns: 260px 1fr; gap:16px; padding:16px; min-height:100%;
-    }
-    @media (max-width: 980px){ .app{ grid-template-columns: 1fr; } }
+    .app{ display:grid; grid-template-columns: 280px 1fr; gap:16px; padding:16px; min-height:100% }
+    @media (max-width: 980px){ .app{ grid-template-columns: 1fr } }
     header{
       display:flex; align-items:center; justify-content:space-between; gap:10px;
       background: color-mix(in srgb, var(--panel) 88%, transparent);
@@ -54,24 +52,22 @@
     }
     .btn.primary{ background: linear-gradient(135deg, var(--brand), var(--brand-2)); border:none }
     .btn.ghost{ background: transparent }
-    .btn.small{ padding:6px 8px; font-weight:600 }
+    .btn.small{ padding:6px 8px; font-weight:600; font-size:13px }
     .pill{padding:2px 8px; border-radius:999px; border:1px solid var(--border); font-size:12px}
     .ok{color:var(--ok); border-color: color-mix(in srgb, var(--ok) 35%, transparent)}
     .danger{color:var(--danger); border-color: color-mix(in srgb, var(--danger) 35%, transparent)}
 
-    .sidebar{
-      display:flex; flex-direction:column; gap:12px;
-    }
+    .sidebar{ display:flex; flex-direction:column; gap:12px }
     .card{
       background: color-mix(in srgb, var(--panel) 88%, transparent);
       border-radius:14px; padding:12px; box-shadow: var(--shadow);
     }
-    .search{ display:flex; gap:8px; }
+    .search{ display:flex; gap:8px }
     input[type="text"], input[type="search"]{
       width:100%; background: rgba(255,255,255,.06); border:1px solid var(--border);
       color:var(--text); padding:10px 12px; border-radius:10px; outline:none;
     }
-    .servers{ display:flex; flex-direction:column; gap:6px; max-height: calc(100vh - 240px); overflow:auto; }
+    .servers{ display:flex; flex-direction:column; gap:6px; max-height: calc(100vh - 240px); overflow:auto }
     .server{
       display:flex; align-items:center; gap:10px; padding:8px; border-radius:10px;
       border:1px solid transparent; cursor:pointer;
@@ -79,29 +75,23 @@
     .server:hover{ background: rgba(255,255,255,.03); border-color: var(--border) }
     .avatar{
       width:28px;height:28px;border-radius:6px;background:#1d2842; display:grid; place-items:center; font-size:12px; color:#cfe0ff;
-      border:1px solid var(--border);
+      border:1px solid var(--border); overflow:hidden; background-size:cover; background-position:center
     }
     .server .name{ flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
-    .server .botin{ font-size:11px; }
-    .layout{
-      display:flex; flex-direction:column; gap:12px; min-width:0;
-    }
-    .toolbar{
-      display:flex; gap:8px; align-items:center; justify-content:space-between;
-    }
-    .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-    .tabs{ display:flex; gap:8px; flex-wrap:wrap; }
+    .server .botin{ font-size:11px }
+    .layout{ display:flex; flex-direction:column; gap:12px; min-width:0 }
+    .toolbar{ display:flex; gap:8px; align-items:center; justify-content:space-between }
+    .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+    .tabs{ display:flex; gap:8px; flex-wrap:wrap }
     .tab{ padding:10px 12px; border-radius:10px; font-weight:700; border:1px solid var(--border); cursor:pointer; background:rgba(255,255,255,.03) }
     .tab.active{ background: linear-gradient(135deg, var(--brand), var(--brand-2)); border:none }
-    .panel{ display:none; gap:12px; }
+    .panel{ display:none; gap:12px }
     .panel.active{ display:block }
-    .grid{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:12px; }
-    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
-    .item{ background: rgba(255,255,255,.02); border:1px solid var(--border); padding:14px; border-radius:12px; }
+    .grid{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:12px }
+    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr } }
+    .item{ background: rgba(255,255,255,.02); border:1px solid var(--border); padding:14px; border-radius:12px }
     .item h3{ margin:0 0 8px; font-size:16px }
-    label.switch{
-      display:inline-flex; align-items:center; gap:10px; cursor:pointer; user-select:none;
-    }
+    label.switch{ display:inline-flex; align-items:center; gap:10px; cursor:pointer; user-select:none }
     .switch input{ display:none }
     .toggle{
       width:44px;height:26px; border-radius:999px; background:#2a3556; position:relative; border:1px solid var(--border);
@@ -116,7 +106,11 @@
     .inline{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
     .sep{ height:1px; background:var(--border); margin:12px 0 }
     .right{ margin-left:auto }
-    .empty{ color:var(--muted); padding:20px 10px }
+    .empty{ color:var(--muted); padding:12px 10px }
+    .list{ display:flex; flex-direction:column; gap:8px; max-height:360px; overflow:auto }
+    .ban-row{ display:flex; align-items:center; gap:10px; border:1px solid var(--border); padding:10px; border-radius:10px; background:rgba(255,255,255,.03) }
+    .ban-row .who{flex:1; min-width:0}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; color:#cbd8ff}
   </style>
 </head>
 <body>
@@ -164,47 +158,62 @@
         <div class="tab" data-tab="filters">Filters</div>
         <div class="tab" data-tab="plus">Plus</div>
       </div>
+
       <!-- MODERATION -->
       <div id="panel-moderation" class="panel active">
         <div class="grid">
           <div class="item">
             <h3>Kick / Ban Controls</h3>
-            <div class="hint">Admin-only via bot commands. This toggle enables dashboard access (coming soon).</div>
-            <label class="switch"><input id="modActions" type="checkbox"><span class="toggle"></span>Allow dashboard actions</label>
-            <div class="hint">Saves per-server.</div>
+            <div class="hint">Admin-only via bot commands. Toggle allows dashboard actions (coming soon).</div>
+            <label class="switch"><input id="modActions" type="checkbox" checked><span class="toggle"></span>Allow dashboard actions</label>
+            <div class="hint">Saved per-server.</div>
           </div>
-          <div class="item">
-            <h3>Timeout Defaults</h3>
-            <div class="inline">
-              <label for="timeoutMins">Minutes:</label>
-              <input id="timeoutMins" type="text" placeholder="e.g. 30" style="width:120px">
-              <button class="btn small" id="saveTimeout">Save</button>
+
+            <div class="item">
+              <h3>Timeout Defaults</h3>
+              <div class="inline">
+                <label for="timeoutMins">Minutes:</label>
+                <input id="timeoutMins" type="text" placeholder="e.g. 30" value="30" style="width:120px">
+                <button class="btn small" id="saveTimeout">Save</button>
+              </div>
+              <div class="hint">Used when applying timeouts from the dashboard.</div>
             </div>
-            <div class="hint">Used when applying timeouts from the dashboard.</div>
-          </div>
+
+            <div class="item" style="grid-column:1 / -1">
+              <div class="inline">
+                <h3 style="margin-right:8px">Banned Users</h3>
+                <button class="btn small" id="refreshBans">Refresh</button>
+              </div>
+              <div id="banList" class="list">
+                <div class="empty">No data yet. Select a server and press Refresh.</div>
+              </div>
+              <div class="hint">Shows users currently banned in the selected server (via bot backend).</div>
+            </div>
         </div>
       </div>
+
       <!-- FILTERS -->
       <div id="panel-filters" class="panel">
         <div class="grid">
           <div class="item">
             <h3>Blocked Links</h3>
-            <label class="switch"><input id="blockLinks" type="checkbox"><span class="toggle"></span>Remove suspicious/blacklisted links</label>
+            <label class="switch"><input id="blockLinks" type="checkbox" checked><span class="toggle"></span>Remove suspicious/blacklisted links</label>
             <div class="sep"></div>
             <h3>Scam Phrases</h3>
-            <label class="switch"><input id="scamPhrases" type="checkbox"><span class="toggle"></span>Delete common scam / phishing text</label>
+            <label class="switch"><input id="scamPhrases" type="checkbox" checked><span class="toggle"></span>Delete common scam / phishing text</label>
             <div class="sep"></div>
             <h3>Flood Control</h3>
-            <label class="switch"><input id="floodControl" type="checkbox"><span class="toggle"></span>Rate-limit spammy senders</label>
+            <label class="switch"><input id="floodControl" type="checkbox" checked><span class="toggle"></span>Rate-limit spammy senders</label>
             <div class="hint">Mirrors your bot config (message window & attachment thresholds).</div>
           </div>
           <div class="item">
             <h3>AI Image Scam Detection</h3>
-            <label class="switch"><input id="aiVision" type="checkbox"><span class="toggle"></span>Enable base AI image scanning</label>
+            <label class="switch"><input id="aiVision" type="checkbox" checked><span class="toggle"></span>Enable base AI image scanning</label>
             <div class="hint">Blocks images likely to be Nitro/Steam/crypto scams.</div>
           </div>
         </div>
       </div>
+
       <!-- PLUS -->
       <div id="panel-plus" class="panel">
         <div class="grid">
@@ -217,36 +226,43 @@
             </div>
             <div class="hint">Plus unlocks advanced features for this server. Codes can be revoked.</div>
           </div>
-          <div class="item" id="plusFeature1" class="locked">
+          <div class="item" id="plusFeature1">
             <h3>Aggressive AI Image Scanning <span class="pill">Plus</span></h3>
             <label class="switch"><input id="plusAggressive" type="checkbox" disabled><span class="toggle"></span>Use stricter AI model & heuristics</label>
             <div class="hint">When enabled, suspicious images are removed even if confidence is moderate.</div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </div>
 
 <script>
-/** ===== REQUIRED CONFIG (replace) ===== **/
-const CLIENT_ID   = "1431696199517475079";
-const REDIRECT_URI= "https://gomega.watch/bot"; // e.g., https://your-repl.yourname.repl.co/oauth/callback
-const PERMISSIONS_INT = "0"; // optional; set your permissions int later
-/** ==================================== **/
+/** ===== REQUIRED CONFIG — CHANGE THESE ===== **/
+const API_BASE     = "https://YOUR-REPL-SUBDOMAIN.YOUR-USERNAME.repl.co"; // Replit bot backend base URL
+const CLIENT_ID    = "1431696199517475079"; // your Discord App client id
+const PERMISSIONS_INT = "0"; // optional; set your bot invite permissions integer
+/** ========================================= **/
 
 const enc = encodeURIComponent;
+const REDIRECT_URI = `${API_BASE}/oauth/callback`; // must be in Developer Portal Redirects
+
+// Scopes
 const scopesLogin = ["identify","guilds"];
 const scopesBot   = ["bot","applications.commands"];
 
+// URLs
 const inviteUrl =
   `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}` +
-  `&permissions=${PERMISSIONS_INT}&scope=${enc(scopesBot.join(" "))}&response_type=code&redirect_uri=${enc(REDIRECT_URI)}`;
+  `&permissions=${PERMISSIONS_INT}&scope=${enc(scopesBot.join(" "))}` +
+  `&response_type=code&redirect_uri=${enc(REDIRECT_URI)}`;
 
 const loginUrl =
   `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}` +
   `&redirect_uri=${enc(REDIRECT_URI)}&response_type=code&scope=${enc(scopesLogin.join(" "))}`;
 
+// Hook up buttons
 document.getElementById("inviteBtn").href = inviteUrl;
 document.getElementById("loginBtn").href  = loginUrl;
 
@@ -259,20 +275,30 @@ let plusActive = false;
 
 /** ====== Helpers ====== */
 const $ = (sel) => document.querySelector(sel);
-function guildIconURL(g){ 
+function guildIconURL(g){
   return g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64` : null;
 }
-function guildInitials(name){
-  return (name||"?").split(/\s+/).map(s=>s[0]).join("").slice(0,3).toUpperCase();
+function guildInitials(name){ return (name||"?").split(/\s+/).map(s=>s[0]).join("").slice(0,3).toUpperCase(); }
+function el(tag, props={}, children=[]){ const n = document.createElement(tag); Object.assign(n, props); for(const c of children) n.append(c); return n; }
+
+// API helpers
+async function apiGET(path){
+  const r = await fetch(`${API_BASE}${path}`, {credentials:"include"});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  return r.json();
 }
-function el(tag, props={}, children=[]){
-  const n = document.createElement(tag);
-  Object.assign(n, props);
-  for(const c of children) n.append(c);
-  return n;
+async function apiPOST(path, body){
+  const r = await fetch(`${API_BASE}${path}`, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    credentials:"include",
+    body: JSON.stringify(body||{})
+  });
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  return r.json();
 }
 
-/** ====== UI: sidebar list ====== */
+/** ====== Sidebar list ====== */
 function renderGuildList(filter=""){
   const list = $("#serverList");
   list.innerHTML = "";
@@ -282,17 +308,14 @@ function renderGuildList(filter=""){
     .filter(g=>!term || (g.name||"").toLowerCase().includes(term))
     .sort((a,b)=> (+(botGuildIds.has(b.id)) - +(botGuildIds.has(a.id))) || a.name.localeCompare(b.name));
 
-  if(!data.length){
-    list.innerHTML = '<div class="empty">No servers found.</div>';
-    return;
-  }
+  if(!data.length){ list.innerHTML = '<div class="empty">No servers found.</div>'; return; }
+
   for(const g of data){
     const inBot = botGuildIds.has(g.id);
     const row = el("div",{className:"server", onclick:()=>selectGuild(g)});
     const av = el("div",{className:"avatar"});
     const icon = guildIconURL(g);
-    if(icon){ av.style.backgroundImage = `url(${icon})`; av.style.backgroundSize="cover"; av.textContent="" }
-    else { av.textContent = guildInitials(g.name) }
+    if(icon){ av.style.backgroundImage = `url(${icon})`; av.textContent="" } else { av.textContent = guildInitials(g.name) }
 
     row.append(
       av,
@@ -303,28 +326,24 @@ function renderGuildList(filter=""){
   }
 }
 
-/** ====== select current guild ====== */
+/** ====== Select Guild ====== */
 async function selectGuild(g){
   selectedGuild = g;
   $("#currentGuildName").textContent = g.name || g.id;
 
-  // load plus state
   await refreshPlusStatus();
+  await loadSettings();
+  await loadBans();
 
-  // load settings (if you persist them in backend)
-  // const s = await apiGET(`/api/guild/${g.id}/settings`);
-  // hydrateFromSettings(s);
-
-  // top-right server switcher visibility
   updateServerSwitcherMenu();
 }
 
-/** ====== top-right Change Server menu ====== */
+/** ====== Change Server button ====== */
 function updateServerSwitcherMenu(){
   const btn = $("#changeServerBtn");
   btn.onclick = () => {
-    // quick inline chooser
     const onlyOwnedAndHasBot = ownedGuilds.filter(g=>botGuildIds.has(g.id));
+    if(!onlyOwnedAndHasBot.length){ alert("No servers with AegisMod found in your owned list."); return; }
     const names = onlyOwnedAndHasBot.map(g=>g.name).join("\n");
     const pick = prompt("Type the exact server name to switch:\n\n" + names);
     const target = onlyOwnedAndHasBot.find(g=>g.name === pick);
@@ -342,11 +361,9 @@ for (const t of document.querySelectorAll(".tab")){
     document.getElementById(id).classList.add("active");
   });
 }
-
-/** ====== Search box ====== */
 $("#searchInput").addEventListener("input", e=>renderGuildList(e.target.value));
 
-/** ====== Save examples ====== */
+/** ====== Settings Save ====== */
 $("#saveTimeout").onclick = async ()=>{
   if(!selectedGuild) return alert("Select a server first.");
   const minutes = ($("#timeoutMins").value||"").trim();
@@ -362,6 +379,50 @@ for (const id of ["modActions","blockLinks","scamPhrases","floodControl","aiVisi
   });
 }
 
+async function loadSettings(){
+  if(!selectedGuild) return;
+  try{
+    // optional: if you later add GET /api/guild/:id/settings to the backend, hydrate here.
+    // const s = await apiGET(`/api/guild/${selectedGuild.id}/settings`);
+    // document.getElementById("modActions").checked   = !!s.modActions ?? true;
+    // document.getElementById("blockLinks").checked   = !!s.blockLinks ?? true;
+    // document.getElementById("scamPhrases").checked  = !!s.scamPhrases ?? true;
+    // document.getElementById("floodControl").checked = !!s.floodControl ?? true;
+    // document.getElementById("aiVision").checked     = !!s.aiVision ?? true;
+  }catch{}
+}
+
+/** ====== Banned Users ====== */
+$("#refreshBans").onclick = loadBans;
+
+async function loadBans(){
+  const box = $("#banList");
+  box.innerHTML = '<div class="empty">Loading…</div>';
+  if(!selectedGuild){ box.innerHTML = '<div class="empty">Select a server.</div>'; return; }
+  try{
+    // Requires backend endpoint GET /api/guild/:id/bans that proxies bot.guild.bans()
+    const data = await apiGET(`/api/guild/${selectedGuild.id}/bans`); // [{user:{id,username,discriminator,avatar}, reason}]
+    if(!data || !data.length){ box.innerHTML = '<div class="empty">No bans in this server.</div>'; return; }
+
+    box.innerHTML = "";
+    for(const e of data){
+      const u = e.user || {};
+      const tag = u.global_name || (u.username ? `${u.username}#${u.discriminator ?? "0000"}` : u.id);
+      const row = el("div",{className:"ban-row"},[
+        (()=>{ const a=el("div",{className:"avatar"}); if(u.avatar){ a.style.backgroundImage=`url(https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64)`; } else { a.textContent=(u.username||"?")[0]?.toUpperCase()||"?" } return a; })(),
+        el("div",{className:"who"},[
+          el("div",{textContent: tag}),
+          el("div",{className:"mono",textContent: `ID: ${u.id || "unknown"}`})
+        ]),
+        el("div",{className:"mono", textContent: e.reason ? `Reason: ${e.reason}` : "No reason" })
+      ]);
+      box.append(row);
+    }
+  }catch(e){
+    box.innerHTML = '<div class="empty">Could not load bans. Make sure your backend exposes <span class="mono">GET /api/guild/:id/bans</span>.</div>';
+  }
+}
+
 /** ====== PLUS ====== */
 async function refreshPlusStatus(){
   if(!selectedGuild) return;
@@ -372,7 +433,6 @@ async function refreshPlusStatus(){
   $("#planPill").textContent = "Plan: " + (plusActive ? "Plus" : "Basic");
   $("#plusState").textContent = "Status: " + (plusActive ? "Active" : "Inactive");
 
-  // lock/unlock Plus feature UI
   const lockable = document.getElementById("plusAggressive");
   lockable.disabled = !plusActive;
   document.getElementById("plusFeature1").classList.toggle("locked", !plusActive);
@@ -384,66 +444,37 @@ $("#activatePlus").onclick = async ()=>{
   if(!code) return;
   try{
     const r = await apiPOST("/api/plus/validate", {guildId: selectedGuild.id, code});
-    if(r && r.active){
-      await refreshPlusStatus();
-      alert("Plus activated for this server.");
-    }else{
-      alert("Invalid or inactive code.");
-    }
-  }catch(e){
-    alert("Could not validate code right now.");
-  }
+    if(r && r.active){ await refreshPlusStatus(); alert("Plus activated for this server."); }
+    else{ alert("Invalid or inactive code."); }
+  }catch{ alert("Could not validate code right now."); }
 };
-
-/** ====== API helpers (your backend) ====== */
-async function apiGET(path){
-  const r = await fetch(path, {credentials:"include"});
-  if(!r.ok) throw new Error("HTTP "+r.status);
-  return r.json();
-}
-async function apiPOST(path, body){
-  const r = await fetch(path, {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    credentials:"include",
-    body: JSON.stringify(body||{})
-  });
-  if(!r.ok) throw new Error("HTTP "+r.status);
-  return r.json();
-}
 
 /** ====== bootstrap ====== */
 async function init(){
-  // Load identity; if not signed in, show login button
+  // Identity
   try{
     user = await apiGET("/api/me"); // {id, username, avatar,...}
     document.getElementById("loginBtn").textContent = "👤 " + (user.global_name || user.username);
     document.getElementById("loginBtn").classList.add("ghost");
   }catch{
-    // not signed in
+    // Not signed in; user will use the Sign in button
     return;
   }
   // Owned guilds
   try{
-    const all = await apiGET("/api/user/guilds"); // array of user guilds
+    const all = await apiGET("/api/user/guilds");
     ownedGuilds = (all||[]).filter(g=>g.owner === true);
   }catch{ ownedGuilds = []; }
-
   // Bot guilds
   try{
     const ids = await apiGET("/api/bot/guilds"); // {ids:[...]}
     botGuildIds = new Set(ids.ids || []);
-  }catch{
-    botGuildIds = new Set();
-  }
+  }catch{ botGuildIds = new Set(); }
 
   renderGuildList();
-
-  // auto-select the first guild you own that the bot is in (if any)
   const first = ownedGuilds.find(g=>botGuildIds.has(g.id)) || ownedGuilds[0];
   if(first) selectGuild(first);
 }
-
 init();
 </script>
 </body>
