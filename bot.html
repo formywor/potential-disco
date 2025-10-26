@@ -6,78 +6,77 @@
 <title>Discord Bot Control Panel</title>
 <style>
   :root{
-    --bg1:#071021; --bg2:#0b1220; --card:#0e1a2f; --ink:#eaf2fa;
-    --muted:#a7b3c4; --accent:#34d3ff; --accent2:#7c3aed; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
+    --bg1:#071021; --bg2:#0b1220; --ink:#eaf2fa; --muted:#98a6b7;
+    --card:rgba(255,255,255,.05); --stroke:rgba(255,255,255,.12);
+    --accent:#34d3ff; --accent2:#7c3aed; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
   }
-  *{box-sizing:border-box}
-  body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,rgba(52,211,255,.12),transparent 60%),linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
-  header{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;background:linear-gradient(180deg,rgba(7,16,33,.9),rgba(11,18,32,.85));backdrop-filter:blur(10px);z-index:5}
-  .logo{width:12px;height:12px;border-radius:4px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 0 30px rgba(124,58,237,.35)}
-  .title{font-weight:700;letter-spacing:.3px}
-  .wrap{max-width:1100px;margin:22px auto;padding:0 16px}
-  .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:16px}
-  .row{display:flex;flex-wrap:wrap;gap:12px}
-  .col{flex:1 1 320px}
-  label{display:block;font-size:.88rem;color:var(--muted);margin:8px 0 6px}
-  input, select, textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:var(--ink);border-radius:10px;padding:10px 12px;outline:none}
-  textarea{min-height:100px;resize:vertical}
-  button{background:linear-gradient(135deg,var(--accent),#67e8f9);color:#00121c;border:none;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer;transition:transform .06s ease,opacity .2s;box-shadow:0 6px 20px rgba(52,211,255,.24)}
-  button:hover{transform:translateY(-1px)}
-  button.ghost{background:transparent;color:var(--ink);border:1px solid rgba(255,255,255,.16);box-shadow:none}
-  .danger{background:linear-gradient(135deg,#fb7185,#ef4444);color:white}
-  .success{background:linear-gradient(135deg,#86efac,#22c55e);color:#003010}
-  .status{font-size:.92rem}
-  .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:.8rem;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06)}
-  .grid{display:grid;grid-template-columns:1fr;gap:12px}
+  *{box-sizing:border-box} body{margin:0;color:var(--ink);
+    background:radial-gradient(1200px 600px at 10% -10%,rgba(52,211,255,.12),transparent 60%),
+               linear-gradient(180deg,var(--bg1),var(--bg2));
+    font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
+  header{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;padding:16px 18px;
+    background:linear-gradient(180deg,rgba(7,16,33,.9),rgba(11,18,32,.85));backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(255,255,255,.06)}
+  .logo{width:12px;height:12px;border-radius:4px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+    box-shadow:0 0 24px rgba(124,58,237,.35)}
+  .wrap{max-width:1100px;margin:20px auto;padding:0 14px}
+  .grid{display:grid;gap:14px}
   @media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
-  ul.list{list-style:none;padding:0;margin:0;display:grid;gap:8px;max-height:240px;overflow:auto}
-  .item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:10px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:10px}
-  .muted{color:var(--muted)}
-  .small{font-size:.85rem}
-  .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;}
-  .warn{color:var(--warn)}
-  .err{color:var(--err)}
-  .ok{color:var(--ok)}
+  .card{background:var(--card);border:1px solid var(--stroke);border-radius:14px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+  h3{margin:.2rem 0 .6rem}
+  label{display:block;color:var(--muted);font-size:.9rem;margin:6px 0 6px}
+  input,select,textarea{width:100%;color:var(--ink);background:rgba(255,255,255,.05);border:1px solid var(--stroke);
+    border-radius:10px;padding:10px 12px;outline:none}
+  textarea{min-height:96px;resize:vertical}
+  .row{display:flex;flex-wrap:wrap;gap:10px}
+  .col{flex:1 1 260px}
+  button{cursor:pointer;border:none;border-radius:12px;padding:10px 14px;font-weight:700;
+    background:linear-gradient(135deg,var(--accent),#67e8f9);color:#00121c;box-shadow:0 6px 18px rgba(52,211,255,.25)}
+  button.ghost{background:transparent;color:var(--ink);border:1px solid var(--stroke);box-shadow:none}
+  .small{font-size:.9rem} .muted{color:var(--muted)}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:.8rem;border:1px solid var(--stroke)}
+  ul.list{list-style:none;margin:0;padding:0;display:grid;gap:8px;max-height:240px;overflow:auto}
+  .item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border-radius:10px;
+    background:rgba(255,255,255,.05);border:1px solid var(--stroke)}
+  .note-ok{color:var(--ok)} .note-warn{color:var(--warn)} .note-err{color:var(--err)}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+  .toast{position:fixed;right:16px;bottom:16px;max-width:320px;padding:10px 12px;border-radius:10px;
+    background:rgba(17,24,39,.9);color:#fff;border:1px solid rgba(255,255,255,.15);box-shadow:0 6px 20px rgba(0,0,0,.35);display:none}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo"></div>
-  <div class="title">Discord Bot Control Panel</div>
+  <div class="logo"></div><strong>Discord Bot Control Panel</strong>
   <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
     <span id="connBadge" class="badge">Disconnected</span>
-    <button class="ghost" id="clear">Clear UI</button>
+    <button id="clear" class="ghost">Clear UI</button>
   </div>
 </header>
 
 <div class="wrap grid">
-  <!-- CONNECT & SECURITY -->
+  <!-- Connection -->
   <section class="card">
-    <h3>Connection & Security</h3>
-    <p class="small muted">Recommended: keep your bot token on the server. This UI calls your backend proxy (default <span class="mono">/api</span>). You can fill a token here if your backend needs it (it will be sent to <span class="mono">/api/auth</span>). The “Advanced (direct)” mode tries to call Discord from the browser and will typically fail due to CORS.</p>
+    <h3>Connection</h3>
+    <p class="small muted">Your token is only sent to your backend at <span class="mono">/api/auth</span> and is not stored in the browser.</p>
     <div class="row">
       <div class="col">
         <label>Proxy Base URL</label>
         <input id="baseUrl" value="/api" />
       </div>
       <div class="col">
-        <label>Bot Token (sent only to your proxy)</label>
-        <input id="token" type="password" placeholder="Bot token (server-side storage recommended)" />
+        <label>Bot Token (sent to backend)</label>
+        <input id="token" type="password" placeholder="Paste bot token or configure env on server" />
       </div>
       <div class="col" style="align-self:end">
         <button id="connect">Connect</button>
         <button id="disconnect" class="ghost">Disconnect</button>
       </div>
     </div>
-    <div style="margin-top:8px;display:flex;align-items:center;gap:10px">
-      <input id="directMode" type="checkbox" />
-      <label for="directMode" class="small">Advanced (direct) — call Discord API from the browser (CORS likely blocks). <span class="warn">Not recommended.</span></label>
-    </div>
     <div id="me" class="small muted" style="margin-top:8px"></div>
     <div id="connectMsg" class="small" style="margin-top:6px"></div>
   </section>
 
-  <!-- PRESENCE -->
+  <!-- Presence -->
   <section class="card">
     <h3>Presence & Status</h3>
     <div class="row">
@@ -110,13 +109,11 @@
     <div id="presenceMsg" class="small" style="margin-top:8px"></div>
   </section>
 
-  <!-- DMS -->
+  <!-- DMs -->
   <section class="card">
     <h3>DMs</h3>
     <div class="row">
-      <div class="col">
-        <button id="loadDMs" class="ghost">Load DM Channels</button>
-      </div>
+      <div class="col"><button id="loadDMs" class="ghost">Load DM Channels</button></div>
       <div class="col">
         <label>DM Channel</label>
         <select id="dmSelect"></select>
@@ -135,13 +132,11 @@
     <div id="dmMsg" class="small" style="margin-top:8px"></div>
   </section>
 
-  <!-- SERVERS -->
+  <!-- Servers -->
   <section class="card">
     <h3>Servers & Channels</h3>
     <div class="row">
-      <div class="col">
-        <button id="loadGuilds" class="ghost">Load Servers</button>
-      </div>
+      <div class="col"><button id="loadGuilds" class="ghost">Load Servers</button></div>
       <div class="col">
         <label>Server</label>
         <select id="guildSelect"></select>
@@ -165,6 +160,8 @@
   </section>
 </div>
 
+<div id="toast" class="toast"></div>
+
 <script>
 (function(){
   const els = {
@@ -172,24 +169,20 @@
     token: document.getElementById('token'),
     connect: document.getElementById('connect'),
     disconnect: document.getElementById('disconnect'),
-    directMode: document.getElementById('directMode'),
     me: document.getElementById('me'),
     connectMsg: document.getElementById('connectMsg'),
     connBadge: document.getElementById('connBadge'),
-
     presence: document.getElementById('presence'),
     activityType: document.getElementById('activityType'),
     activityText: document.getElementById('activityText'),
     updatePresence: document.getElementById('updatePresence'),
     presenceMsg: document.getElementById('presenceMsg'),
-
     loadDMs: document.getElementById('loadDMs'),
     dmSelect: document.getElementById('dmSelect'),
     dmList: document.getElementById('dmList'),
     dmText: document.getElementById('dmText'),
     sendDM: document.getElementById('sendDM'),
     dmMsg: document.getElementById('dmMsg'),
-
     loadGuilds: document.getElementById('loadGuilds'),
     guildSelect: document.getElementById('guildSelect'),
     channelSelect: document.getElementById('channelSelect'),
@@ -197,91 +190,71 @@
     guildText: document.getElementById('guildText'),
     sendGuild: document.getElementById('sendGuild'),
     guildMsg: document.getElementById('guildMsg'),
-
     clear: document.getElementById('clear'),
+    toast: document.getElementById('toast'),
   };
 
-  let auth = { mode: 'proxy', token: null };
+  // persist only baseUrl for convenience
+  els.baseUrl.value = localStorage.getItem('bot_base_url') || '/api';
+  els.baseUrl.addEventListener('change', ()=>localStorage.setItem('bot_base_url', els.baseUrl.value));
 
   function setBadge(text, kind){
     els.connBadge.textContent = text;
-    els.connBadge.style.borderColor = 'rgba(255,255,255,.16)';
-    if(kind==='ok'){ els.connBadge.style.background='rgba(34,197,94,.15)'; }
-    else if(kind==='err'){ els.connBadge.style.background='rgba(239,68,68,.15)'; }
-    else { els.connBadge.style.background='rgba(255,255,255,.06)'; }
+    els.connBadge.style.background =
+      kind==='ok' ? 'rgba(34,197,94,.15)' :
+      kind==='err' ? 'rgba(239,68,68,.15)' :
+      'rgba(255,255,255,.06)';
   }
-
-  function note(el, text, kind){
-    el.textContent = text || '';
-    el.className = 'small ' + (kind || '');
+  function note(el, text, kind){ el.textContent = text||''; el.className = 'small ' + (kind || ''); }
+  function toast(msg){
+    els.toast.textContent = msg;
+    els.toast.style.display = 'block';
+    setTimeout(()=> els.toast.style.display='none', 2200);
   }
-
-  function headers(){
-    if(auth.mode==='proxy'){
-      return {'Content-Type':'application/json'};
-    }else{
-      return {'Content-Type':'application/json', 'Authorization': 'Bot ' + (auth.token||'')};
-    }
-  }
-
-  async function api(path, options={}){
-    const direct = auth.mode==='direct';
-    if(direct){
-      // Hitting Discord directly. Most routes will be blocked by CORS in browsers.
-      const url = 'https://discord.com/api/v10' + path;
-      const res = await fetch(url, { ...options, headers: { ...(options.headers||{}), ...headers() } });
-      if(!res.ok) throw new Error('HTTP '+res.status+': '+await res.text());
-      return res.json();
-    }else{
-      const url = els.baseUrl.value.replace(/\/$/,'') + path;
-      const res = await fetch(url, { ...options, headers: { ...(options.headers||{}), ...headers() } });
-      if(!res.ok) throw new Error('HTTP '+res.status+': '+await res.text());
-      return res.json();
-    }
-  }
-
-  // -------- CONNECT/DISCONNECT ----------
-  els.connect.addEventListener('click', async ()=>{
-    auth.mode = els.directMode.checked ? 'direct' : 'proxy';
-    auth.token = els.token.value || null;
-    note(els.connectMsg, '', '');
-    try{
-      if(auth.mode==='proxy'){
-        // Send token to your backend once; backend should store it securely (not in memory if you restart often).
-        if(auth.token){
-          await api('/auth', { method:'POST', body: JSON.stringify({ token: auth.token }) });
-        }
-        const me = await api('/me'); // backend should call GET /users/@me with the stored token
-        els.me.textContent = `Signed in as ${me.username}#${me.discriminator || me.global_name || ''} (${me.id}) via proxy`;
-      }else{
-        if(!auth.token){ throw new Error('Direct mode requires a token'); }
-        const me = await api('/users/@me');
-        els.me.textContent = `Signed in as ${me.username}#${me.discriminator || me.global_name || ''} (${me.id}) [direct]`;
+  function api(path, options={}){
+    const url = (els.baseUrl.value||'/api').replace(/\/$/,'') + path;
+    return fetch(url, {
+      ...options,
+      headers: { 'Content-Type':'application/json', ...(options.headers||{}) }
+    }).then(async res=>{
+      if(!res.ok){
+        const txt = await res.text().catch(()=> '');
+        throw new Error('HTTP '+res.status+(txt?(': '+txt):''));
       }
-      setBadge('Connected', 'ok');
-      note(els.connectMsg, 'Connected.', 'ok');
-    }catch(err){
-      console.error(err);
-      setBadge('Disconnected', 'err');
-      note(els.connectMsg, 'Connect failed: ' + err.message, 'err');
+      // some endpoints may return {} only
+      try { return await res.json(); } catch { return {}; }
+    });
+  }
+
+  // ---- Connect / Disconnect
+  els.connect.addEventListener('click', async ()=>{
+    note(els.connectMsg, 'Connecting…', 'muted');
+    try{
+      const t = (els.token.value||'').trim();
+      if(t) await api('/auth', { method:'POST', body: JSON.stringify({ token: t }) });
+      const me = await api('/me');
+      note(els.connectMsg, 'Connected.', 'note-ok');
+      els.me.textContent = `Signed in as ${me.username}${me.discriminator?('#'+me.discriminator):''} (${me.id})`;
+      setBadge('Connected','ok'); toast('Connected to bot');
+    }catch(e){
+      console.error(e);
+      note(els.connectMsg, 'Connect failed: ' + e.message, 'note-err');
+      setBadge('Disconnected','err');
     }
   });
 
   els.disconnect.addEventListener('click', async ()=>{
-    try{
-      if(auth.mode==='proxy'){
-        await api('/auth', { method:'DELETE' }); // backend should forget token/session
-      }
-    }catch(_e){}
-    auth.token = null;
-    setBadge('Disconnected');
-    els.me.textContent = '';
-    note(els.connectMsg, 'Disconnected.', 'muted');
+    try{ await api('/auth', { method:'DELETE' }); }catch(_e){}
+    setBadge('Disconnected'); els.me.textContent=''; note(els.connectMsg,'Disconnected.','muted');
+    // clear UI state
+    els.dmSelect.innerHTML=''; els.dmList.innerHTML=''; els.dmText.value='';
+    els.guildSelect.innerHTML=''; els.channelSelect.innerHTML=''; els.guildList.innerHTML=''; els.guildText.value='';
+    toast('Disconnected');
   });
 
-  // -------- PRESENCE ----------
+  // ---- Presence
   els.updatePresence.addEventListener('click', async ()=>{
-    note(els.presenceMsg, '');
+    note(els.presenceMsg,'Updating…','muted');
     try{
       const body = {
         status: els.presence.value,
@@ -289,169 +262,105 @@
         activity_text: els.activityText.value.trim()
       };
       await api('/status', { method:'POST', body: JSON.stringify(body) });
-      note(els.presenceMsg, 'Presence updated.', 'ok');
-    }catch(err){
-      note(els.presenceMsg, 'Failed to update presence: '+err.message, 'err');
+      note(els.presenceMsg,'Presence updated.','note-ok');
+      toast('Presence updated');
+    }catch(e){
+      note(els.presenceMsg,'Failed: '+e.message,'note-err');
     }
   });
 
-  // -------- DMS ----------
+  // ---- DMs
   els.loadDMs.addEventListener('click', async ()=>{
-    note(els.dmMsg,'');
-    els.dmSelect.innerHTML = '';
-    els.dmList.innerHTML = '';
+    note(els.dmMsg,'Loading…','muted'); els.dmSelect.innerHTML=''; els.dmList.innerHTML='';
     try{
-      const dms = await api('/dms'); // backend: GET /users/@me/channels (type DM/Group DM) or cached list
+      const dms = await api('/dms');
       dms.forEach(ch=>{
-        const opt = document.createElement('option');
-        opt.value = ch.id;
-        const name = (ch.recipients && ch.recipients[0]) ? (ch.recipients[0].username + ' ('+ch.id+')') : ('DM '+ch.id);
-        opt.textContent = name;
-        els.dmSelect.appendChild(opt);
-
+        const label = (ch.recipients && ch.recipients[0]) ? `${ch.recipients[0].username} (${ch.id})` : `DM ${ch.id}`;
+        const opt = new Option(label, ch.id); els.dmSelect.add(opt);
         const li = document.createElement('li');
-        li.className = 'item';
-        li.innerHTML = `<div><div><strong>${name}</strong></div><div class="muted small">Type: ${ch.type}</div></div><button data-id="${ch.id}" class="ghost small">Open</button>`;
+        li.className='item'; li.innerHTML = `<div><strong>${label}</strong><div class="small muted">Type: ${ch.type}</div></div><button class="ghost small">Select</button>`;
         li.querySelector('button').addEventListener('click', ()=>{ els.dmSelect.value = ch.id; });
         els.dmList.appendChild(li);
       });
-      if(!dms.length) note(els.dmMsg,'No DMs found. Start a DM with someone first.','muted');
-    }catch(err){
-      note(els.dmMsg,'Load DMs failed: '+err.message,'err');
+      if(!dms.length) note(els.dmMsg,'No DM channels known yet. Open a DM with the bot first.','muted');
+      else note(els.dmMsg,`Loaded ${dms.length} DM channel(s).`,'note-ok');
+    }catch(e){
+      note(els.dmMsg,'Failed: '+e.message,'note-err');
     }
   });
 
-  els.sendDM.addEventListener('click', async ()=>{
-    note(els.dmMsg,'');
-    const channelId = els.dmSelect.value;
-    const content = els.dmText.value.trim();
-    if(!channelId) return note(els.dmMsg,'Pick a DM channel first.','warn');
-    if(!content) return note(els.dmMsg,'Type a message.','warn');
-
+  document.getElementById('sendDM').addEventListener('click', async ()=>{
+    note(els.dmMsg,''); const id = els.dmSelect.value; const content = els.dmText.value.trim();
+    if(!id) return note(els.dmMsg,'Pick a DM channel first.','note-warn');
+    if(!content) return note(els.dmMsg,'Type a message.','note-warn');
     try{
-      await api(`/channels/${channelId}/messages`, { method:'POST', body: JSON.stringify({ content }) });
-      note(els.dmMsg,'DM sent.','ok');
-      els.dmText.value='';
-    }catch(err){
-      note(els.dmMsg,'Send failed: '+err.message,'err');
-    }
+      await api(`/channels/${id}/messages`, { method:'POST', body: JSON.stringify({ content }) });
+      note(els.dmMsg,'DM sent.','note-ok'); els.dmText.value=''; toast('DM sent');
+    }catch(e){ note(els.dmMsg,'Failed: '+e.message,'note-err'); }
   });
 
-  // -------- GUILDS ----------
+  // ---- Guilds & Channels
   els.loadGuilds.addEventListener('click', async ()=>{
-    note(els.guildMsg,'');
-    els.guildSelect.innerHTML='';
-    els.channelSelect.innerHTML='';
-    els.guildList.innerHTML='';
+    note(els.guildMsg,'Loading servers…','muted'); els.guildSelect.innerHTML=''; els.channelSelect.innerHTML=''; els.guildList.innerHTML='';
     try{
-      const guilds = await api('/guilds'); // backend: GET /users/@me/guilds
+      const guilds = await api('/guilds');
       guilds.forEach(g=>{
-        const opt = document.createElement('option');
-        opt.value = g.id;
-        opt.textContent = `${g.name} (${g.id})`;
-        els.guildSelect.appendChild(opt);
-
+        els.guildSelect.add(new Option(`${g.name} (${g.id})`, g.id));
         const li = document.createElement('li');
-        li.className = 'item';
-        li.innerHTML = `<div><div><strong>${g.name}</strong></div><div class="muted small">ID: ${g.id}</div></div><button data-id="${g.id}" class="ghost small">Channels</button>`;
+        li.className='item'; li.innerHTML = `<div><strong>${g.name}</strong><div class="small muted">ID: ${g.id}</div></div><button class="ghost small">Channels</button>`;
         li.querySelector('button').addEventListener('click', ()=>{ els.guildSelect.value = g.id; loadChannels(g.id); });
         els.guildList.appendChild(li);
       });
-
       if(guilds[0]) loadChannels(guilds[0].id);
-      if(!guilds.length) note(els.guildMsg,'No servers found (bot must be invited).','muted');
-    }catch(err){
-      note(els.guildMsg,'Load servers failed: '+err.message,'err');
-    }
+      if(!guilds.length) note(els.guildMsg,'No servers found (invite the bot).','muted');
+      else note(els.guildMsg,`Loaded ${guilds.length} server(s).`,'note-ok');
+    }catch(e){ note(els.guildMsg,'Failed: '+e.message,'note-err'); }
   });
 
-  async function loadChannels(guildId){
+  async function loadChannels(gid){
     els.channelSelect.innerHTML='';
     try{
-      const chans = await api(`/guilds/${guildId}/channels`); // backend: GET /guilds/{id}/channels
-      chans.filter(c=>c.type===0).forEach(c=>{
-        const opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = `#${c.name} (${c.id})`;
-        els.channelSelect.appendChild(opt);
-      });
-      if(!els.channelSelect.options.length){
-        const opt=document.createElement('option');
-        opt.textContent='No text channels';
-        els.channelSelect.appendChild(opt);
-      }
-    }catch(err){
-      note(els.guildMsg,'Load channels failed: '+err.message,'err');
-    }
+      const chans = await api(`/guilds/${gid}/channels`);
+      const textChans = chans.filter(c=> c.type===0);
+      textChans.forEach(c=> els.channelSelect.add(new Option(`#${c.name} (${c.id})`, c.id)));
+      if(!textChans.length) els.channelSelect.add(new Option('No text channels',''));
+    }catch(e){ note(els.guildMsg,'Load channels failed: '+e.message,'note-err'); }
   }
-
   els.guildSelect.addEventListener('change', e=> loadChannels(e.target.value));
 
   els.sendGuild.addEventListener('click', async ()=>{
-    note(els.guildMsg,'');
-    const channelId = els.channelSelect.value;
-    const content = els.guildText.value.trim();
-    if(!channelId || channelId.startsWith('No text')) return note(els.guildMsg,'Pick a text channel.','warn');
-    if(!content) return note(els.guildMsg,'Type a message.','warn');
-
+    note(els.guildMsg,''); const chId = els.channelSelect.value; const content = els.guildText.value.trim();
+    if(!chId) return note(els.guildMsg,'Pick a text channel.','note-warn');
+    if(!content) return note(els.guildMsg,'Type a message.','note-warn');
     try{
-      await api(`/channels/${channelId}/messages`, { method:'POST', body: JSON.stringify({ content }) });
-      note(els.guildMsg,'Message sent.','ok');
-      els.guildText.value='';
-    }catch(err){
-      note(els.guildMsg,'Send failed: '+err.message,'err');
-    }
+      await api(`/channels/${chId}/messages`, { method:'POST', body: JSON.stringify({ content }) });
+      note(els.guildMsg,'Message sent.','note-ok'); els.guildText.value=''; toast('Channel message sent');
+    }catch(e){ note(els.guildMsg,'Failed: '+e.message,'note-err'); }
   });
 
-  // -------- CLEAR ----------
+  // ---- Clear UI
   els.clear.addEventListener('click', ()=>{
-    els.token.value='';
-    els.me.textContent='';
-    els.dmSelect.innerHTML='';
-    els.dmList.innerHTML='';
-    els.dmText.value='';
-    els.guildSelect.innerHTML='';
-    els.channelSelect.innerHTML='';
-    els.guildList.innerHTML='';
-    els.guildText.value='';
-    note(els.connectMsg,'');
-    note(els.dmMsg,'');
-    note(els.guildMsg,'');
-    note(els.presenceMsg,'');
-    setBadge('Disconnected');
+    els.token.value=''; els.me.textContent=''; setBadge('Disconnected');
+    ['connectMsg','presenceMsg','dmMsg','guildMsg'].forEach(id=> note(els[id],'',''));
+    els.dmSelect.innerHTML=''; els.dmList.innerHTML=''; els.dmText.value='';
+    els.guildSelect.innerHTML=''; els.channelSelect.innerHTML=''; els.guildList.innerHTML=''; els.guildText.value='';
   });
-
 })();
 </script>
 
 <!--
-BACKEND CONTRACT (Proxy at /api). Keep the real token on the server.
+This frontend expects the backend routes from the FastAPI+discord.py server:
 
-POST   /api/auth                 body: { token }                 -> 200 { ok:true }
-DELETE /api/auth                 (forget token/session)          -> 200 { ok:true }
-GET    /api/me                   -> 200 { id, username, ... }    // calls Discord GET /users/@me
+POST   /api/auth                 { token }
+DELETE /api/auth
+GET    /api/me
+GET    /api/dms
+GET    /api/guilds
+GET    /api/guilds/:id/channels
+POST   /api/channels/:id/messages  { content }
+POST   /api/status                 { status, activity_type, activity_text }
 
-GET    /api/dms                  -> 200 [ { id, type, recipients:[{username,id}], ... }, ... ]
-                                   // typically from Discord GET /users/@me/channels
-
-GET    /api/guilds               -> 200 [ { id, name }, ... ]    // Discord GET /users/@me/guilds
-GET    /api/guilds/:id/channels  -> 200 [ { id, name, type }, ... ] // Discord GET /guilds/{id}/channels
-
-POST   /api/channels/:id/messages body: { content }              -> 200 { id, content, ... }
-                                   // Discord POST /channels/{id}/messages
-
-POST   /api/status               body: { status, activity_type, activity_text }
-                                 -> 200 { ok:true }
-    // Presence should be set via your gateway-connected bot process (discord.js/discord.py)
-    // Example (discord.js v14):
-    // client.user.setPresence({
-    //   status, activities:[{ type: activity_type, name: activity_text }]
-    // });
-
-SECURITY NOTES:
-- Do NOT store the token in localStorage or send it to third-party origins.
-- Rate-limit all routes; validate payloads; log actions.
-- For DMs, ensure the bot respects Discord ToS and user privacy, and that it’s allowed to message that user.
+Security: keep the real token on the server (env var or POST /api/auth). This page does not persist tokens.
 -->
 </body>
 </html>
