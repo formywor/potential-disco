@@ -1,0 +1,369 @@
+<!-- Vap@.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vap@ — Dealers & Ratings</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --muted:#9aa6b2;
+      --accent:#7c3aed;
+      --glass: rgba(255,255,255,0.03);
+      --gold: linear-gradient(90deg,#FFD54F,#FFC107);
+    }
+    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.12), transparent),
+                  radial-gradient(800px 400px at 90% 90%, rgba(52,211,153,0.06), transparent),
+                  var(--bg);
+      color:#e6eef8;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:32px;
+    }
+
+    header{display:flex;align-items:center;gap:16px;margin-bottom:22px}
+    header h1{font-size:20px;margin:0}
+    header p{margin:0;color:var(--muted);font-size:13px}
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap:18px;
+      margin-bottom:26px;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius:12px;
+      padding:14px;
+      border:1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 6px 18px rgba(2,6,23,0.6);
+    }
+
+    .dealer-name{font-weight:700;font-size:15px;margin-bottom:6px}
+    .dealer-sub{font-size:12px;color:var(--muted);margin-bottom:8px}
+    .rating-row{display:flex;align-items:center;gap:8px}
+    .stars{display:inline-flex;gap:2px;line-height:0}
+    .star{
+      width:16px;height:16px;display:inline-block;
+      background: linear-gradient(180deg,#111827, #0b1220);
+      clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+      position:relative;
+      overflow:hidden;
+      border-radius:2px;
+      box-shadow:0 1px 1px rgba(0,0,0,0.4) inset;
+    }
+    .star .fill{
+      position:absolute; left:0; top:0; bottom:0;
+      background: linear-gradient(90deg,#FFD54F,#FFB400);
+      transform-origin:left;
+      width:0%;
+    }
+    .rating-num{font-weight:700;font-size:13px;color:#fff}
+
+    .info-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+    .meta{font-size:12px;color:var(--muted)}
+    .price{font-weight:700}
+
+    /* Highlight for recommended/featured */
+    .featured{
+      border: 1px solid rgba(255,215,0,0.12);
+      box-shadow: 0 8px 30px rgba(255,200,50,0.06);
+    }
+    .featured-badge{
+      display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;background:linear-gradient(90deg,#fff2cc, #ffeab0);color:#6b3d00;font-weight:700;margin-left:8px;
+    }
+
+    /* Reviews */
+    #reviewsWrap{margin-top:30px}
+    .reviews-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .reviews-list{display:flex;flex-direction:column;gap:12px;max-height:360px;overflow:auto;padding:10px;border-radius:10px;background:var(--glass);border:1px solid rgba(255,255,255,0.02)}
+    .review{
+      padding:10px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border:1px solid rgba(255,255,255,0.02);
+      display:flex;gap:12px;align-items:flex-start;
+    }
+    .avatar{
+      width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#111827,#0b1220);flex:0 0 44px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted)
+    }
+    .review-body{flex:1}
+    .review-meta{font-size:12px;color:var(--muted);margin-bottom:6px}
+    .golden{
+      background: linear-gradient(90deg, rgba(255,223,110,0.12), rgba(255,204,0,0.06));
+      border:1px solid rgba(255,200,50,0.18);
+      box-shadow: 0 6px 20px rgba(255,193,7,0.06);
+    }
+
+    .small{font-size:12px;color:var(--muted)}
+
+    /* subtle animations */
+    .fade-in{animation:fadeIn .6s ease both}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+    /* page footer */
+    footer{margin-top:18px;color:var(--muted);font-size:12px}
+    .controls{display:flex;gap:8px;align-items:center}
+    button{
+      background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:8px;color:inherit;font-weight:600;cursor:pointer
+    }
+    button.primary{background:linear-gradient(90deg,#7c3aed,#34d399);border:none;color:#081226}
+    .search{margin-bottom:12px}
+    input.input{
+      width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;font-size:14px
+    }
+    @media (max-width:560px){header{flex-direction:column;align-items:flex-start} .grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Vap@ — Dealers & Recommended Ratings</h1>
+      <p>List of local vape dealers and their recommended star ratings (0–5). Fake reviews section simulates live updates.</p>
+    </div>
+  </header>
+
+  <section>
+    <div class="search">
+      <input id="filterInput" class="input" placeholder="Filter dealers by name (type here) — live filter" />
+    </div>
+
+    <div class="grid" id="dealersGrid">
+      <!-- Dealer cards inserted by JS -->
+    </div>
+
+    <div style="margin-top:10px; display:flex;gap:10px;align-items:center">
+      <span class="small">Highlighted recommendation:</span>
+      <span class="featured-badge">Top Recommendation</span>
+    </div>
+  </section>
+
+  <section id="reviewsWrap">
+    <div class="reviews-header">
+      <div>
+        <h2 style="margin:0;font-size:16px">Live Reviews</h2>
+        <div class="small">Below are simulated / fake reviews (for demo/testing)</div>
+      </div>
+      <div class="controls">
+        <button id="addOne">Add One Review</button>
+        <button id="toggleAuto" class="primary">Auto: ON</button>
+      </div>
+    </div>
+
+    <div class="reviews-list" id="reviewsList" aria-live="polite" aria-atomic="false">
+      <!-- initial reviews -->
+    </div>
+
+    <footer>
+      <div>All reviews here are fictional and for demonstration only.</div>
+    </footer>
+  </section>
+
+<script>
+  // Dealer data (20 random names) + 21st recommended Jonathan Andre (3.9)
+  const dealers = [
+    {name:"BlueMist Vapes", rating:4.2, note:"Popular fruity blends"},
+    {name:"Nebula Vapor", rating:4.6, note:"Wide selection of mods"},
+    {name:"PuffPoint", rating:3.8, note:"Budget-friendly"},
+    {name:"CloudNine Vapes", rating:4.7, note:"Premium liquids"},
+    {name:"VaporVista", rating:4.1, note:"Great customer service"},
+    {name:"SteamStreet", rating:3.9, note:"Local favorite"},
+    {name:"Drift Vapors", rating:4.0, note:"Good starter kits"},
+    {name:"Glow Vape Co.", rating:4.3, note:"Bright shop & friendly staff"},
+    {name:"Nicotine Nook", rating:3.5, note:"Value options"},
+    {name:"FlavorForge", rating:4.4, note:"Custom flavor blending"},
+    {name:"MistMaker", rating:3.7, note:"Occasional restocks"},
+    {name:"VapeVault", rating:4.0, note:"Secure packaging"},
+    {name:"CloudCraft", rating:4.5, note:"Handmade juices"},
+    {name:"Pulse Vapor", rating:3.6, note:"Competitive prices"},
+    {name:"Echo Vapes", rating:4.1, note:"Tech-forward mods"},
+    {name:"Soothe Smoke", rating:3.9, note:"Relaxed vibe"},
+    {name:"Prime Puff", rating:4.2, note:"Fast service"},
+    {name:"AeroVape", rating:4.0, note:"Good warranty"},
+    {name:"VaporLane", rating:3.8, note:"Convenient location"},
+    {name:"Twist & Smoke", rating:4.3, note:"Fun seasonal flavors"},
+    // 21st
+    {name:"Jonathan Andre", rating:3.9, note:"Recommended — independent seller", featured:true}
+  ];
+
+  // Example fake reviews pool (some reference various dealers)
+  const reviewPool = [
+    {author:"Sam V.", text:"Great service and fast shipping. Tried a mango flavor and it was excellent.", rating:4.5, target:"BlueMist Vapes"},
+    {author:"Aly", text:"Good starter kit. Staff helped pick the right nicotine level.", rating:4.0, target:"PuffPoint"},
+    {author:"Carlos", text:"Solid selection but prices a bit high. Flavor selection was great.", rating:3.8, target:"CloudNine Vapes"},
+    {author:"Jessie", text:"I loved the custard juice I got. Will return for more.", rating:4.6, target:"FlavorForge"},
+    {author:"M. Reed", text:"Decent experience. They fixed a coil problem quickly.", rating:4.0, target:"VapeVault"},
+    {author:"Gomega Owner", text:"I recommend Jonathan Andre — it was a good flavor, the service was personal and prompt. Smooth throat hit and a clean finish. I give him 4 and a half stars.", rating:4.5, target:"Jonathan Andre", golden:true},
+    {author:"Talia", text:"Budget-friendly shop, staff patient with questions. Recommended for beginners.", rating:4.0, target:"Nicotine Nook"},
+    {author:"Marco", text:"The cloud builds were impressive. Friendly staff and competitive pricing.", rating:4.4, target:"CloudCraft"},
+    {author:"Ren", text:"They had a limited restock but the juice I wanted was sold out. Staff took contact info to notify me.", rating:3.2, target:"MistMaker"},
+    {author:"Kara", text:"Excellent mods and training on coil installation. Two thumbs up.", rating:4.7, target:"Echo Vapes"},
+    {author:"Sam B.", text:"Decent local shop with good recommendations.", rating:3.9, target:"SteamStreet"},
+    {author:"Nina", text:"Perfect weekend stop — bright shop and friendly staff.", rating:4.3, target:"Glow Vape Co."},
+    {author:"Otis", text:"Quick turnaround when ordering replacement parts online.", rating:4.1, target:"AeroVape"},
+    {author:"Lorna", text:"A bit pricey but premium ingredients are noticeable.", rating:3.9, target:"VaporVista"},
+    {author:"Kai", text:"Local gem for custom blends. Highly recommended.", rating:4.8, target:"FlavorForge"},
+  ];
+
+  // Render dealers
+  const grid = document.getElementById('dealersGrid');
+  function pctFromRating(r){ return Math.max(0, Math.min(100, (r/5)*100)); }
+
+  function createDealerCard(d){
+    const c = document.createElement('div');
+    c.className = 'card fade-in' + (d.featured ? ' featured' : '');
+    const name = document.createElement('div'); name.className='dealer-name'; name.textContent = d.name;
+    if(d.featured){
+      const span = document.createElement('span'); span.className='featured-badge'; span.textContent = 'Recommended';
+      name.appendChild(span);
+    }
+    const sub = document.createElement('div'); sub.className='dealer-sub'; sub.textContent = d.note || '';
+    const ratingRow = document.createElement('div'); ratingRow.className='rating-row';
+    const stars = document.createElement('div'); stars.className='stars';
+    // 5 star containers, each with fill that can be partial
+    for(let i=1;i<=5;i++){
+      const st = document.createElement('span'); st.className='star';
+      const fill = document.createElement('span'); fill.className='fill';
+      // calculate fill percentage for this star
+      const fullWidth = pctFromRating(d.rating); // e.g. 78%
+      const starIndex = i;
+      const startPercent = (starIndex-1) * 20;
+      let fillPercent = Math.max(0, Math.min(100, fullWidth - startPercent));
+      if(fillPercent < 0) fillPercent = 0;
+      if(fillPercent > 100) fillPercent = 100;
+      fill.style.width = fillPercent + '%';
+      st.appendChild(fill);
+      stars.appendChild(st);
+    }
+    const num = document.createElement('div'); num.className='rating-num'; num.textContent = d.rating.toFixed(1) + ' / 5';
+    ratingRow.appendChild(stars);
+    ratingRow.appendChild(num);
+
+    const info = document.createElement('div'); info.className='info-row';
+    const meta = document.createElement('div'); meta.className='meta'; meta.textContent = 'Recommended';
+    const price = document.createElement('div'); price.className='price small'; price.textContent = '—';
+    info.appendChild(meta); info.appendChild(price);
+
+    c.appendChild(name);
+    c.appendChild(sub);
+    c.appendChild(ratingRow);
+    c.appendChild(info);
+
+    return c;
+  }
+
+  function populateDealers(list){
+    grid.innerHTML = '';
+    list.forEach(d=>{
+      grid.appendChild(createDealerCard(d));
+    });
+  }
+
+  populateDealers(dealers);
+
+  // Filter functionality
+  const filterInput = document.getElementById('filterInput');
+  filterInput.addEventListener('input', ()=> {
+    const q = filterInput.value.trim().toLowerCase();
+    if(!q) return populateDealers(dealers);
+    const filtered = dealers.filter(d => d.name.toLowerCase().includes(q));
+    populateDealers(filtered);
+  });
+
+  // Reviews / "live" feed
+  const reviewsList = document.getElementById('reviewsList');
+
+  function createReviewEl(r){
+    const el = document.createElement('div');
+    el.className = 'review fade-in' + (r.golden ? ' golden' : '');
+    const avatar = document.createElement('div'); avatar.className='avatar'; avatar.textContent = r.author.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+    const body = document.createElement('div'); body.className='review-body';
+    const meta = document.createElement('div'); meta.className='review-meta';
+    meta.innerHTML = `<strong>${escapeHtml(r.author)}</strong> • <span class="small">${escapeHtml(r.target || 'General')}</span> • ${formatStars(r.rating)}`;
+    const txt = document.createElement('div'); txt.className='review-text'; txt.style.marginTop='6px';
+    txt.textContent = r.text;
+    body.appendChild(meta); body.appendChild(txt);
+    el.appendChild(avatar); el.appendChild(body);
+    return el;
+  }
+
+  function formatStars(rating){
+    // show numeric and small stars
+    const whole = Math.floor(rating);
+    const half = (rating - whole) >= 0.25 && (rating - whole) < 0.75;
+    const final = `${rating.toFixed(1)} ⭐`;
+    return final;
+  }
+
+  function escapeHtml(str){
+    return (str+'').replace(/[&<>"']/g, function(m){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; });
+  }
+
+  // Add initial reviews (a couple)
+  const initial = [
+    reviewPool[0],
+    reviewPool[3],
+    reviewPool[5] // Gomega Owner golden review included
+  ];
+  initial.forEach(r => {
+    reviewsList.appendChild(createReviewEl(r));
+  });
+
+  // Show live reviews by periodically adding from pool
+  let autoOn = true;
+  let autoTimer = null;
+  function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function pushRandomReview(){
+    const r = pickRandom(reviewPool);
+    // clone and slightly vary text to feel dynamic
+    const clone = Object.assign({}, r);
+    clone.text = clone.text + (Math.random() > 0.7 ? " (Quick update: same great experience.)" : "");
+    const el = createReviewEl(clone);
+    reviewsList.prepend(el);
+    // limit
+    while(reviewsList.children.length > 40) reviewsList.removeChild(reviewsList.lastElementChild);
+  }
+
+  function startAuto(){
+    if(autoTimer) clearInterval(autoTimer);
+    autoTimer = setInterval(()=>{
+      pushRandomReview();
+    }, 4200 + Math.floor(Math.random()*3800));
+  }
+  startAuto();
+
+  document.getElementById('addOne').addEventListener('click', ()=> {
+    pushRandomReview();
+  });
+
+  const toggleBtn = document.getElementById('toggleAuto');
+  toggleBtn.addEventListener('click', ()=>{
+    autoOn = !autoOn;
+    if(autoOn){ startAuto(); toggleBtn.textContent = 'Auto: ON'; toggleBtn.classList.add('primary'); }
+    else{ clearInterval(autoTimer); autoTimer = null; toggleBtn.textContent = 'Auto: OFF'; toggleBtn.classList.remove('primary'); }
+  });
+
+  // small accessibility: scroll reviews into view when new
+  const obs = new MutationObserver((mut)=>{
+    // noop for now, leaving hook for future
+  });
+  obs.observe(reviewsList, {childList:true});
+
+  // Add keyboard support: press "r" to add one
+  window.addEventListener('keydown', (e)=>{
+    if(e.key.toLowerCase()==='r' && !e.metaKey && !e.ctrlKey){
+      pushRandomReview();
+    }
+  });
+
+  // Handy: expose data for console debugging
+  window.__VapDealers = dealers;
+  window.__VapReviews = reviewPool;
+
+</script>
+</body>
+</html>
