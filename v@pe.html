@@ -6,110 +6,96 @@
 <title>Vap@ — Vape Dealers Network</title>
 <style>
 :root{
-  --bg:#0e1420; --accent:#7c3aed; --accent2:#34d399;
-  --muted:#a0aec0; --card:#121a29; --glass:rgba(255,255,255,.04);
-  --gold1:#ffd54f; --gold2:#ffc107;
+  --bg:#0e1420;--accent:#7c3aed;--accent2:#34d399;
+  --muted:#a0aec0;--card:#121a29;--glass:rgba(255,255,255,.05);
+  --gold1:#ffd54f;--gold2:#ffc107;
 }
-*{box-sizing:border-box;font-family:"Inter",ui-sans-serif,system-ui;}
-body{
-  margin:0;padding:30px;background:
-    radial-gradient(800px 600px at 20% 10%,rgba(124,58,237,.12),transparent),
-    radial-gradient(800px 400px at 80% 80%,rgba(52,211,153,.08),transparent),
-    var(--bg);
-  color:#e7eef8;overflow-x:hidden;
-}
-h1{font-size:24px;margin:0;}
-p{color:var(--muted);font-size:14px;margin:4px 0 20px;}
-.grid{
-  display:grid;gap:18px;
-  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-}
+*{box-sizing:border-box;font-family:"Inter",system-ui;}
+body{margin:0;padding:24px;background:
+  radial-gradient(900px 600px at 20% 10%,rgba(124,58,237,.1),transparent),
+  radial-gradient(800px 400px at 80% 80%,rgba(52,211,153,.07),transparent),
+  var(--bg);color:#e7eef8;}
+h1{font-size:1.6rem;margin:0 0 4px;}
+p{color:var(--muted);font-size:.9rem;margin:0 0 18px;}
+.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));}
 .card{
-  position:relative;
-  background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);
-  border:1px solid rgba(255,255,255,.04);
-  border-radius:14px;padding:16px;
-  box-shadow:0 6px 18px rgba(2,6,23,.6);
-  transition:transform .3s,box-shadow .3s;
+  background:var(--glass);border-radius:16px;padding:16px;position:relative;
+  border:1px solid rgba(255,255,255,.05);transition:transform .3s,box-shadow .3s;
   animation:float 6s ease-in-out infinite alternate;
 }
+.card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 10px 28px rgba(124,58,237,.25);}
 @keyframes float{0%{transform:translateY(0)}100%{transform:translateY(-4px)}}
-.card:hover{
-  transform:translateY(-6px) scale(1.02);
-  box-shadow:0 10px 24px rgba(124,58,237,.25);
-}
-.logo{
-  width:48px;height:48px;border-radius:12px;
-  background:linear-gradient(135deg,#1e293b,#0b1220);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:18px;color:var(--muted);
-  margin-bottom:8px;
-}
-.dealer-name{font-weight:700;font-size:16px;margin-bottom:4px;}
-.dealer-desc{font-size:13px;color:var(--muted);margin-bottom:6px;}
-.tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
-.tag{
-  background:var(--glass);border-radius:999px;
-  padding:2px 8px;font-size:11px;color:#cbd5e1;
-  border:1px solid rgba(255,255,255,.05);
-}
+.logo{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#1e293b,#0b1220);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:var(--muted);margin-bottom:8px;}
+.dealer-name{font-weight:700;font-size:1.1rem;margin-bottom:4px;}
+.dealer-desc{font-size:.85rem;color:var(--muted);margin-bottom:6px;}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
+.tag{background:var(--glass);border-radius:999px;padding:2px 8px;font-size:.7rem;color:#cbd5e1;}
 .rating{display:flex;align-items:center;gap:4px;font-weight:600;}
 .star{color:#ffd54f;}
-.featured{border:1px solid rgba(255,215,0,.18);box-shadow:0 8px 26px rgba(255,215,0,.06);}
-.featured::after{
-  content:"★ Recommended";position:absolute;top:8px;right:8px;
-  background:linear-gradient(90deg,#fff2cc,#ffeab0);
-  color:#654d00;font-size:10px;padding:3px 6px;border-radius:999px;font-weight:700;
-}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.badge{font-size:.65rem;padding:3px 6px;border-radius:8px;font-weight:600;}
+.badge.gold{background:linear-gradient(90deg,#fff2cc,#ffeab0);color:#5b4200;}
+.badge.green{background:linear-gradient(90deg,#bbf7d0,#6ee7b7);color:#064e3b;}
+.badge.blue{background:linear-gradient(90deg,#bfdbfe,#93c5fd);color:#1e3a8a;}
+.featured{border:1px solid rgba(255,215,0,.15);box-shadow:0 8px 28px rgba(255,215,0,.08);}
 
 /* Reviews */
 .reviews{margin-top:40px;}
-.review{background:var(--glass);border-radius:10px;padding:10px;margin-bottom:10px;
-  border:1px solid rgba(255,255,255,.03);display:flex;gap:10px;animation:fadeIn .6s ease both;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.avatar{width:44px;height:44px;border-radius:10px;
-  background:linear-gradient(135deg,#111827,#0b1220);
+.review{background:var(--glass);border-radius:14px;padding:14px;margin-bottom:14px;
+  border:1px solid rgba(255,255,255,.04);display:flex;gap:12px;animation:fadeIn .6s ease both;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.avatar{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#111827,#0b1220);
   display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted);}
-.review-body{flex:1}
-.review-meta{font-size:12px;color:var(--muted);margin-bottom:4px;}
+.review-body{flex:1;}
+.review-meta{font-size:.8rem;color:var(--muted);margin-bottom:6px;}
+.review-text{font-size:.9rem;line-height:1.4;}
 .golden{background:linear-gradient(90deg,rgba(255,223,110,.1),rgba(255,200,0,.05));
-  border:1px solid rgba(255,200,50,.18);box-shadow:0 0 20px rgba(255,200,50,.05);}
-.filter{margin-bottom:20px;}
-select{background:transparent;border:1px solid rgba(255,255,255,.08);
-  color:#fff;padding:8px;border-radius:8px;}
+  border:1px solid rgba(255,200,50,.18);box-shadow:0 0 18px rgba(255,200,50,.07);}
+
+/* Mobile */
+@media(max-width:600px){
+  body{padding:16px;}
+  .grid{grid-template-columns:1fr;}
+  .card{padding:14px;}
+}
 </style>
 </head>
 <body>
-<h1>Vap@ Dealer Directory</h1>
-<p>Explore trusted vape dealers, ratings, and reviews. Filter by tag to find your perfect flavor experience.</p>
-
-<div class="filter">
-  <select id="tagFilter">
-    <option value="">All Tags</option>
-  </select>
-</div>
+<h1>Vap@ Dealer Network</h1>
+<p>Find the most trusted vape dealers, their ratings, and see what users are saying. 100% demo data — for presentation only.</p>
 
 <div class="grid" id="dealerGrid"></div>
 
-<div class="reviews">
-  <h2>Live Reviews</h2>
+<section class="reviews">
+  <h2>Customer Reviews</h2>
   <div id="reviewsList"></div>
-</div>
+</section>
 
 <script>
-const tagColors=["Premium","Budget","Mods","Fruity","Dessert","NicSalt","Online","Local","Hardware","Exclusive"];
-const dealers=[];
-function randomTags(){return Array.from({length:2+Math.floor(Math.random()*3)},()=>tagColors[Math.floor(Math.random()*tagColors.length)])}
-for(let i=1;i<=34;i++){
-  dealers.push({
-    name:`Dealer ${i}`,
-    desc:["Wide flavor range","Fast delivery","Known for smooth hits","Exclusive blends","Friendly staff"][i%5],
-    rating:(Math.random()*2+3).toFixed(1),
-    tags:randomTags()
-  });
-}
-dealers.push({name:"Jonathan Andre",desc:"Independent mixer — personalized blends, limited edition drops.",
-  rating:3.9,tags:["Independent","Custom"],featured:true});
+// dealer names
+const dealerNames=[
+"BlueMist Vapors","Nebula Cloud Co.","PuffPoint","CloudNine Supply","VaporVista","SteamStreet",
+"Drift Vapors","Glow Vape Co.","Nicotine Nook","FlavorForge","MistMaker","VapeVault","CloudCraft",
+"Pulse Vapor","Echo Vapes","Soothe Smoke","Prime Puff","AeroVape","VaporLane","Twist & Smoke",
+"Skyline Vapors","PureAir Vape","Vape Avenue","NovaCloud","Elite E-Juice","LiquidAlchemy",
+"ZenVape","HaloMist","Infinity Puff","CloudTheory","Fusion Vapor","Urban Cloud","Zephyr Vapors",
+"SilverStream","Atomic Air"
+];
+const dealers=dealerNames.map(n=>({
+  name:n,
+  desc:["Wide flavor range","Premium hardware","Fast shipping","Excellent customer support","Great local lounge"][Math.floor(Math.random()*5)],
+  rating:(Math.random()*2+3).toFixed(1),
+  tags:["Premium","Budget","Mods","Fruity","Dessert","Online","Local","Exclusive"].sort(()=>0.5-Math.random()).slice(0,2)
+}));
+dealers.push({
+  name:"Jonathan Andre",
+  desc:"Independent artisan mixer — known for rich dessert and tropical blends, excellent flavor depth and personal service.",
+  rating:3.9,
+  tags:["Independent","Custom","Top Seller"],
+  featured:true,
+  badges:["Top Seller","Flavor Expert","Verified Dealer","Award Winner","Fast Delivery"]
+});
 
 const grid=document.getElementById("dealerGrid");
 function renderDealers(list){
@@ -122,28 +108,27 @@ function renderDealers(list){
       <div class="dealer-name">${d.name}</div>
       <div class="dealer-desc">${d.desc}</div>
       <div class="tags">${d.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
-      <div class="rating">${"★".repeat(Math.round(d.rating))}<span style="color:var(--muted);font-size:13px;">${d.rating}</span></div>`;
+      <div class="rating">${"★".repeat(Math.round(d.rating))}<span style="color:var(--muted);font-size:.85rem;"> ${d.rating}</span></div>
+      ${d.badges?`<div class="badges">${d.badges.map((b,i)=>`<span class="badge ${["gold","green","blue"][i%3]}">${b}</span>`).join("")}</div>`:""}
+    `;
     grid.appendChild(el);
   });
 }
 renderDealers(dealers);
 
-/* Tag filter */
-const tagSet=new Set(dealers.flatMap(d=>d.tags));
-const select=document.getElementById("tagFilter");
-for(const t of tagSet){const opt=document.createElement("option");opt.value=t;opt.textContent=t;select.appendChild(opt);}
-select.addEventListener("change",()=>{
-  const v=select.value;
-  if(!v)renderDealers(dealers);else renderDealers(dealers.filter(d=>d.tags.includes(v)));
-});
-
-/* Reviews */
+// reviews
 const reviews=[
-  {author:"Gomega Owner",text:"I recommend Jonathan Andre — amazing flavor, personal service, quick replies. Smooth, clean, flavorful clouds. ★★★★½",golden:true},
-  {author:"Sam V.",text:"Dealer 4 had great prices and my order came early!"},
-  {author:"Lina",text:"Love the dessert options from Dealer 12, super sweet!"},
-  {author:"Alex R.",text:"Dealer 8’s mods are top-tier, would buy again."},
-  {author:"Dana",text:"Dealer 17’s fruity flavor is refreshing and smooth."}
+  {author:"Gomega Owner",text:"I recommend Jonathan Andre — truly standout flavors. His Pineapple Frost was crisp and smooth, with an aftertaste that’s actually pleasant. Quick communication, timely shipping, and genuine passion. I give him four and a half stars overall and will definitely return.",golden:true},
+  {author:"Samantha R.",text:"BlueMist Vapors’ fruity collection surprised me — intense mango burst, decent throat hit, friendly staff, and quick delivery. Excellent overall!"},
+  {author:"Marcus T.",text:"CloudNine Supply’s device selection is top-notch. Bought a starter kit that lasted months; customer support even followed up to check satisfaction. That’s service!"},
+  {author:"Janelle P.",text:"Drift Vapors was okay, but the flavor didn’t match the description and shipping was late. Hoping next order improves. ★★☆☆☆"},
+  {author:"Eli G.",text:"FlavorForge deserves five stars. Their custom Vanilla Custard is unbeatable — rich, warm, and consistent. Bottle design is sleek too."},
+  {author:"Kylie B.",text:"Nicotine Nook is affordable but hit-or-miss on restocks. Got what I needed though. ★★★☆☆"},
+  {author:"Ruben D.",text:"Jonathan Andre’s limited ‘Tropical Storm’ flavor changed my entire perception of vaping — subtle, sweet, and perfectly balanced. Great communication and fast shipping."},
+  {author:"Sarah V.",text:"VaporVista’s local lounge is chill! Friendly staff taught me how to clean coils and save liquid. Learned a lot — 10/10 experience."},
+  {author:"Leo A.",text:"MistMaker had a small stock but great attitude. They even threw in a sample for free!"},
+  {author:"Chloe M.",text:"SteamStreet delayed my shipment for a week with no update. Not ideal, but refund process was smooth. ★★☆☆☆"},
+  {author:"Anthony W.",text:"Jonathan Andre again impresses — his Lemon Pie mix feels crafted by a perfectionist. A strong 4.8 ⭐ in my book!"},
 ];
 const list=document.getElementById("reviewsList");
 function addReview(r){
@@ -153,19 +138,11 @@ function addReview(r){
     <div class="avatar">${r.author.split(" ").map(s=>s[0]).join("")}</div>
     <div class="review-body">
       <div class="review-meta"><strong>${r.author}</strong></div>
-      <div>${r.text}</div>
+      <div class="review-text">${r.text}</div>
     </div>`;
-  list.prepend(el);
+  list.appendChild(el);
 }
 reviews.forEach(addReview);
-
-/* Auto fake reviews */
-const fakeAuthors=["Mia","Noah","Eve","Luca","Taylor","Aiden","Sophie","Riley","Omar","Jade"];
-setInterval(()=>{
-  const r={author:fakeAuthors[Math.floor(Math.random()*fakeAuthors.length)],
-    text:`Tried ${dealers[Math.floor(Math.random()*dealers.length)].name} — rated ${ (Math.random()*2+3).toFixed(1)}★`};
-  addReview(r);
-},4000);
 </script>
 </body>
 </html>
