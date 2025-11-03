@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Login — Gomega Watch</title>
+<style>
+body{margin:0;background:#0e1420;color:#eaf2fa;font-family:Inter,ui-sans-serif;
+display:flex;align-items:center;justify-content:center;height:100vh;}
+.card{background:rgba(255,255,255,.05);padding:32px 40px;border-radius:16px;
+box-shadow:0 6px 22px rgba(0,0,0,.4);width:320px;text-align:center;}
+h1{margin-bottom:20px;font-size:22px;}
+input{width:100%;margin-bottom:10px;padding:10px;border:none;border-radius:8px;}
+button{width:100%;padding:10px;border:none;border-radius:8px;
+background:linear-gradient(90deg,#7c3aed,#34d399);color:#fff;font-weight:700;cursor:pointer;}
+p{font-size:13px;margin-top:10px;color:#a0aec0;}
+a{color:#7dd3fc;text-decoration:none;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Gomega Login</h1>
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+    <button id="loginBtn">Login</button>
+    <p>Don’t have an account? <a href="signup.html">Sign up</a></p>
+  </div>
+
+<script type="module">
+import { auth } from "./firebase.js";
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+document.getElementById("loginBtn").onclick = async () => {
+  const email = email.value.trim();
+  const pass = password.value.trim();
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    window.location = "home.html";
+  } catch (e) {
+    alert(e.message);
+  }
+};
+</script>
+</body>
+</html>

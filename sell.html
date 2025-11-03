@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sell Product — Gomega Watch</title>
+<style>
+body{margin:0;background:#0e1420;color:#eaf2fa;font-family:Inter,ui-sans-serif;
+display:flex;flex-direction:column;align-items:center;padding:30px;}
+form{max-width:400px;width:100%;background:rgba(255,255,255,.05);
+padding:24px;border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+input,textarea{width:100%;margin-bottom:10px;padding:10px;border:none;border-radius:8px;}
+button{padding:10px;width:100%;border:none;border-radius:8px;
+background:linear-gradient(90deg,#7c3aed,#34d399);color:#fff;font-weight:700;cursor:pointer;}
+</style>
+</head>
+<body>
+<h1>Sell a Product</h1>
+<form id="sellForm">
+  <input type="text" id="pname" placeholder="Product Name" required/>
+  <textarea id="pdesc" placeholder="Description"></textarea>
+  <input type="number" id="pprice" placeholder="Price (USD)" required/>
+  <input type="number" id="pqty" placeholder="Quantity" required/>
+  <input type="file" id="pimages" multiple accept="image/*" />
+  <button type="submit">Post Listing</button>
+</form>
+
+<script type="module">
+import { auth, db, storage } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { doc, getDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
+
+onAuthStateChanged(auth, async user=>{
+  if(!user){window.location="login.html";return;}
+  const snap=await getDoc(doc(db,"users",user.uid));
+  if(!snap.exists()||snap.data().role!=="seller"){
+    document.body.innerHTML="<h2>You cannot sell products (Buyer account).</h2>";
+  }
+});
+
+const form=document.getElementById("sellForm");
+form.onsubmit=async e=>{
+  e.preventDefault();
+  const user=auth.currentUser;
+  const imgs=document.getElementById("pimages").files;
+  const uploaded=[];
+  for(let i=0;i<Math.min(imgs.length,3);i++){
+    const f=imgs[i];
+    const r=ref(storage,`products/${user.uid}/${Date.now()}_${f.name}`);
+    await uploadBytes(r,f);
+    uploaded.push(await getDownloadURL(r));
+  }
+  const product={
+    sellerId:user.uid,
+    name:pname.value.trim(),
+    description:pdesc.value.trim(),
+    price:Math.round(parseFloat(pprice.value)*100),
+    quantity:parseInt(pqty.value),
+    images:uploaded,
+    createdAt:new Date()
+  };
+  const docRef=await addDoc(collection(db,"products"),product);
+  window.location=`product.html?id=${docRef.id}`;
+};
+</script>
+</body>
+</html>

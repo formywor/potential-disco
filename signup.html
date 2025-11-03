@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sign Up — Gomega Watch</title>
+<style>
+body{margin:0;background:#0e1420;color:#eaf2fa;font-family:Inter,ui-sans-serif;
+display:flex;align-items:center;justify-content:center;height:100vh;}
+.card{background:rgba(255,255,255,.05);padding:32px 40px;border-radius:16px;
+box-shadow:0 6px 22px rgba(0,0,0,.4);width:340px;text-align:center;}
+h1{margin-bottom:20px;font-size:22px;}
+input,select{width:100%;margin-bottom:10px;padding:10px;border:none;border-radius:8px;}
+button{width:100%;padding:10px;border:none;border-radius:8px;
+background:linear-gradient(90deg,#7c3aed,#34d399);color:#fff;font-weight:700;cursor:pointer;}
+p{font-size:13px;margin-top:10px;color:#a0aec0;}
+a{color:#7dd3fc;text-decoration:none;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Create Account</h1>
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+    <select id="role">
+      <option value="">Select Account Type</option>
+      <option value="buyer">Buyer</option>
+      <option value="seller">Seller</option>
+    </select>
+    <button id="signupBtn">Sign Up</button>
+    <p>Already have an account? <a href="login.html">Login</a></p>
+  </div>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+document.getElementById("signupBtn").onclick = async () => {
+  const emailVal = email.value.trim();
+  const passVal = password.value.trim();
+  const roleVal = role.value;
+  if(!roleVal){alert("Please select Buyer or Seller");return;}
+  try {
+    const userCred = await createUserWithEmailAndPassword(auth, emailVal, passVal);
+    const uid = userCred.user.uid;
+    await setDoc(doc(db,"users",uid),{
+      email: emailVal,
+      role: roleVal,
+      createdAt: new Date(),
+      balance: 0
+    });
+    window.location = "home.html";
+  } catch(e){alert(e.message);}
+};
+</script>
+</body>
+</html>

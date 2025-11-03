@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Product — Gomega Watch</title>
+<style>
+body{margin:0;background:#0e1420;color:#eaf2fa;font-family:Inter,ui-sans-serif;padding:24px;}
+img{width:260px;border-radius:12px;margin-right:10px;}
+.gallery{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;}
+button{padding:8px 14px;border:none;border-radius:8px;
+background:linear-gradient(90deg,#7c3aed,#34d399);color:#fff;font-weight:700;cursor:pointer;margin:4px;}
+</style>
+</head>
+<body>
+<h1 id="pname"></h1>
+<div class="gallery" id="pimages"></div>
+<p id="pdesc"></p>
+<h3 id="pprice"></h3>
+<div id="actions"></div>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { doc, getDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+const urlParams=new URLSearchParams(window.location.search);
+const productId=urlParams.get("id");
+let product;
+
+onAuthStateChanged(auth,async user=>{
+  if(!user){window.location="login.html";return;}
+  const docSnap=await getDoc(doc(db,"products",productId));
+  if(!docSnap.exists()){document.body.innerHTML="<h2>Product not found</h2>";return;}
+  product=docSnap.data();
+  pname.textContent=product.name;
+  pdesc.textContent=product.description;
+  pprice.textContent=`$${(product.price/100).toFixed(2)} (${product.quantity} available)`;
+  pimages.innerHTML=product.images.map(u=>`<img src="${u}">`).join("");
+
+  if(user.uid===product.sellerId){
+    actions.innerHTML=`
+      <button id="editBtn">Edit</button>
+      <button id="deleteBtn">Delete</button>
+    `;
+    document.getElementById("deleteBtn").onclick=async()=>{
+      if(confirm("Delete this listing?")){
+        await deleteDoc(doc(db,"products",productId));
+        alert("Deleted.");window.location="home.html";
+      }
+    };
+    document.getElementById("editBtn").onclick=async()=>{
+      const np=prompt("New price (USD):", (product.price/100).toFixed(2));
+      if(np){
+        await updateDoc(doc(db,"products",productId),{price:Math.round(np*100)});
+        alert("Updated.");location.reload();
+      }
+    };
+  }else{
+    actions.innerHTML=`<button id="buyBtn">Purchase</button>`;
+    document.getElementById("buyBtn").onclick=()=>purchase(user.uid);
+  }
+});
+
+async function purchase(buyerUid){
+  const res=await fetch(
+    "https://YOUR_REGION-gomega-65e3f.cloudfunctions.net/api/create-checkout-session",
+    {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({productId, buyerUid})
+    }
+  );
+  const data=await res.json();
+  if(data.url) window.location=data.url; else alert(data.error||"Error");
+}
+</script>
+</body>
+</html>

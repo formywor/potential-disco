@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Home — Gomega Watch</title>
+<style>
+body{margin:0;background:#0e1420;color:#eaf2fa;font-family:Inter,ui-sans-serif;}
+header{display:flex;justify-content:space-between;align-items:center;
+padding:20px;background:rgba(255,255,255,.04);backdrop-filter:blur(10px);}
+h1{font-size:20px;margin:0;}
+button{background:linear-gradient(90deg,#7c3aed,#34d399);border:none;
+border-radius:8px;padding:8px 14px;color:#fff;cursor:pointer;font-weight:700;}
+.grid{display:grid;gap:20px;padding:24px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));}
+.card{background:rgba(255,255,255,.05);padding:16px;border-radius:14px;
+box-shadow:0 6px 20px rgba(0,0,0,.4);transition:.3s;}
+.card:hover{transform:translateY(-3px) scale(1.02);}
+img{width:100%;border-radius:10px;margin-bottom:8px;}
+.name{font-weight:700;font-size:16px;}
+.price{color:#7dd3fc;margin-top:4px;}
+.desc{font-size:13px;color:#a0aec0;margin-top:6px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Gomega Watch Marketplace</h1>
+  <div>
+    <button onclick="window.location='sell.html'">Sell Products</button>
+    <button onclick="window.location='balance.html'">My Balance</button>
+  </div>
+</header>
+
+<div class="grid" id="productGrid"></div>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+const grid=document.getElementById("productGrid");
+
+async function loadProducts(){
+  const snap=await getDocs(collection(db,"products"));
+  grid.innerHTML="";
+  snap.forEach(docSnap=>{
+    const p=docSnap.data();
+    const card=document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+      <img src="${p.images?.[0]||''}" alt="">
+      <div class="name">${p.name}</div>
+      <div class="price">$${(p.price/100).toFixed(2)}</div>
+      <div class="desc">${p.description||''}</div>
+      <button data-id="${docSnap.id}">Purchase</button>
+    `;
+    card.querySelector("button").onclick=()=>purchase(p,docSnap.id);
+    grid.appendChild(card);
+  });
+}
+
+async function purchase(p,productId){
+  const user=auth.currentUser;
+  if(!user){alert("Please log in first");return;}
+  const res=await fetch(
+    "https://YOUR_REGION-gomega-65e3f.cloudfunctions.net/api/create-checkout-session",
+    {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({productId, buyerUid:user.uid})
+    }
+  );
+  const data=await res.json();
+  if(data.url) window.location=data.url;
+  else alert(data.error||"Checkout error");
+}
+
+onAuthStateChanged(auth,u=>{
+  if(!u) window.location="login.html";
+  else loadProducts();
+});
+</script>
+</body>
+</html>
