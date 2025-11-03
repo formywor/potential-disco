@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Balance — Gomega Watch</title>
+<style>
+body{margin:0;background:#0e1420;color:#eaf2fa;font-family:Inter,ui-sans-serif;
+display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;}
+.card{background:rgba(255,255,255,.05);padding:30px 40px;border-radius:16px;
+box-shadow:0 6px 24px rgba(0,0,0,.5);text-align:center;width:300px;}
+h1{margin-bottom:10px;font-size:22px;}
+.balance{font-size:32px;font-weight:700;color:#7dd3fc;margin-bottom:10px;}
+small{color:#a0aec0;}
+button{margin-top:20px;padding:10px 16px;border:none;border-radius:8px;
+background:linear-gradient(90deg,#7c3aed,#34d399);color:#fff;font-weight:700;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>My Balance</h1>
+  <div class="balance" id="bal">$0.00</div>
+  <small>Service fee 0.5 % applies on payouts</small><br>
+  <button id="cashout">Cash Out via Cash App</button>
+</div>
+
+<script type="module">
+import {auth,db} from "./firebase.js";
+import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import {doc,getDoc,updateDoc} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+onAuthStateChanged(auth,async user=>{
+  if(!user){window.location="login.html";return;}
+  const ref=doc(db,"users",user.uid);
+  const snap=await getDoc(ref);
+  if(!snap.exists()){alert("Profile missing");return;}
+  const data=snap.data();
+  const balAmt=data.balance||0;
+  bal.textContent=`$${(balAmt/100).toFixed(2)}`;
+
+  document.getElementById("cashout").onclick=async()=>{
+    if(balAmt<=0)return alert("No balance to withdraw");
+    const fee=Math.round(balAmt*0.005);
+    const payout=balAmt-fee;
+    alert(`Simulated payout $${(payout/100).toFixed(2)} sent to Cash App tag ${data.cashapp||"(none set)"}`);
+    await updateDoc(ref,{balance:0});
+    location.reload();
+  };
+});
+</script>
+</body>
+</html>

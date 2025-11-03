@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Payment Method — Gomega Watch</title>
+<style>
+body{margin:0;background:#0e1420;color:#eaf2fa;font-family:Inter,ui-sans-serif;
+display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;}
+.card{background:rgba(255,255,255,.05);padding:30px 40px;border-radius:16px;
+box-shadow:0 6px 24px rgba(0,0,0,.5);text-align:center;width:300px;}
+h1{margin-bottom:20px;font-size:22px;}
+input{width:100%;padding:10px;border:none;border-radius:8px;margin-bottom:12px;}
+button{padding:10px;width:100%;border:none;border-radius:8px;
+background:linear-gradient(90deg,#7c3aed,#34d399);color:#fff;font-weight:700;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Cash App Tag</h1>
+  <input id="tag" placeholder="$username"/>
+  <button id="save">Save Tag</button>
+</div>
+
+<script type="module">
+import {auth,db} from "./firebase.js";
+import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import {doc,getDoc,updateDoc} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+onAuthStateChanged(auth,async user=>{
+  if(!user){window.location="login.html";return;}
+  const ref=doc(db,"users",user.uid);
+  const snap=await getDoc(ref);
+  if(snap.exists()) tag.value=snap.data().cashapp||"";
+  document.getElementById("save").onclick=async()=>{
+    await updateDoc(ref,{cashapp:tag.value.trim()});
+    alert("Cash App tag saved");
+    window.location="balance.html";
+  };
+});
+</script>
+</body>
+</html>
