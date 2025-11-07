@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Gomega Browser — V17 Overview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root{
+      --bg:#0f172a;
+      --panel:#111827;
+      --ink:#e5e7eb;
+      --muted:#94a3b8;
+      --accent:#0ea5e9;
+      --accent2:#22c55e;
+      --border:rgba(148,163,184,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Segoe UI,Arial,sans-serif;background:#020617;color:var(--ink);}
+    body{
+      background:radial-gradient(circle at top,#0ea5e9 0,#020617 40%) fixed;
+      display:flex;
+      justify-content:center;
+      padding:24px;
+    }
+    .shell{
+      max-width:960px;
+      width:100%;
+      margin:auto;
+    }
+    .card{
+      background:rgba(15,23,42,.92);
+      border-radius:20px;
+      border:1px solid var(--border);
+      box-shadow:0 18px 60px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.04);
+      padding:22px 24px 26px;
+      backdrop-filter:blur(14px);
+    }
+    header{
+      display:flex;
+      align-items:flex-start;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+    .logo{
+      width:52px;height:52px;
+      border-radius:16px;
+      background:conic-gradient(from 210deg,#22c55e,#0ea5e9,#6366f1,#22c55e);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo::after{
+      content:"G";
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:800;
+      font-size:24px;
+      color:rgba(15,23,42,.95);
+      text-shadow:0 0 12px rgba(15,23,42,.9);
+    }
+    h1{
+      margin:0;
+      font-size:24px;
+      letter-spacing:.02em;
+    }
+    .tagline{
+      margin:4px 0 0;
+      font-size:13px;
+      color:var(--muted);
+    }
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+    .pill{
+      font-size:11px;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.4);
+      background:#020617;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .pill span.dot{
+      width:7px;height:7px;border-radius:999px;
+      background:var(--accent2);
+      box-shadow:0 0 10px rgba(34,197,94,.9);
+    }
+    .pill.warn span.dot{background:#facc15;box-shadow:0 0 10px rgba(250,204,21,.9);}
+    .pill.info span.dot{background:#38bdf8;box-shadow:0 0 10px rgba(56,189,248,.9);}
+
+    main{margin-top:18px;font-size:14px;color:var(--muted);line-height:1.6;}
+    h2{
+      margin:18px 0 6px;
+      font-size:16px;
+      color:#e5e7eb;
+    }
+    .kicker{
+      font-size:11px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:#cbd5e1;
+      margin-top:14px;
+    }
+    ul{margin:6px 0 0 20px;padding:0;}
+    li{margin:2px 0 0;}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:16px;
+      margin-top:16px;
+    }
+    .tile{
+      grid-column:span 12;
+      background:rgba(15,23,42,.95);
+      border-radius:16px;
+      border:1px solid rgba(30,64,175,.45);
+      padding:14px 16px 16px;
+    }
+    .tile h3{
+      margin:0 0 4px;
+      font-size:15px;
+      color:#e5e7eb;
+    }
+    .badge-inline{
+      display:inline-block;
+      padding:2px 8px;
+      border-radius:999px;
+      background:rgba(56,189,248,.15);
+      border:1px solid rgba(56,189,248,.5);
+      font-size:11px;
+      color:#e0f2fe;
+      margin-left:6px;
+    }
+    code{
+      font-family:Consolas,Menlo,monospace;
+      font-size:12px;
+      background:rgba(15,23,42,.9);
+      border-radius:6px;
+      border:1px solid rgba(148,163,184,.35);
+      padding:1px 4px;
+      color:#e5e7eb;
+    }
+    .callout{
+      border-radius:12px;
+      border:1px solid rgba(34,197,94,.4);
+      background:linear-gradient(135deg,rgba(22,163,74,.18),rgba(15,23,42,.85));
+      padding:10px 12px;
+      margin-top:10px;
+      font-size:13px;
+      color:#dcfce7;
+    }
+    .callout strong{color:#bbf7d0;}
+    a{
+      color:#7dd3fc;
+      text-decoration:none;
+    }
+    a:hover{text-decoration:underline;}
+    .footer{
+      margin-top:16px;
+      font-size:11px;
+      color:#64748b;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .link-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(125,211,252,.4);
+      background:rgba(15,23,42,.95);
+      font-size:11px;
+      color:#e0f2fe;
+      text-decoration:none;
+    }
+    .link-btn:hover{background:rgba(15,23,42,1);}
+    @media(max-width:720px){
+      .card{padding:18px 16px 20px;}
+    }
+    @media(min-width:800px){
+      .tile.span-6{grid-column:span 6;}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="card">
+      <header>
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Gomega Browser Launcher — V17</h1>
+          <p class="tagline">
+            A guarded Chrome launcher with better website compatibility, including GeForce NOW.
+          </p>
+          <div class="pill-row">
+            <div class="pill"><span class="dot"></span><span>Current release: <strong>V17</strong></span></div>
+            <div class="pill info"><span class="dot"></span><span>Chrome user-agent tuned for real sites</span></div>
+            <div class="pill warn"><span class="dot"></span><span>Password-protected launcher</span></div>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <div class="kicker">Overview</div>
+        <h2>What’s new in V17?</h2>
+        <p>
+          Gomega Browser V17 is a Windows HTA-based launcher that wraps Google Chrome with a custom user agent,
+          guarded access, and a clean status UI. This version focuses on
+          <strong>compatibility with real websites</strong> while keeping your existing password system.
+        </p>
+
+        <div class="grid">
+          <div class="tile span-6">
+            <h3>Improved website compatibility <span class="badge-inline">GeForce NOW works</span></h3>
+            <p>
+              Earlier versions used a Chromebook-style user agent that made some services think the browser
+              was unsupported or “too automated.” V17 now uses a
+              <strong>modern Windows Chrome user agent</strong>, which:
+            </p>
+            <ul>
+              <li>Works with <strong>NVIDIA GeForce NOW</strong> at <a href="https://www.nvidia.com/en-us/geforce-now/" target="_blank" rel="noopener">nvidia.com</a>.</li>
+              <li>Passes most “unsupported browser” checks that blocked older versions.</li>
+              <li>Looks like a normal, up-to-date Chrome install on Windows.</li>
+            </ul>
+            <p style="margin-top:6px;">
+              The launcher still calls the real <strong>Chrome.exe</strong> on your machine, it just tells sites
+              to treat it as a supported configuration.
+            </p>
+          </div>
+
+          <div class="tile span-6">
+            <h3>Password-protected launcher</h3>
+            <p>
+              Access to the launcher is still locked behind a remote password list:
+            </p>
+            <ul>
+              <li>Valid passwords are stored remotely in <code>browser/codes.txt</code>.</li>
+              <li>On every run, V17 downloads that list and checks the code you enter.</li>
+              <li>If the password isn’t on the list, the launcher closes and Chrome is not opened.</li>
+            </ul>
+            <div class="callout">
+              <strong>Note:</strong> Info shown here is high level only. Actual passwords are never shown on this
+              page and are still managed remotely.
+            </div>
+          </div>
+
+          <div class="tile span-6">
+            <h3>Version-locked for safety</h3>
+            <p>
+              V17 includes a version check against your site so you can force updates:
+            </p>
+            <ul>
+              <li>On start, the launcher reads <code>browser/version.txt</code> from your server.</li>
+              <li>If that file doesn’t say <code>17</code>, the launcher stops and tells the user to download the new build.</li>
+              <li>This prevents old, out-of-date launchers from being used once you ship a new version.</li>
+            </ul>
+          </div>
+
+          <div class="tile span-6">
+            <h3>Launch behavior</h3>
+            <p>
+              After a correct password and version check:
+            </p>
+            <ul>
+              <li>Any existing <code>chrome.exe</code> process is closed to avoid conflicts.</li>
+              <li>Chrome is launched with a custom user agent so sites see it as a supported browser.</li>
+              <li>Multiple tabs can be opened on launch, including:
+                <ul>
+                  <li>Your <strong>Instagram</strong> profile(s).</li>
+                  <li>The <strong>Gomega AI</strong> page at <code>https://gomega.watch/ai</code>.</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+
+          <div class="tile span-6">
+            <h3>Visual + UX updates</h3>
+            <ul>
+              <li>Glassmorphism-style launcher UI with live status text.</li>
+              <li>Spinner and status line so users know what’s happening:
+                <ul>
+                  <li>Integrity / version checks.</li>
+                  <li>Password loading.</li>
+                  <li>Browser launch.</li>
+                </ul>
+              </li>
+              <li>Soft integrity check: if the launcher can’t read its own file, it warns but keeps going instead of crashing.</li>
+            </ul>
+          </div>
+
+          <div class="tile span-6">
+            <h3>What V17 does <em>not</em> do</h3>
+            <ul>
+              <li>It does <strong>not</strong> bypass GeForce NOW requirements or any other service’s rules.</li>
+              <li>It does <strong>not</strong> change how Chrome itself executes code or installs extensions.</li>
+              <li>It does <strong>not</strong> manage your GeForce NOW account or login in any way.</li>
+            </ul>
+            <p style="margin-top:4px;">
+              V17 simply launches the browser with a user agent that many services expect and trust.
+            </p>
+          </div>
+        </div>
+
+        <div class="kicker">For users</div>
+        <h2>How to use Gomega Browser V17</h2>
+        <ul>
+          <li>Run the <strong>Gomega Browser V17</strong> launcher file.</li>
+          <li>Wait for the status text to say it’s checking version and loading passwords.</li>
+          <li>Enter your launcher password when prompted.</li>
+          <li>If the password is valid, Chrome will open with the Gomega configuration.</li>
+          <li>From there, you can visit sites like <strong>GeForce NOW</strong> and others as normal.</li>
+        </ul>
+      </main>
+
+      <div class="footer">
+        <div>Gomega Browser Launcher V17 • Info page only &mdash; no passwords are stored here.</div>
+        <a class="link-btn" href="https://gomega.watch" target="_blank" rel="noopener">
+          <span>Back to gomega.watch</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
