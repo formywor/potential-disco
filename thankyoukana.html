@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Thank You Kana — ScriptNova Certificate</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root {
+  --bg1:#071021;
+  --bg2:#0b1220;
+  --accent:#34d3ff;
+  --accent2:#22c55e;
+  --text:#e5e7eb;
+}
+body {
+  margin:0;
+  font-family:"Inter",sans-serif;
+  background:linear-gradient(135deg,var(--bg1),var(--bg2));
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  text-align:center;
+}
+h1 {
+  font-size:2.4em;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+#message {
+  max-width:750px;
+  line-height:1.6;
+  margin-bottom:40px;
+}
+#certificate {
+  background:white;
+  color:black;
+  border:6px solid var(--accent);
+  border-radius:16px;
+  padding:40px 30px;
+  text-align:center;
+  box-shadow:0 0 25px rgba(52,211,255,0.3);
+  max-width:700px;
+  display:none;
+  animation:fadein 1s ease;
+}
+@keyframes fadein { from{opacity:0; transform:scale(.95);} to{opacity:1; transform:scale(1);} }
+#certTitle {
+  font-size:1.8em;
+  color:#0b1220;
+  margin-bottom:10px;
+}
+#certBody { font-size:1.1em; margin-bottom:30px; }
+#certSign {
+  text-align:right;
+  font-weight:bold;
+  font-size:1em;
+  margin-top:20px;
+}
+button {
+  background:var(--accent);
+  color:white;
+  border:none;
+  padding:10px 20px;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.2s;
+}
+button:hover { background:var(--accent2); transform:scale(1.05); }
+footer { margin-top:50px; font-size:.9em; opacity:.8; }
+</style>
+</head>
+<body>
+  <h1>💙 Thank You, Kana 💙</h1>
+  <div id="message">
+    Kana, this page is dedicated to you.<br><br>
+    Thank you for everything you’ve done for ScriptNova and for always supporting our journey.<br>
+    You helped me grow and even helped me become close friends with <strong>Zainab</strong> — something I’ll always be grateful for.<br><br>
+    Your kindness and creativity are part of what makes the ScriptNova community so special.
+  </div>
+  <button id="generate">Generate Certificate</button>
+
+  <div id="certificate">
+    <div id="certTitle">Certificate of Appreciation</div>
+    <div id="certBody"></div>
+    <div id="certSign">— ScriptNova Owner (David Y)</div>
+  </div>
+
+  <footer>Made by the ScriptNova Team — made with love ❤️</footer>
+
+<script>
+document.getElementById("generate").onclick = ()=>{
+  const cert = document.getElementById("certificate");
+  const body = document.getElementById("certBody");
+  const date = new Date().toLocaleDateString();
+  body.innerHTML = `
+  This certificate is proudly presented to <strong>Kana</strong><br><br>
+  In recognition of her outstanding support, positivity, and friendship.<br>
+  Kana has been an invaluable part of ScriptNova’s journey,<br>
+  helping the team grow and bringing people closer — including David and Zainab.<br><br>
+  <em>Issued on ${date}</em>
+  `;
+  cert.style.display = "block";
+  document.getElementById("generate").style.display="none";
+};
+</script>
+</body>
+</html>
